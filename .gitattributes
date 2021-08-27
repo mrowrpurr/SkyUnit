@@ -1,2 +1,6 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+# Binary files (no line-ending conversions), diff using hexdump
+*.esp binary diff=hex
+*.pex binary diff=hex
+*.swf binary diff=hex
