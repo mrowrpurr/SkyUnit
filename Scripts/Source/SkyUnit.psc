@@ -50,11 +50,20 @@ SkyUnitTest[] _registeredTestScripts1
 SkyUnitTest[] _registeredTestScripts2
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Debug Logs fro SkyUI
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+function Debug(string text)
+    Debug.Trace("[SkyUnit] " + text)
+endFunction
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Getter for "Current Test" script
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 SkyUnitTest property CurrentTestScript
     SkyUnitTest function get()
+        Debug("Returning Current Test Script: " + _currentTestScript)
         return _currentTestScript
     endFunction
 endProperty
@@ -68,6 +77,7 @@ endEvent
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 function ResetTestData()
+    Debug("Reset Test Data")
     if _testData
         JValue.release(_testData)
     endIf
@@ -80,6 +90,7 @@ function ResetTestData()
 endFunction
 
 function ResetSkyUnitTestArrays()
+    Debug("Reset SkyUnitTest Storage Arrays")
     if _registeredTestScriptsLookupMap
         JValue.release(_registeredTestScriptsLookupMap)
     endIf
@@ -106,6 +117,7 @@ function RegisterSkyUnitTest(SkyUnitTest test)
     if existingIndex
         return ; Already registered
     endIf
+    Debug("Register SkyUnitTest script " + test)
     JMap.setInt(_registeredTestScriptsLookupMap, test, _registeredTestScriptsNextIndex)
     if _registeredTestScriptsNextIndex < 128
         _registeredTestScripts1[_registeredTestScriptsNextIndex] = test
@@ -114,7 +126,7 @@ function RegisterSkyUnitTest(SkyUnitTest test)
         _registeredTestScripts1[_registeredTestScriptsNextIndex - 128] = test
         _registeredTestScriptsNextIndex += 1
     else
-        Debug.Trace("[SkyUnit] Cannot register SkyUnitTest " + test + " because 256 tests are already registered (that is currently the max)")
+        Debug("Cannot register SkyUnitTest " + test + " because 256 tests are already registered (that is currently the max)")
     endIf
 endFunction
 
@@ -132,7 +144,7 @@ SkyUnitTest function InstanceGetNthTestScript(int index)
     elseIf index < 256
         return _registeredTestScripts1[index - 128]
     else
-        Debug.Trace("[SkyUnit] Cannot get SkyUnitTest " + index + " because 255 is the highest allowed index")
+        Debug("Cannot get SkyUnitTest " + index + " because 255 is the highest allowed index")
     endIf
 endFunction
 
@@ -145,7 +157,7 @@ endFunction
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 function BeginTestScript(SkyUnitTest test)
-    Debug.Trace("[SkyUnit] Begin Test Script (" + test + ")")
+    Debug("Begin Test Script: " + test)
     int testScripts = JMap.getObj(_testData, "testScripts")
     int testScript = JMap.object()
     JMap.setObj(testScripts, test, testScript)
@@ -157,7 +169,7 @@ function BeginTestScript(SkyUnitTest test)
 endFunction
 
 function BeginTest(SkyUnitTest test, string testName)
-    Debug.Trace("[SkyUnit] Begin Test (" + test + ") [" + testName + "]")
+    Debug("Begin Test: " + test + " ~ " + testName)
     int testObj = JMap.object()
     JMap.setObj(_currentTestScriptTestsMap, testName, testObj)
     JMap.setStr(testObj, "name", testName)
@@ -196,11 +208,11 @@ endFunction
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 function BeginExpectation(string type, string object) global
-    Debug.Trace("[SkyUnit] Begin Expectation (" + type + ") [" + object + "]")
-    GetInstance().InstanceBeginExpectation(type, object)
+    SkyUnit.GetInstance().InstanceBeginExpectation(type, object)
 endFunction
 
 function InstanceBeginExpectation(string type, string object)
+    Debug("Begin Expectation:" + type + " [" + object + "]")
     int expectation = JMap.object()
     JArray.addObj(_currentExpectationsArray, expectation)
     JMap.setStr(expectation, "type", type)
@@ -209,14 +221,15 @@ function InstanceBeginExpectation(string type, string object)
     JMap.setObj(expectation, "data", expectationData)
     _currentExpectationMap = expectation
     _currentExpectationDataMap = expectationData
+    Debug("Finished Setting Up Expectation")
 endFunction
 
 function FailExpectation(string failureMessage) global
-    Debug.Trace("FAILED EXPECTATION " + failureMessage)
     GetInstance().InstanceFailExpectation(failureMessage)
 endFunction
 
 function InstanceFailExpectation(string failureMessage)
+    Debug("Fail Expectation: " + failureMessage)
     JMap.setInt(_currentExpectationMap, "failed", 1)
     JMap.setStr(_currentExpectationMap, "expectationFailureMessage", failureMessage)
     ; Total failed for Test Script
@@ -227,6 +240,7 @@ function InstanceFailExpectation(string failureMessage)
     JMap.setInt(_currentTestMap, "failedExpectations", currentFailedExpectationCount + 1)
     ; Add to failure messages for this test function
     JArray.addStr(_currentExpectationFailureMessagesArray, failureMessage)
+    Debug("Finished Failing Expectation")
 endFunction
 
 bool function Not() global
@@ -249,108 +263,264 @@ endFunction
 ;; Expectation Data Getters and Setters
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+string function GetExpectationData_Object_TypeKey(string typeName) global
+    return "[DEFAULT_OBJECT:" + typeName + "]"
+endFunction
+
+string function GetExpectationData_Object_Text() global
+    return GetInstance().InstanceGetExpectationData_Object_Text()
+endFunction
+
+function SetExpectationData_Object_Text(string object) global
+    GetInstance().InstanceSetExpectationData_Object_Text(object)
+endFunction
+
+function InstanceSetExpectationData_Object_Text(string object)
+    JMap.setStr(_currentExpectationDataMap, GetExpectationData_Object_TypeKey("TEXT"), object)
+endFunction
+
+string function InstanceGetExpectationData_Object_Text()
+    return GetExpectationData_String(GetExpectationData_Object_TypeKey("TEXT"))
+endFunction
+
 ;; Form
 
-Form function GetExpectationObjectForm() global
-    return GetExpectationForm("<object:form>")
+Form function GetExpectationData_Object_Form() global
+    return GetExpectationData_Form(GetExpectationData_Object_TypeKey("Form"))
 endFunction
 
-function SetExpectationObjectForm(Form value) global
-    SetExpectationForm("<object:form>", value)
+function SetExpectationData_Object_Form(Form value) global
+    SetExpectationData_Form(GetExpectationData_Object_TypeKey("Form"), value)
 endFunction
 
-Form function GetExpectationForm(string strKey) global
-    return GetInstance().InstanceGetExpectationForm(strKey)
+Form function GetExpectationData_Form(string dataKey) global
+    return GetInstance().InstanceGetExpectationData_Form(dataKey)
 endFunction
 
-Form function InstanceGetExpectationForm(string strKey)
-    return JMap.getForm(_currentExpectationDataMap, strKey)
+Form function InstanceGetExpectationData_Form(string dataKey)
+    return JMap.getForm(_currentExpectationDataMap, dataKey)
 endFunction
 
-function SetExpectationForm(string strKey, Form value) global
-    GetInstance().InstanceSetExpectationForm(strKey, value)
+function SetExpectationData_Form(string dataKey, Form value) global
+    GetInstance().InstanceSetExpectationData_Form(dataKey, value)
 endFunction
 
-function InstanceSetExpectationForm(string strKey, Form value)
-    JMap.setForm(_currentExpectationDataMap, strKey, value)
+function InstanceSetExpectationData_Form(string dataKey, Form value)
+    JMap.setForm(_currentExpectationDataMap, dataKey, value)
+    SetExpectationData_Object_Text(value)
+endFunction
+
+;; Form Array
+
+Form[] function GetExpectationData_Object_FormArray() global
+    return GetExpectationData_FormArray(GetExpectationData_Object_TypeKey("FormArray"))
+endFunction
+
+function SetExpectationData_Object_FormArray(Form[] value) global
+    SetExpectationData_FormArray(GetExpectationData_Object_TypeKey("FormArray"), value)
+endFunction
+
+Form[] function GetExpectationData_FormArray(string dataKey) global
+    return GetInstance().InstanceGetExpectationData_FormArray(dataKey)
+endFunction
+
+Form[] function InstanceGetExpectationData_FormArray(string dataKey)
+    return JArray.asFormArray(JMap.getObj(_currentExpectationDataMap, dataKey))
+endFunction
+
+function SetExpectationData_FormArray(string dataKey, Form[] value) global
+    GetInstance().InstanceSetExpectationData_FormArray(dataKey, value)
+endFunction
+
+function InstanceSetExpectationData_FormArray(string dataKey, Form[] value)
+    int array = JArray.object()
+    JMap.setObj(_currentExpectationDataMap, dataKey, array)
+    int index = 0
+    while index < value.Length
+        JArray.addForm(array, value[index])
+        index += 1
+    endWhile
+    SetExpectationData_Object_Text(value)
 endFunction
 
 ;; String
 
-string function GetExpectationObjectString() global
-    return GetExpectationString("<object:string>")
+string function GetExpectationData_Object_String() global
+    return GetExpectationData_String(GetExpectationData_Object_TypeKey("String"))
 endFunction
 
-function SetExpectationObjectString(string value) global
-    SetExpectationString("<object:string>", value)
+function SetExpectationData_Object_String(string value) global
+    SetExpectationData_String(GetExpectationData_Object_TypeKey("String"), value)
 endFunction
 
-string function GetExpectationString(string strKey) global
-    return GetInstance().InstanceGetExpectationString(strKey)
+string function GetExpectationData_String(string dataKey) global
+    return GetInstance().InstanceGetExpectationData_String(dataKey)
 endFunction
 
-string function InstanceGetExpectationString(string strKey)
-    return JMap.getStr(_currentExpectationDataMap, strKey)
+string function InstanceGetExpectationData_String(string dataKey)
+    return JMap.getStr(_currentExpectationDataMap, dataKey)
 endFunction
 
-function SetExpectationString(string strKey, String value) global
-    GetInstance().InstanceSetExpectationString(strKey, value)
+function SetExpectationData_String(string dataKey, String value) global
+    GetInstance().InstanceSetExpectationData_String(dataKey, value)
 endFunction
 
-function InstanceSetExpectationString(string strKey, String value)
-    JMap.setStr(_currentExpectationDataMap, strKey, value)
+function InstanceSetExpectationData_String(string dataKey, String value)
+    JMap.setStr(_currentExpectationDataMap, dataKey, value)
+    SetExpectationData_Object_Text(value)
+endFunction
+
+;; String Array
+
+string[] function GetExpectationData_Object_StringArray() global
+    return GetExpectationData_StringArray(GetExpectationData_Object_TypeKey("StringArray"))
+endFunction
+
+function SetExpectationData_Object_StringArray(string[] value) global
+    SetExpectationData_StringArray(GetExpectationData_Object_TypeKey("StringArray"), value)
+endFunction
+
+string[] function GetExpectationData_StringArray(string dataKey) global
+    return GetInstance().InstanceGetExpectationData_StringArray(dataKey)
+endFunction
+
+string[] function InstanceGetExpectationData_StringArray(string dataKey)
+    return JArray.asStringArray(JMap.getObj(_currentExpectationDataMap, dataKey))
+endFunction
+
+function SetExpectationData_StringArray(string dataKey, string[] value) global
+    GetInstance().InstanceSetExpectationData_StringArray(dataKey, value)
+endFunction
+
+function InstanceSetExpectationData_StringArray(string dataKey, string[] value)
+    int array = JArray.object()
+    JMap.setObj(_currentExpectationDataMap, dataKey, array)
+    int index = 0
+    while index < value.Length
+        JArray.addStr(array, value[index])
+        index += 1
+    endWhile
+    SetExpectationData_Object_Text(value)
 endFunction
 
 ;; Int
 
-int function GetExpectationObjectInt() global
-    return GetExpectationInt("<object:int>")
+int function GetExpectationData_Object_Int() global
+    return GetExpectationData_Int(GetExpectationData_Object_TypeKey("Int"))
 endFunction
 
-function SetExpectationObjectInt(int value) global
-    SetExpectationInt("<object:int>", value)
+function SetExpectationData_Object_Int(int value) global
+    SetExpectationData_Int(GetExpectationData_Object_TypeKey("Int"), value)
 endFunction
 
-int function GetExpectationInt(string strKey) global
-    return GetInstance().InstanceGetExpectationInt(strKey)
+int function GetExpectationData_Int(string dataKey) global
+    return GetInstance().InstanceGetExpectationData_Int(dataKey)
 endFunction
 
-int function InstanceGetExpectationInt(string strKey)
-    return JMap.getInt(_currentExpectationDataMap, strKey)
+int function InstanceGetExpectationData_Int(string dataKey)
+    return JMap.getInt(_currentExpectationDataMap, dataKey)
 endFunction
 
-function SetExpectationInt(string strKey, Int value) global
-    GetInstance().InstanceSetExpectationInt(strKey, value)
+function SetExpectationData_Int(string dataKey, Int value) global
+    GetInstance().InstanceSetExpectationData_Int(dataKey, value)
 endFunction
 
-function InstanceSetExpectationInt(string strKey, Int value)
-    JMap.setInt(_currentExpectationDataMap, strKey, value)
+function InstanceSetExpectationData_Int(string dataKey, Int value)
+    JMap.setInt(_currentExpectationDataMap, dataKey, value)
+    SetExpectationData_Object_Text(value)
+endFunction
+
+;; Int Array
+
+int[] function GetExpectationData_Object_IntArray() global
+    return GetExpectationData_IntArray(GetExpectationData_Object_TypeKey("IntArray"))
+endFunction
+
+function SetExpectationData_Object_IntArray(int[] value) global
+    SetExpectationData_IntArray(GetExpectationData_Object_TypeKey("IntArray"), value)
+endFunction
+
+int[] function GetExpectationData_IntArray(string dataKey) global
+    return GetInstance().InstanceGetExpectationData_IntArray(dataKey)
+endFunction
+
+int[] function InstanceGetExpectationData_IntArray(string dataKey)
+    return JArray.asIntArray(JMap.getObj(_currentExpectationDataMap, dataKey))
+endFunction
+
+function SetExpectationData_IntArray(string dataKey, int[] value) global
+    GetInstance().InstanceSetExpectationData_IntArray(dataKey, value)
+endFunction
+
+function InstanceSetExpectationData_IntArray(string dataKey, int[] value)
+    int array = JArray.object()
+    JMap.setObj(_currentExpectationDataMap, dataKey, array)
+    int index = 0
+    while index < value.Length
+        JArray.addInt(array, value[index])
+        index += 1
+    endWhile
+    SetExpectationData_Object_Text(value)
 endFunction
 
 ;; Float
 
-float function GetExpectationObjectFloat() global
-    return GetExpectationFloat("<object:float>")
+float function GetExpectationData_Object_Float() global
+    return GetExpectationData_Float(GetExpectationData_Object_TypeKey("Float"))
 endFunction
 
-function SetExpectationObjectFloat(float value) global
-    SetExpectationFloat("<object:float>", value)
+function SetExpectationData_Object_Float(float value) global
+    SetExpectationData_Float(GetExpectationData_Object_TypeKey("Float"), value)
 endFunction
 
-float function GetExpectationFloat(string strKey) global
-    return GetInstance().InstanceGetExpectationFloat(strKey)
+float function GetExpectationData_Float(string dataKey) global
+    return GetInstance().InstanceGetExpectationData_Float(dataKey)
 endFunction
 
-float function InstanceGetExpectationFloat(string strKey)
-    return JMap.getFlt(_currentExpectationDataMap, strKey)
+float function InstanceGetExpectationData_Float(string dataKey)
+    return JMap.getFlt(_currentExpectationDataMap, dataKey)
 endFunction
 
-function SetExpectationFloat(string strKey, Float value) global
-    GetInstance().InstanceSetExpectationFloat(strKey, value)
+function SetExpectationData_Float(string dataKey, Float value) global
+    GetInstance().InstanceSetExpectationData_Float(dataKey, value)
 endFunction
 
-function InstanceSetExpectationFloat(string strKey, Float value)
-    JMap.setFlt(_currentExpectationDataMap, strKey, value)
+function InstanceSetExpectationData_Float(string dataKey, Float value)
+    JMap.setFlt(_currentExpectationDataMap, dataKey, value)
+    SetExpectationData_Object_Text(value)
+endFunction
+
+;; Float Array
+
+float[] function GetExpectationData_Object_FloatArray() global
+    return GetExpectationData_FloatArray(GetExpectationData_Object_TypeKey("FloatArray"))
+endFunction
+
+function SetExpectationData_Object_FloatArray(float[] value) global
+    SetExpectationData_FloatArray(GetExpectationData_Object_TypeKey("FloatArray"), value)
+endFunction
+
+float[] function GetExpectationData_FloatArray(string dataKey) global
+    return GetInstance().InstanceGetExpectationData_FloatArray(dataKey)
+endFunction
+
+float[] function InstanceGetExpectationData_FloatArray(string dataKey)
+    return JArray.asFloatArray(JMap.getObj(_currentExpectationDataMap, dataKey))
+endFunction
+
+function SetExpectationData_FloatArray(string dataKey, float[] value) global
+    GetInstance().InstanceSetExpectationData_FloatArray(dataKey, value)
+endFunction
+
+function InstanceSetExpectationData_FloatArray(string dataKey, float[] value)
+    int array = JArray.object()
+    JMap.setObj(_currentExpectationDataMap, dataKey, array)
+    int index = 0
+    while index < value.Length
+        JArray.addFlt(array, value[index])
+        index += 1
+    endWhile
+    SetExpectationData_Object_Text(value)
 endFunction
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -358,6 +528,7 @@ endFunction
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 function GetTestLock(float waitTime = 0.1, float lock = 0.0)
+    Debug("GetTestLock()")
     if lock == 0.0
         lock = Utility.RandomFloat(1.0, 1000.0)
     endIf
@@ -372,6 +543,7 @@ function GetTestLock(float waitTime = 0.1, float lock = 0.0)
 
     if _testLock == lock
         if _testLock == lock
+            Debug("Test Lock Acquired")
             return
         else
             return GetTestLock(waitTime, lock)
@@ -382,6 +554,7 @@ function GetTestLock(float waitTime = 0.1, float lock = 0.0)
 endFunction
 
 function ReleaseTestLock()
+    Debug("Test Lock Released")
     _testLock = 0.0
 endFunction
 
@@ -426,7 +599,6 @@ endFunction
 
 int function GetFailedExpectationCount(SkyUnitTest test)
     int testMap = GetMapForSkyUnitTestResults(test)
-    Debug.Trace("Getting failed expectation cound for " + test + " which is " + JMap.getInt(testMap, "failedExpectations"))
     return JMap.getInt(testMap, "failedExpectations")
 endFunction
 

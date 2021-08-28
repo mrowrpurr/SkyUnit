@@ -2,17 +2,17 @@ scriptName QuestAssertions hidden
 {SkyUnit test assertions for Quests}
 
 SkyUnitTest function ExpectQuest(Quest theQuest) global
-    SkyUnit.BeginExpectation(type = "Quest", object = theQuest)
-    SkyUnit.SetExpectationForm("ExpectationQuest", theQuest)
+    SkyUnit.BeginExpectation(type = "ExpectQuest", object = theQuest)
+    SkyUnit.SetExpectationData_Form("ExpectationQuest", theQuest)
     return SkyUnit.CurrentTest()
 endFunction
 
 Quest function ExpectationQuest() global
-    return SkyUnit.GetExpectationForm("ExpectationQuest") as Quest
+    return SkyUnit.GetExpectationData_Form("ExpectationQuest") as Quest
 endFunction
 
 function HaveCompletedObjective(int objective) global
-    SkyUnit.SetExpectationInt("Objective", objective)
+    SkyUnit.SetExpectationData_Int("Objective", objective)
     bool not = SkyUnit.Not()
     Quest theQuest = ExpectationQuest()
     bool completed = theQuest.IsObjectiveCompleted(objective)
@@ -24,7 +24,7 @@ function HaveCompletedObjective(int objective) global
 endFunction
 
 function HaveFailedObjective(int objective) global
-    SkyUnit.SetExpectationInt("Objective", objective)
+    SkyUnit.SetExpectationData_Int("Objective", objective)
     bool not = SkyUnit.Not()
     Quest theQuest = ExpectationQuest()
     bool failed = theQuest.IsObjectiveFailed(objective)
@@ -37,7 +37,7 @@ function HaveFailedObjective(int objective) global
 endFunction
 
 function BeAtStage(int stageNumber) global
-    SkyUnit.SetExpectationInt("Stage Number", stageNumber)
+    SkyUnit.SetExpectationData_Int("Stage Number", stageNumber)
     Quest theQuest = ExpectationQuest()
     bool not = SkyUnit.Not()
     int currentStage = theQuest.GetStage()
