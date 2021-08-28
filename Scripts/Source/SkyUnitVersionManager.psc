@@ -1,2 +1,8 @@
 Scriptname SkyUnitVersionManager extends ReferenceAlias  
-{This is a Player Script and can handle OnPlayerLoadGame events}
+{Handles OnPlayerLoadGame and OnInit mod installation events for SkyUnit}
+
+float property CurrentlyInstalledVersion auto
+
+event OnInit()
+    CurrentlyInstalledVersion = 1.0
+endEvent

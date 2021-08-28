@@ -7,19 +7,42 @@ int _currentExpectation
 bool _modInstalled
 
 event OnInit()
+    SkyUnit sdk = SkyUnit.GetInstance()
+    sdk.RegisterSkyUnitTest(self)
     if ! _modInstalled
         _modInstalled = true
     else
         Debug.Trace("[SkyUnit] onInit for test script (" + self + ")")
-        SkyUnit sdk = SkyUnit.GetInstance()
         sdk.BeginTestScript(self)
         if sdk.ShouldRun()
             BeforeAll()
             Tests()
-            sdk.WriteTestLogs()
         endIf
     endIf
 endEvent
+
+bool function Run()
+    SkyUnit sdk = SkyUnit.GetInstance()
+    sdk.BeginTestScript(self)
+    BeforeAll()
+    Tests()
+    return sdk.AllTestsPassed(self)
+endFunction
+
+function SaveResult(string filePath)
+    SkyUnit sdk = SkyUnit.GetInstance()
+    JValue.writeToFile(sdk.GetMapForSkyUnitTestResults(self), filePath)
+endFunction
+
+string function GetSummary()
+    SkyUnit sdk = SkyUnit.GetInstance()
+    return sdk.GetTestSummary(self)
+endFunction
+
+string function GetDisplayName()
+    SkyUnit sdk = SkyUnit.GetInstance()
+    sdk.GetTestDisplayName(self)
+endFunction
 
 function Log(string text)
     SkyUnit.GetInstance().Log(text)
