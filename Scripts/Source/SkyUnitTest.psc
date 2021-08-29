@@ -33,9 +33,9 @@ function SaveResult(string filePath)
     JValue.writeToFile(sdk.GetMapForSkyUnitTestResults(self), filePath)
 endFunction
 
-string function GetSummary()
+string function GetSummary(bool showFailureMessages = true, bool showPassingTestNames = true)
     SkyUnit sdk = SkyUnit.GetInstance()
-    return sdk.GetTestSummary(self)
+    return sdk.GetTestSummary(self, showFailureMessages, showPassingTestNames)
 endFunction
 
 string function GetDisplayName()

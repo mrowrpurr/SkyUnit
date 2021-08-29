@@ -4,6 +4,9 @@ scriptName SkyUnit extends Quest hidden
 ; TODO look at doing fluent assertions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+; Whether SkyUnit is setup and ready (data structures ready for test registration)
+bool _testRegistrationAvailable = false
+
 ; Debug: whether to write JSON test log file for each test that runs
 bool _writeTestLogFiles = true
 
@@ -82,11 +85,18 @@ int property CurrentExpectationDataMap
     endFunction
 endProperty
 
+bool property TestRegistrationReady
+    bool function get()
+        return _testRegistrationAvailable
+    endFunction
+endProperty
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Test Data Setup
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 function ResetTestData()
+    _testRegistrationAvailable = false
     Debug("Reset Test Data")
     if _testData
         JValue.release(_testData)
@@ -97,9 +107,11 @@ function ResetTestData()
     if ! _registeredTestScripts1
         ResetSkyUnitTestArrays()
     endIf
+    _testRegistrationAvailable = true
 endFunction
 
 function ResetSkyUnitTestArrays()
+    _testRegistrationAvailable = false
     Debug("Reset SkyUnitTest Storage Arrays")
     if _registeredTestScriptsLookupMap
         JValue.release(_registeredTestScriptsLookupMap)
@@ -108,6 +120,7 @@ function ResetSkyUnitTestArrays()
     JValue.retain(_registeredTestScriptsLookupMap)
     _registeredTestScripts1 = new SkyUnitTest[128]
     _registeredTestScripts2 = new SkyUnitTest[128]
+    _testRegistrationAvailable = true
 endFunction
 
 SkyUnit function GetInstance() global
@@ -123,6 +136,7 @@ endFunction
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 function RegisterSkyUnitTest(SkyUnitTest test)
+    WaitUntilReady()
     int existingIndex = JMap.getInt(_registeredTestScriptsLookupMap, test)
     if existingIndex
         return ; Already registered
@@ -138,6 +152,12 @@ function RegisterSkyUnitTest(SkyUnitTest test)
     else
         Debug("Cannot register SkyUnitTest " + test + " because 256 tests are already registered (that is currently the max)")
     endIf
+endFunction
+
+function WaitUntilReady()
+    while ! TestRegistrationReady
+        Utility.WaitMenuMode(0.1)
+    endWhile
 endFunction
 
 int function InstanceGetTestScriptCount()
@@ -617,35 +637,48 @@ string function GetTestDisplayName(SkyUnitTest test)
     return StringUtil.Substring(scriptNameText, 1, spaceIndex - 1)    
 endFunction
 
-string function GetTestSummary(SkyUnitTest test)
+string function GetTestSummary(SkyUnitTest test, bool showFailureMessages = true, bool showPassingTestNames = true) ; TODO showAllExpectations
     string testScriptName = GetTestDisplayName(test)
     bool allTestsPassed = AllTestsPassed(test)
     string summary
 
-    if allTestsPassed
-        summary = testScriptName + " test passed\n"
-    else
-        summary = testScriptName + " test failed\n"
-    endIf
-
+    ; TODO - add support for "PENDING tests"
+    int totalPassed = 0
+    int totalFailed = 0
     string[] testNames = GetTestNames(test)
     int index = 0
     while index < testNames.Length
         string testName = testNames[index]
         bool testPassed = TestPassed(test, testName)
         if testPassed
-            summary += "[PASSED] " + testName + "\n"
+            totalPassed += 1
+            if showPassingTestNames
+                summary += "[PASSED] " + testName + "\n"
+            endIf
         else
+            totalFailed += 1
             summary += "[FAILED] " + testName + "\n"
-            string[] failMessages = GetTestFailureMessages(test, testName)
-            int failIndex = 0
-            while failIndex < failMessages.Length
-                summary += "- " + failMessages[failIndex] + "\n"
-                failIndex += 1
-            endWhile
+            if showFailureMessages
+                string[] failMessages = GetTestFailureMessages(test, testName)
+                int failIndex = 0
+                while failIndex < failMessages.Length
+                    summary += "- " + failMessages[failIndex] + "\n"
+                    failIndex += 1
+                endWhile
+            endIf
         endIf
         index += 1
     endWhile
+
+    if totalPassed > 0 && totalFailed > 0
+        summary = totalPassed + " Tests Passed, " + totalFailed + "Tests Failed\n\n" + summary
+    elseIf totalPassed > 0
+        summary = totalPassed + " Tests Passed\n\n" + summary
+    elseIf totalFailed > 0
+        summary = totalFailed + "Tests Failed\n\n" + summary
+    else
+        summary = "No tests"
+    endIf
 
     return summary
 endFunction
