@@ -88,49 +88,62 @@ endFunction
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 SkyUnitTest function ExpectString(string value)
-    SkyUnit.BeginExpectation(type = "ExpectString", object = value)
+    SkyUnit.BeginExpectation("ExpectString")
     SkyUnit.SetExpectationData_Object_String(value)
+    SkyUnit.SetExpectationData_MainObjectType("String")
     return SkyUnit.CurrentTest()
 endFunction
 
 SkyUnitTest function ExpectStringArray(string[] value)
-    SkyUnit.BeginExpectation(type = "ExpectStringArray", object = value)
+    SkyUnit.BeginExpectation("ExpectStringArray")
     SkyUnit.SetExpectationData_Object_StringArray(value)
     return SkyUnit.CurrentTest()
 endFunction
 
 SkyUnitTest function ExpectInt(int value)
-    SkyUnit.BeginExpectation(type = "ExpectInt", object = value)
+    SkyUnit.BeginExpectation("ExpectInt")
     SkyUnit.SetExpectationData_Object_Int(value)
     return SkyUnit.CurrentTest()
 endFunction
 
 SkyUnitTest function ExpectIntArray(int[] value)
-    SkyUnit.BeginExpectation(type = "ExpectIntArray", object = value)
+    SkyUnit.BeginExpectation("ExpectIntArray")
     SkyUnit.SetExpectationData_Object_IntArray(value)
     return SkyUnit.CurrentTest()
 endFunction
 
+SkyUnitTest function ExpectBool(bool value)
+    SkyUnit.BeginExpectation("ExpectBool")
+    SkyUnit.SetExpectationData_Object_Bool(value)
+    return SkyUnit.CurrentTest()
+endFunction
+
+SkyUnitTest function ExpectBoolArray(bool[] value)
+    SkyUnit.BeginExpectation("ExpectBoolArray")
+    SkyUnit.SetExpectationData_Object_BoolArray(value)
+    return SkyUnit.CurrentTest()
+endFunction
+
 SkyUnitTest function ExpectFloat(float value)
-    SkyUnit.BeginExpectation(type = "ExpectFloat", object = value)
+    SkyUnit.BeginExpectation("ExpectFloat")
     SkyUnit.SetExpectationData_Object_Float(value)
     return SkyUnit.CurrentTest()
 endFunction
 
 SkyUnitTest function ExpectFloatArray(float[] value)
-    SkyUnit.BeginExpectation(type = "ExpectFloatArray", object = value)
+    SkyUnit.BeginExpectation("ExpectFloatArray")
     SkyUnit.SetExpectationData_Object_FloatArray(value)
     return SkyUnit.CurrentTest()
 endFunction
 
 SkyUnitTest function ExpectForm(Form value)
-    SkyUnit.BeginExpectation(type = "ExpectForm", object = value)
+    SkyUnit.BeginExpectation("ExpectForm")
     SkyUnit.SetExpectationData_Object_Form(value)
     return SkyUnit.CurrentTest()
 endFunction
 
 SkyUnitTest function ExpectFormArray(Form[] value)
-    SkyUnit.BeginExpectation(type = "ExpectFormArray", object = value)
+    SkyUnit.BeginExpectation("ExpectFormArray")
     SkyUnit.SetExpectationData_Object_FormArray(value)
     return SkyUnit.CurrentTest()
 endFunction
@@ -188,6 +201,45 @@ function ContainText(string expect)
         SkyUnit.FailExpectation("Expected string '" + actual + "'s to contain expect '" + expect + "'")
     endIf
 endFunction
+
+function BeEmpty()
+    string actual = SkyUnit.GetExpectationData_Object_Text()
+    bool not = SkyUnit.Not()
+    string type = SkyUnit.GetExpectationData_MainObjectType()
+    bool isEmpty = actual
+    if StringUtil.Find(type, "Array") > -1
+        isEmpty = actual == "[]"
+    endIf
+    if not && isEmpty
+        SkyUnit.FailExpectation("Expected " + type + " not to be empty but it was empty")
+    elseIf ! not && ! isEmpty
+        SkyUnit.FailExpectation("Expected " + type + " to be empty but it was not empty: " + actual)
+    endIf
+endFunction
+
+function HaveLength(int expectedCount)
+    string type = SkyUnit.GetExpectationData_MainObjectType()
+    int actualLength
+    if type == "String"
+        actualLength = StringUtil.GetLength(SkyUnit.GetExpectationData_Object_String())
+    elseIf type == "StringArray"
+        actualLength = SkyUnit.GetExpectationData_Object_StringArray().Length
+    elseIf type == "IntArray"
+        actualLength = SkyUnit.GetExpectationData_Object_IntArray().Length
+    elseIf type == "FloatArray"
+        actualLength = SkyUnit.GetExpectationData_Object_FloatArray().Length
+    elseIf type == "FormArray"
+        actualLength = SkyUnit.GetExpectationData_Object_FormArray().Length
+    elseIf type == "BoolArray"
+        actualLength = SkyUnit.GetExpectationData_Object_BoolArray().Length
+    else
+        Log("HaveLength() called with unsupported type " + type + " " + SkyUnit.GetExpectationData_Object_Text())
+    endIf
+endFunction
+
+; BeFalsy
+
+; BeTruthy
 
 ; bool function BeGreaterThan(float value)
 ; endFunction

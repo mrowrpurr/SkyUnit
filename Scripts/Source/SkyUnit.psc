@@ -50,6 +50,14 @@ SkyUnitTest[] _registeredTestScripts1
 SkyUnitTest[] _registeredTestScripts2
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Main OnInit() for mod installation
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+event OnInit()
+    ResetTestData()
+endEvent
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Debug Logs fro SkyUI
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -58,7 +66,7 @@ function Debug(string text)
 endFunction
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Getter for "Current Test" script
+;; Read-only getters
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 SkyUnitTest property CurrentTestScript
@@ -68,9 +76,11 @@ SkyUnitTest property CurrentTestScript
     endFunction
 endProperty
 
-event OnInit()
-    ResetTestData()
-endEvent
+int property CurrentExpectationDataMap
+    int function get()
+        return _currentExpectationDataMap
+    endFunction
+endProperty
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Test Data Setup
@@ -207,21 +217,19 @@ endFunction
 ;; Expectations
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-function BeginExpectation(string type, string object) global
-    SkyUnit.GetInstance().InstanceBeginExpectation(type, object)
+function BeginExpectation(string expectationName) global
+    SkyUnit.GetInstance().InstanceBeginExpectation(expectationName)
 endFunction
 
-function InstanceBeginExpectation(string type, string object)
-    Debug("Begin Expectation:" + type + " [" + object + "]")
+function InstanceBeginExpectation(string expectationName)
+    Debug("Begin Expectation:" + expectationName)
     int expectation = JMap.object()
     JArray.addObj(_currentExpectationsArray, expectation)
-    JMap.setStr(expectation, "type", type)
-    JMap.setStr(expectation, "object", object)
+    JMap.setStr(expectation, "type", expectationName)
     int expectationData = JMap.object()
     JMap.setObj(expectation, "data", expectationData)
     _currentExpectationMap = expectation
     _currentExpectationDataMap = expectationData
-    Debug("Finished Setting Up Expectation")
 endFunction
 
 function FailExpectation(string failureMessage) global
@@ -240,7 +248,6 @@ function InstanceFailExpectation(string failureMessage)
     JMap.setInt(_currentTestMap, "failedExpectations", currentFailedExpectationCount + 1)
     ; Add to failure messages for this test function
     JArray.addStr(_currentExpectationFailureMessagesArray, failureMessage)
-    Debug("Finished Failing Expectation")
 endFunction
 
 bool function Not() global
@@ -264,23 +271,28 @@ endFunction
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 string function GetExpectationData_Object_TypeKey(string typeName) global
-    return "[DEFAULT_OBJECT:" + typeName + "]"
+    return "Default Expectation Object: " + typeName
+endFunction
+
+function SetExpectationData_MainObjectType(string typeName, bool onlyIfNotSet = false) global
+    if onlyIfNotSet && GetExpectationData_MainObjectType()
+        return
+    endIf
+    JMap.setStr(GetInstance().CurrentExpectationDataMap, "Main Expectation Object Type", typeName)
+endFunction
+
+string function GetExpectationData_MainObjectType() global
+    return JMap.getStr(GetInstance().CurrentExpectationDataMap, "Main Expectation Object Type")
+endFunction
+
+;; Text representation of the most recently added object for this expectation
+
+function SetExpectationData_Object_Text(string object) global
+    JMap.setStr(GetInstance().CurrentExpectationDataMap, GetExpectationData_Object_TypeKey("LastObjectSerializedAsText"), object)
 endFunction
 
 string function GetExpectationData_Object_Text() global
-    return GetInstance().InstanceGetExpectationData_Object_Text()
-endFunction
-
-function SetExpectationData_Object_Text(string object) global
-    GetInstance().InstanceSetExpectationData_Object_Text(object)
-endFunction
-
-function InstanceSetExpectationData_Object_Text(string object)
-    JMap.setStr(_currentExpectationDataMap, GetExpectationData_Object_TypeKey("TEXT"), object)
-endFunction
-
-string function InstanceGetExpectationData_Object_Text()
-    return GetExpectationData_String(GetExpectationData_Object_TypeKey("TEXT"))
+    return GetExpectationData_String(GetExpectationData_Object_TypeKey("LastObjectSerializedAsText"))
 endFunction
 
 ;; Form
@@ -291,23 +303,16 @@ endFunction
 
 function SetExpectationData_Object_Form(Form value) global
     SetExpectationData_Form(GetExpectationData_Object_TypeKey("Form"), value)
+    SetExpectationData_Object_Text(value)
+    SetExpectationData_MainObjectType("Form", onlyIfNotSet = true)
 endFunction
 
 Form function GetExpectationData_Form(string dataKey) global
-    return GetInstance().InstanceGetExpectationData_Form(dataKey)
-endFunction
-
-Form function InstanceGetExpectationData_Form(string dataKey)
-    return JMap.getForm(_currentExpectationDataMap, dataKey)
+    return JMap.getForm(GetInstance().CurrentExpectationDataMap, dataKey)
 endFunction
 
 function SetExpectationData_Form(string dataKey, Form value) global
-    GetInstance().InstanceSetExpectationData_Form(dataKey, value)
-endFunction
-
-function InstanceSetExpectationData_Form(string dataKey, Form value)
-    JMap.setForm(_currentExpectationDataMap, dataKey, value)
-    SetExpectationData_Object_Text(value)
+    JMap.setForm(GetInstance().CurrentExpectationDataMap, dataKey, value)
 endFunction
 
 ;; Form Array
@@ -318,29 +323,22 @@ endFunction
 
 function SetExpectationData_Object_FormArray(Form[] value) global
     SetExpectationData_FormArray(GetExpectationData_Object_TypeKey("FormArray"), value)
+    SetExpectationData_Object_Text(value)
+    SetExpectationData_MainObjectType("FormArray", onlyIfNotSet = true)
 endFunction
 
 Form[] function GetExpectationData_FormArray(string dataKey) global
-    return GetInstance().InstanceGetExpectationData_FormArray(dataKey)
-endFunction
-
-Form[] function InstanceGetExpectationData_FormArray(string dataKey)
-    return JArray.asFormArray(JMap.getObj(_currentExpectationDataMap, dataKey))
+    return JArray.asFormArray(JMap.getObj(GetInstance().CurrentExpectationDataMap, dataKey))
 endFunction
 
 function SetExpectationData_FormArray(string dataKey, Form[] value) global
-    GetInstance().InstanceSetExpectationData_FormArray(dataKey, value)
-endFunction
-
-function InstanceSetExpectationData_FormArray(string dataKey, Form[] value)
     int array = JArray.object()
-    JMap.setObj(_currentExpectationDataMap, dataKey, array)
+    JMap.setObj(GetInstance().CurrentExpectationDataMap, dataKey, array)
     int index = 0
     while index < value.Length
         JArray.addForm(array, value[index])
         index += 1
     endWhile
-    SetExpectationData_Object_Text(value)
 endFunction
 
 ;; String
@@ -351,23 +349,16 @@ endFunction
 
 function SetExpectationData_Object_String(string value) global
     SetExpectationData_String(GetExpectationData_Object_TypeKey("String"), value)
+    SetExpectationData_Object_Text(value)
+    SetExpectationData_MainObjectType("String", onlyIfNotSet = true)
 endFunction
 
 string function GetExpectationData_String(string dataKey) global
-    return GetInstance().InstanceGetExpectationData_String(dataKey)
-endFunction
-
-string function InstanceGetExpectationData_String(string dataKey)
-    return JMap.getStr(_currentExpectationDataMap, dataKey)
+    return JMap.getStr(GetInstance().CurrentExpectationDataMap, dataKey)
 endFunction
 
 function SetExpectationData_String(string dataKey, String value) global
-    GetInstance().InstanceSetExpectationData_String(dataKey, value)
-endFunction
-
-function InstanceSetExpectationData_String(string dataKey, String value)
-    JMap.setStr(_currentExpectationDataMap, dataKey, value)
-    SetExpectationData_Object_Text(value)
+    JMap.setStr(GetInstance().CurrentExpectationDataMap, dataKey, value)
 endFunction
 
 ;; String Array
@@ -378,29 +369,22 @@ endFunction
 
 function SetExpectationData_Object_StringArray(string[] value) global
     SetExpectationData_StringArray(GetExpectationData_Object_TypeKey("StringArray"), value)
+    SetExpectationData_Object_Text(value)
+    SetExpectationData_MainObjectType("StringArray", onlyIfNotSet = true)
 endFunction
 
 string[] function GetExpectationData_StringArray(string dataKey) global
-    return GetInstance().InstanceGetExpectationData_StringArray(dataKey)
-endFunction
-
-string[] function InstanceGetExpectationData_StringArray(string dataKey)
-    return JArray.asStringArray(JMap.getObj(_currentExpectationDataMap, dataKey))
+    return JArray.asStringArray(JMap.getObj(GetInstance().CurrentExpectationDataMap, dataKey))
 endFunction
 
 function SetExpectationData_StringArray(string dataKey, string[] value) global
-    GetInstance().InstanceSetExpectationData_StringArray(dataKey, value)
-endFunction
-
-function InstanceSetExpectationData_StringArray(string dataKey, string[] value)
     int array = JArray.object()
-    JMap.setObj(_currentExpectationDataMap, dataKey, array)
+    JMap.setObj(GetInstance().CurrentExpectationDataMap, dataKey, array)
     int index = 0
     while index < value.Length
         JArray.addStr(array, value[index])
         index += 1
     endWhile
-    SetExpectationData_Object_Text(value)
 endFunction
 
 ;; Int
@@ -411,23 +395,16 @@ endFunction
 
 function SetExpectationData_Object_Int(int value) global
     SetExpectationData_Int(GetExpectationData_Object_TypeKey("Int"), value)
+    SetExpectationData_Object_Text(value)
+    SetExpectationData_MainObjectType("Int", onlyIfNotSet = true)
 endFunction
 
 int function GetExpectationData_Int(string dataKey) global
-    return GetInstance().InstanceGetExpectationData_Int(dataKey)
-endFunction
-
-int function InstanceGetExpectationData_Int(string dataKey)
-    return JMap.getInt(_currentExpectationDataMap, dataKey)
+    return JMap.getInt(GetInstance().CurrentExpectationDataMap, dataKey)
 endFunction
 
 function SetExpectationData_Int(string dataKey, Int value) global
-    GetInstance().InstanceSetExpectationData_Int(dataKey, value)
-endFunction
-
-function InstanceSetExpectationData_Int(string dataKey, Int value)
-    JMap.setInt(_currentExpectationDataMap, dataKey, value)
-    SetExpectationData_Object_Text(value)
+    JMap.setInt(GetInstance().CurrentExpectationDataMap, dataKey, value)
 endFunction
 
 ;; Int Array
@@ -438,29 +415,75 @@ endFunction
 
 function SetExpectationData_Object_IntArray(int[] value) global
     SetExpectationData_IntArray(GetExpectationData_Object_TypeKey("IntArray"), value)
+    SetExpectationData_Object_Text(value)
+    SetExpectationData_MainObjectType("IntArray", onlyIfNotSet = true)
 endFunction
 
 int[] function GetExpectationData_IntArray(string dataKey) global
-    return GetInstance().InstanceGetExpectationData_IntArray(dataKey)
-endFunction
-
-int[] function InstanceGetExpectationData_IntArray(string dataKey)
-    return JArray.asIntArray(JMap.getObj(_currentExpectationDataMap, dataKey))
+    return JArray.asIntArray(JMap.getObj(GetInstance().CurrentExpectationDataMap, dataKey))
 endFunction
 
 function SetExpectationData_IntArray(string dataKey, int[] value) global
-    GetInstance().InstanceSetExpectationData_IntArray(dataKey, value)
-endFunction
-
-function InstanceSetExpectationData_IntArray(string dataKey, int[] value)
     int array = JArray.object()
-    JMap.setObj(_currentExpectationDataMap, dataKey, array)
+    JMap.setObj(GetInstance().CurrentExpectationDataMap, dataKey, array)
     int index = 0
     while index < value.Length
         JArray.addInt(array, value[index])
         index += 1
     endWhile
+endFunction
+
+;; Bool
+
+bool function GetExpectationData_Object_Bool() global
+    return GetExpectationData_Bool(GetExpectationData_Object_TypeKey("Bool"))
+endFunction
+
+function SetExpectationData_Object_Bool(bool value) global
+    SetExpectationData_Bool(GetExpectationData_Object_TypeKey("Bool"), value)
     SetExpectationData_Object_Text(value)
+    SetExpectationData_MainObjectType("Bool", onlyIfNotSet = true)
+endFunction
+
+bool function GetExpectationData_Bool(string dataKey) global
+    return JMap.getInt(GetInstance().CurrentExpectationDataMap, dataKey)
+endFunction
+
+function SetExpectationData_Bool(string dataKey, bool value) global
+    JMap.setInt(GetInstance().CurrentExpectationDataMap, dataKey, value as int)
+endFunction
+
+;; Bool Array
+
+bool[] function GetExpectationData_Object_BoolArray() global
+    return GetExpectationData_BoolArray(GetExpectationData_Object_TypeKey("BoolArray"))
+endFunction
+
+function SetExpectationData_Object_BoolArray(bool[] value) global
+    SetExpectationData_BoolArray(GetExpectationData_Object_TypeKey("BoolArray"), value)
+    SetExpectationData_Object_Text(value)
+    SetExpectationData_MainObjectType("BoolArray", onlyIfNotSet = true)
+endFunction
+
+bool[] function GetExpectationData_BoolArray(string dataKey) global
+    int[] integers = JArray.asIntArray(JMap.getObj(GetInstance().CurrentExpectationDataMap, dataKey))
+    bool[] bools = Utility.CreateBoolArray(integers.Length)
+    int index = 0
+    while index < integers.Length
+        bools[index] = integers[index]
+        index += 1
+    endWhile
+    return bools
+endFunction
+
+function SetExpectationData_BoolArray(string dataKey, bool[] value) global
+    int array = JArray.object()
+    JMap.setObj(GetInstance().CurrentExpectationDataMap, dataKey, array)
+    int index = 0
+    while index < value.Length
+        JArray.addInt(array, value[index] as int)
+        index += 1
+    endWhile
 endFunction
 
 ;; Float
@@ -471,23 +494,16 @@ endFunction
 
 function SetExpectationData_Object_Float(float value) global
     SetExpectationData_Float(GetExpectationData_Object_TypeKey("Float"), value)
+    SetExpectationData_Object_Text(value)
+    SetExpectationData_MainObjectType("Float", onlyIfNotSet = true)
 endFunction
 
 float function GetExpectationData_Float(string dataKey) global
-    return GetInstance().InstanceGetExpectationData_Float(dataKey)
-endFunction
-
-float function InstanceGetExpectationData_Float(string dataKey)
-    return JMap.getFlt(_currentExpectationDataMap, dataKey)
+    return JMap.getFlt(GetInstance().CurrentExpectationDataMap, dataKey)
 endFunction
 
 function SetExpectationData_Float(string dataKey, Float value) global
-    GetInstance().InstanceSetExpectationData_Float(dataKey, value)
-endFunction
-
-function InstanceSetExpectationData_Float(string dataKey, Float value)
-    JMap.setFlt(_currentExpectationDataMap, dataKey, value)
-    SetExpectationData_Object_Text(value)
+    JMap.setFlt(GetInstance().CurrentExpectationDataMap, dataKey, value)
 endFunction
 
 ;; Float Array
@@ -498,29 +514,22 @@ endFunction
 
 function SetExpectationData_Object_FloatArray(float[] value) global
     SetExpectationData_FloatArray(GetExpectationData_Object_TypeKey("FloatArray"), value)
+    SetExpectationData_Object_Text(value)
+    SetExpectationData_MainObjectType("FloatArray", onlyIfNotSet = true)
 endFunction
 
 float[] function GetExpectationData_FloatArray(string dataKey) global
-    return GetInstance().InstanceGetExpectationData_FloatArray(dataKey)
-endFunction
-
-float[] function InstanceGetExpectationData_FloatArray(string dataKey)
-    return JArray.asFloatArray(JMap.getObj(_currentExpectationDataMap, dataKey))
+    return JArray.asFloatArray(JMap.getObj(GetInstance().CurrentExpectationDataMap, dataKey))
 endFunction
 
 function SetExpectationData_FloatArray(string dataKey, float[] value) global
-    GetInstance().InstanceSetExpectationData_FloatArray(dataKey, value)
-endFunction
-
-function InstanceSetExpectationData_FloatArray(string dataKey, float[] value)
     int array = JArray.object()
-    JMap.setObj(_currentExpectationDataMap, dataKey, array)
+    JMap.setObj(GetInstance().CurrentExpectationDataMap, dataKey, array)
     int index = 0
     while index < value.Length
         JArray.addFlt(array, value[index])
         index += 1
     endWhile
-    SetExpectationData_Object_Text(value)
 endFunction
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
