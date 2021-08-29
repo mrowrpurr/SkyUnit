@@ -544,7 +544,7 @@ function GetTestLock(float waitTime = 0.1, float lock = 0.0)
 
     while _testLock != 0.0
         if waitTime
-            Utility.Wait(waitTime)
+            Utility.WaitMenuMode(waitTime)
         endIf
     endWhile
 

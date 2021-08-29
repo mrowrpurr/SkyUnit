@@ -206,7 +206,7 @@ function BeEmpty()
     string actual = SkyUnit.GetExpectationData_Object_Text()
     bool not = SkyUnit.Not()
     string type = SkyUnit.GetExpectationData_MainObjectType()
-    bool isEmpty = actual
+    bool isEmpty = ! actual
     if StringUtil.Find(type, "Array") > -1
         isEmpty = actual == "[]"
     endIf
@@ -217,8 +217,9 @@ function BeEmpty()
     endIf
 endFunction
 
-function HaveLength(int expectedCount)
+function HaveLength(int expectedLength)
     string type = SkyUnit.GetExpectationData_MainObjectType()
+    bool not = SkyUnit.Not()
     int actualLength
     if type == "String"
         actualLength = StringUtil.GetLength(SkyUnit.GetExpectationData_Object_String())
@@ -235,11 +236,80 @@ function HaveLength(int expectedCount)
     else
         Log("HaveLength() called with unsupported type " + type + " " + SkyUnit.GetExpectationData_Object_Text())
     endIf
+    if not && expectedLength == actualLength
+        SkyUnit.FailExpectation("Expected value not to have length " + expectedLength + ": " + SkyUnit.GetExpectationData_Object_Text())
+    elseIf ! not && expectedLength != actualLength
+        SkyUnit.FailExpectation("Expected value to have length " + expectedLength + ": " + SkyUnit.GetExpectationData_Object_Text())
+    endIf
 endFunction
 
-; BeFalsy
+function BeTrue()
+    string type = SkyUnit.GetExpectationData_MainObjectType()
+    bool not = SkyUnit.Not()
+    bool actualValue
+    if type == "Bool"
+        actualValue = SkyUnit.GetExpectationData_Object_Bool()
+    elseIf type == "String"
+        actualValue = SkyUnit.GetExpectationData_Object_String()
+    elseIf type == "Int"
+        actualValue = SkyUnit.GetExpectationData_Object_Int()
+    elseIf type == "Float"
+        actualValue = SkyUnit.GetExpectationData_Object_Float()
+    elseIf type == "Form"
+        actualValue = SkyUnit.GetExpectationData_Object_Form()
+    elseIf type == "StringArray"
+        actualValue = SkyUnit.GetExpectationData_Object_StringArray()
+    elseIf type == "IntArray"
+        actualValue = SkyUnit.GetExpectationData_Object_IntArray()
+    elseIf type == "FloatArray"
+        actualValue = SkyUnit.GetExpectationData_Object_FloatArray()
+    elseIf type == "FormArray"
+        actualValue = SkyUnit.GetExpectationData_Object_FormArray()
+    elseIf type == "BoolArray"
+        actualValue = SkyUnit.GetExpectationData_Object_BoolArray()
+    else
+        actualValue = SkyUnit.GetExpectationData_Object_Text()
+    endIf
+    if not && actualValue
+        SkyUnit.FailExpectation("Expected value not to be true: " + actualValue)
+    elseIf ! not && ! actualValue
+        SkyUnit.FailExpectation("Expected value to be true: " + actualValue)
+    endIf
+endFunction
 
-; BeTruthy
+function BeFalse()
+    string type = SkyUnit.GetExpectationData_MainObjectType()
+    bool not = SkyUnit.Not()
+    bool actualValue
+    if type == "Bool"
+        actualValue = SkyUnit.GetExpectationData_Object_Bool()
+    elseIf type == "String"
+        actualValue = SkyUnit.GetExpectationData_Object_String()
+    elseIf type == "Int"
+        actualValue = SkyUnit.GetExpectationData_Object_Int()
+    elseIf type == "Float"
+        actualValue = SkyUnit.GetExpectationData_Object_Float()
+    elseIf type == "Form"
+        actualValue = SkyUnit.GetExpectationData_Object_Form()
+    elseIf type == "StringArray"
+        actualValue = SkyUnit.GetExpectationData_Object_StringArray()
+    elseIf type == "IntArray"
+        actualValue = SkyUnit.GetExpectationData_Object_IntArray()
+    elseIf type == "FloatArray"
+        actualValue = SkyUnit.GetExpectationData_Object_FloatArray()
+    elseIf type == "FormArray"
+        actualValue = SkyUnit.GetExpectationData_Object_FormArray()
+    elseIf type == "BoolArray"
+        actualValue = SkyUnit.GetExpectationData_Object_BoolArray()
+    else
+        actualValue = SkyUnit.GetExpectationData_Object_Text()
+    endIf
+    if not && ! actualValue
+        SkyUnit.FailExpectation("Expected value not to be false: " + actualValue)
+    elseIf ! not && actualValue
+        SkyUnit.FailExpectation("Expected value to be false: " + actualValue)
+    endIf
+endFunction
 
 ; bool function BeGreaterThan(float value)
 ; endFunction
