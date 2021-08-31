@@ -23,7 +23,7 @@ The quest will have attached `Scripts` for each group of tests that you write.
 - **Disable** `Start Game Enabled`
 - **Disable** `Run Once`
 
-## #3. Add a new script
+## #3. Add a new script🧐
 
 > e.g. `MyCoolModTests.psc`
 
@@ -33,7 +33,7 @@ You can organize your tests into multiple scripts or simply use one script.
 
 ## #4. Update script to `extends SkyUnitTest`
 
-#### Example:
+### Example:
 
 ```psc
 scriptName MyCoolModTests extends SkyUnitTest
@@ -45,7 +45,7 @@ In this function, you will declare all of your tests.
 
 Each test maps to a function which you define!
 
-#### Example:
+### Example:
 
 ```psc
 scriptName MyCoolModTests extends SkyUnitTest
@@ -61,7 +61,7 @@ _See below for creating test functions._
 
 > e.g. `function QuestStartsOkTest()`
 
-#### Example:
+### Example:
 
 ```psc
 scriptName MyCoolModTests extends SkyUnitTest
@@ -79,7 +79,17 @@ endFunction
 
 > e.g. `ExpectString("Hello").To(EqualString("Hello"))`
 
-#### Example:
+Note: certain expectations are built-in to `SkyUnitTest`:
+- `ExpectString`, `ExpectInt`, `ExpectFloat`, `ExpectBool`, `ExpectForm`
+- `ExpectStringArray`, `ExpectIntArray`, `ExpectFloatArray`, `ExpectBoolArray`, `ExpectFormArray`
+
+Other expectations are available via the `import` statement:
+
+> e.g. `import QuestAssertions`
+
+You can find documentation for all available assertions on the [Wiki][],
+
+### Example:
 
 ```psc
 scriptName MyCoolModTests extends SkyUnitTest
@@ -89,6 +99,10 @@ scriptName MyCoolModTests extends SkyUnitTest
 ; who is initially disabled until the quest starts
 Quest property MyCoolQuest auto
 Actor property MyCoolNpc   auto
+
+; Import Expect* functions for Actors and Quests
+import ActorAssertions
+import QuestAssertions
 
 function Tests()
     Test("Quest starts OK").Fn(QuestStartsOkTest())
