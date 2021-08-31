@@ -237,15 +237,15 @@ endFunction
 ;; Expectations
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-function BeginExpectation(string expectationName) global
+function BeginExpectation(string expectationName = "") global
     SkyUnit.GetInstance().InstanceBeginExpectation(expectationName)
 endFunction
 
-function InstanceBeginExpectation(string expectationName)
+function InstanceBeginExpectation(string expectationName = "")
     Debug("Begin Expectation:" + expectationName)
     int expectation = JMap.object()
     JArray.addObj(_currentExpectationsArray, expectation)
-    JMap.setStr(expectation, "type", expectationName)
+    JMap.setStr(expectation, "type", expectationName) ; Optional
     int expectationData = JMap.object()
     JMap.setObj(expectation, "data", expectationData)
     _currentExpectationMap = expectation
@@ -419,8 +419,14 @@ function SetExpectationData_Object_Int(int value) global
     SetExpectationData_MainObjectType("Int", onlyIfNotSet = true)
 endFunction
 
-int function GetExpectationData_Int(string dataKey) global
-    return JMap.getInt(GetInstance().CurrentExpectationDataMap, dataKey)
+; TODO: Update ALL getters to support a DEFAULT (provided when key is not set)
+int function GetExpectationData_Int(string dataKey, int default = 0) global
+    int map = GetInstance().CurrentExpectationDataMap
+    if JMap.hasKey(map, dataKey)
+        return JMap.getInt(map, dataKey)
+    else
+        return default
+    endIf
 endFunction
 
 function SetExpectationData_Int(string dataKey, Int value) global
@@ -671,11 +677,11 @@ string function GetTestSummary(SkyUnitTest test, bool showFailureMessages = true
     endWhile
 
     if totalPassed > 0 && totalFailed > 0
-        summary = totalPassed + " Tests Passed, " + totalFailed + "Tests Failed\n\n" + summary
+        summary = totalPassed + " Tests Passed, " + totalFailed + " Tests Failed\n\n" + summary
     elseIf totalPassed > 0
         summary = totalPassed + " Tests Passed\n\n" + summary
     elseIf totalFailed > 0
-        summary = totalFailed + "Tests Failed\n\n" + summary
+        summary = totalFailed + " Tests Failed\n\n" + summary
     else
         summary = "No tests"
     endIf

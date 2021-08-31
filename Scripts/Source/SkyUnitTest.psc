@@ -16,6 +16,7 @@ event OnInit()
         if sdk.ShouldRun()
             BeforeAll()
             Tests()
+            AfterAll()
         endIf
     endIf
 endEvent
@@ -25,6 +26,7 @@ bool function Run()
     sdk.BeginTestScript(self)
     BeforeAll()
     Tests()
+    AfterAll()
     return sdk.AllTestsPassed(self)
 endFunction
 
@@ -40,11 +42,15 @@ endFunction
 
 string function GetDisplayName()
     SkyUnit sdk = SkyUnit.GetInstance()
-    sdk.GetTestDisplayName(self)
+    return sdk.GetTestDisplayName(self)
 endFunction
 
 function Log(string text)
     SkyUnit.GetInstance().Log(text)
+endFunction
+
+SkyUnitTest function Example(string testName)
+    return Test(testName)
 endFunction
 
 SkyUnitTest function Test(string testName)
@@ -52,11 +58,14 @@ SkyUnitTest function Test(string testName)
     sdk.GetTestLock()
     sdk.BeginTest(self, testName)
     BeforeEach()
+    Setup()
     return self
 endFunction
 
 function Fn(bool testFunction)
     SkyUnit sdk = SkyUnit.GetInstance()
+    AfterEach()
+    Teardown()
     sdk.ReleaseTestLock()
 endFunction
 
@@ -80,7 +89,19 @@ endFunction
 function BeforeAll()
 endFunction
 
+function AfterAll()
+endFunction
+
 function BeforeEach()
+endFunction
+
+function AfterEach()
+endFunction
+
+function Setup()
+endFunction
+
+function Teardown()
 endFunction
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -196,9 +217,9 @@ function ContainText(string expect)
     string actual = SkyUnit.GetExpectationData_Object_Text()
     bool not = SkyUnit.Not()
     if not && StringUtil.Find(actual, expect) > -1
-        SkyUnit.FailExpectation("Expected string '" + actual + "' not to contain expect '" + expect + "'")
+        SkyUnit.FailExpectation("Expected '" + actual + "' not to contain text '" + expect + "'")
     elseIf ! not && StringUtil.Find(actual, expect) == -1
-        SkyUnit.FailExpectation("Expected string '" + actual + "'s to contain expect '" + expect + "'")
+        SkyUnit.FailExpectation("Expected '" + actual + "' to contain text '" + expect + "'")
     endIf
 endFunction
 
