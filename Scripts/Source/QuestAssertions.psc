@@ -14,9 +14,17 @@ SkyUnitTest function ExpectQuestObjective(Quest theQuest, int objective) global
     return SkyUnit.CurrentTest()
 endFunction
 
+SkyUnitTest function ExpectQuestStage(Quest theQuest, int stage) global
+    SkyUnit.BeginExpectation()
+    SkyUnit.SetExpectationData_Form("Quest", theQuest)
+    SkyUnit.SetExpectationData_Int("Stage", stage)
+    return SkyUnit.CurrentTest()
+endFunction
+
 function BeComplete() global
     Quest theQuest = SkyUnit.GetExpectationData_Form("Quest") as Quest
     int objective = SkyUnit.GetExpectationData_Int("Objective", -1)
+    int stage = SkyUnit.GetExpectationData_Int("Stage", -1)
     bool not = SkyUnit.Not()
     if theQuest && objective > -1
         if not && theQuest.IsObjectiveCompleted(objective)
@@ -24,13 +32,25 @@ function BeComplete() global
         elseIf ! not && ! theQuest.IsObjectiveCompleted(objective)
             SkyUnit.FailExpectation("Expected quest objective " + objective + " to be completed - " + theQuest)
         endIf
+    elseIf theQuest && stage > -1
+        if not && theQuest.IsStageDone(stage)
+            SkyUnit.FailExpectation("Expected quest stage " + stage + " not to be done - " + theQuest)
+        elseIf ! not && ! theQuest.IsStageDone(stage)
+            SkyUnit.FailExpectation("Expected quest stage " + stage + " to be done - " + theQuest)
+        endIf
     elseIf theQuest
         if not && theQuest.IsCompleted()
             SkyUnit.FailExpectation("Expected quest not to be completed - " + theQuest)
         elseIf ! not && ! theQuest.IsCompleted()
             SkyUnit.FailExpectation("Expected quest to be completed - " + theQuest)
         endIf
+    else
+        SkyUnit.GetInstance().Log("BeComplete() or BeDone() called without ExpectQuest[Stage|Objective]()")
     endIf
+endFunction
+
+function BeDone() global
+    BeComplete()
 endFunction
 
 function BeFailed() global
@@ -63,15 +83,50 @@ function BeDisplayed() global
     endIf
 endFunction
 
-; BeStarted()
+function BeRunning() global
+    Quest theQuest = SkyUnit.GetExpectationData_Form("Quest") as Quest
+    if theQuest
+        bool not = SkyUnit.Not()
+        int currentStage = theQuest.GetStage()
+        if not && theQuest.IsRunning()
+            SkyUnit.FailExpectation("Expected quest not to be running - " + theQuest)
+        elseIf ! not && ! theQuest.IsRunning()
+            SkyUnit.FailExpectation("Expected quest to be running - " + theQuest)
+        endIf
+    else
+        SkyUnit.GetInstance().Log("BeRunning() called without ExpectQuest()")
+    endIf
+endFunction
 
-; BeStopped()
+function BeActive() global
+    Quest theQuest = SkyUnit.GetExpectationData_Form("Quest") as Quest
+    if theQuest
+        bool not = SkyUnit.Not()
+        int currentStage = theQuest.GetStage()
+        if not && theQuest.IsActive()
+            SkyUnit.FailExpectation("Expected quest not to be active - " + theQuest)
+        elseIf ! not && ! theQuest.IsActive()
+            SkyUnit.FailExpectation("Expected quest to be active - " + theQuest)
+        endIf
+    else
+        SkyUnit.GetInstance().Log("BeActive() called without ExpectQuest()")
+    endIf
+endFunction
 
-; BeRunning()
-
-; BeActive()
-
-; BeDone()
+function BeStopped() global
+    Quest theQuest = SkyUnit.GetExpectationData_Form("Quest") as Quest
+    if theQuest
+        bool not = SkyUnit.Not()
+        int currentStage = theQuest.GetStage()
+        if not && theQuest.IsStopped()
+            SkyUnit.FailExpectation("Expected quest not to be stopped - " + theQuest)
+        elseIf ! not && ! theQuest.IsStopped()
+            SkyUnit.FailExpectation("Expected quest to be stopped - " + theQuest)
+        endIf
+    else
+        SkyUnit.GetInstance().Log("BeStopped() called without ExpectQuest()")
+    endIf
+endFunction
 
 function BeAtStage(int stageNumber) global
     Quest theQuest = SkyUnit.GetExpectationData_Form("Quest") as Quest
