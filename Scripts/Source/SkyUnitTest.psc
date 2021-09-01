@@ -58,14 +58,12 @@ SkyUnitTest function Test(string testName)
     sdk.GetTestLock()
     sdk.BeginTest(self, testName)
     BeforeEach()
-    Setup()
     return self
 endFunction
 
 function Fn(bool testFunction)
     SkyUnit sdk = SkyUnit.GetInstance()
     AfterEach()
-    Teardown()
     sdk.ReleaseTestLock()
 endFunction
 
@@ -98,12 +96,6 @@ endFunction
 function AfterEach()
 endFunction
 
-function Setup()
-endFunction
-
-function Teardown()
-endFunction
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Base included Expect[Type]() functions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -115,21 +107,9 @@ SkyUnitTest function ExpectString(string value)
     return SkyUnit.CurrentTest()
 endFunction
 
-SkyUnitTest function ExpectStringArray(string[] value)
-    SkyUnit.BeginExpectation("ExpectStringArray")
-    SkyUnit.SetExpectationData_Object_StringArray(value)
-    return SkyUnit.CurrentTest()
-endFunction
-
 SkyUnitTest function ExpectInt(int value)
     SkyUnit.BeginExpectation("ExpectInt")
     SkyUnit.SetExpectationData_Object_Int(value)
-    return SkyUnit.CurrentTest()
-endFunction
-
-SkyUnitTest function ExpectIntArray(int[] value)
-    SkyUnit.BeginExpectation("ExpectIntArray")
-    SkyUnit.SetExpectationData_Object_IntArray(value)
     return SkyUnit.CurrentTest()
 endFunction
 
@@ -139,33 +119,15 @@ SkyUnitTest function ExpectBool(bool value)
     return SkyUnit.CurrentTest()
 endFunction
 
-SkyUnitTest function ExpectBoolArray(bool[] value)
-    SkyUnit.BeginExpectation("ExpectBoolArray")
-    SkyUnit.SetExpectationData_Object_BoolArray(value)
-    return SkyUnit.CurrentTest()
-endFunction
-
 SkyUnitTest function ExpectFloat(float value)
     SkyUnit.BeginExpectation("ExpectFloat")
     SkyUnit.SetExpectationData_Object_Float(value)
     return SkyUnit.CurrentTest()
 endFunction
 
-SkyUnitTest function ExpectFloatArray(float[] value)
-    SkyUnit.BeginExpectation("ExpectFloatArray")
-    SkyUnit.SetExpectationData_Object_FloatArray(value)
-    return SkyUnit.CurrentTest()
-endFunction
-
 SkyUnitTest function ExpectForm(Form value)
     SkyUnit.BeginExpectation("ExpectForm")
     SkyUnit.SetExpectationData_Object_Form(value)
-    return SkyUnit.CurrentTest()
-endFunction
-
-SkyUnitTest function ExpectFormArray(Form[] value)
-    SkyUnit.BeginExpectation("ExpectFormArray")
-    SkyUnit.SetExpectationData_Object_FormArray(value)
     return SkyUnit.CurrentTest()
 endFunction
 
@@ -343,59 +305,3 @@ endFunction
 
 ; bool function BeLessThanOrEqualTo(float value)
 ; endFunction
-
-function ContainString(string expected)
-    string[] actual = SkyUnit.GetExpectationData_Object_StringArray()
-    if actual
-        int index = 0
-        while index < actual.Length
-            if actual[index] == expected
-                return ; Found it
-            endIf
-            index += 1
-        endWhile
-    endIf
-    SkyUnit.FailExpectation("Expected " + actual + " to contain '" + expected + "'")
-endFunction
-
-function ContainInt(int expected)
-    int[] actual = SkyUnit.GetExpectationData_Object_IntArray()
-    if actual
-        int index = 0
-        while index < actual.Length
-            if actual[index] == expected
-                return ; Found it
-            endIf
-            index += 1
-        endWhile
-    endIf
-    SkyUnit.FailExpectation("Expected " + actual + " to contain " + expected)
-endFunction
-
-function ContainFloat(float expected)
-    float[] actual = SkyUnit.GetExpectationData_Object_FloatArray()
-    if actual
-        int index = 0
-        while index < actual.Length
-            if actual[index] == expected
-                return ; Found it
-            endIf
-            index += 1
-        endWhile
-    endIf
-    SkyUnit.FailExpectation("Expected " + actual + " to contain " + expected)
-endFunction
-
-function ContainForm(Form expected)
-    Form[] actual = SkyUnit.GetExpectationData_Object_FormArray()
-    if actual
-        int index = 0
-        while index < actual.Length
-            if actual[index] == expected
-                return ; Found it
-            endIf
-            index += 1
-        endWhile
-    endIf
-    SkyUnit.FailExpectation("Expected " + actual + " to contain " + expected)
-endFunction
