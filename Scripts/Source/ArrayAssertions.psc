@@ -33,72 +33,102 @@ endFunction
 
 function ContainBool(bool expected) global
     bool[] actual = SkyUnit.GetExpectationData_Object_BoolArray()
+    bool found = false
     if actual
         int index = 0
-        while index < actual.Length
+        while index < actual.Length && ! found
             if actual[index] == expected
-                return ; Found it
+                found = true
             endIf
             index += 1
         endWhile
     endIf
-    SkyUnit.FailExpectation("Expected " + actual + " to contain '" + expected + "'")
+    bool not = SkyUnit.Not()
+    if not && found
+        SkyUnit.FailExpectation("Expected " + actual + " not to contain '" + expected + "'")
+    elseIf ! not && ! found
+        SkyUnit.FailExpectation("Expected " + actual + " to contain '" + expected + "'")
+    endIf
 endFunction
 
 function ContainString(string expected) global
     string[] actual = SkyUnit.GetExpectationData_Object_StringArray()
+    bool found = false
     if actual
         int index = 0
-        while index < actual.Length
+        while index < actual.Length && ! found
             if actual[index] == expected
-                return ; Found it
+                found = true
             endIf
             index += 1
         endWhile
     endIf
-    SkyUnit.FailExpectation("Expected " + actual + " to contain '" + expected + "'")
+    bool not = SkyUnit.Not()
+    if not && found
+        SkyUnit.FailExpectation("Expected " + actual + " not to contain '" + expected + "'")
+    elseIf ! not && ! found
+        SkyUnit.FailExpectation("Expected " + actual + " to contain '" + expected + "'")
+    endIf
 endFunction
 
 function ContainInt(int expected) global
     int[] actual = SkyUnit.GetExpectationData_Object_IntArray()
+    bool found = false
     if actual
         int index = 0
-        while index < actual.Length
+        while index < actual.Length && ! found
             if actual[index] == expected
-                return ; Found it
+                found = true
             endIf
             index += 1
         endWhile
     endIf
-    SkyUnit.FailExpectation("Expected " + actual + " to contain " + expected)
+    bool not = SkyUnit.Not()
+    if not && found
+        SkyUnit.FailExpectation("Expected " + actual + " not to contain '" + expected + "'")
+    elseIf ! not && ! found
+        SkyUnit.FailExpectation("Expected " + actual + " to contain '" + expected + "'")
+    endIf
 endFunction
 
 function ContainFloat(float expected) global
     float[] actual = SkyUnit.GetExpectationData_Object_FloatArray()
+    bool found = false
     if actual
         int index = 0
-        while index < actual.Length
+        while index < actual.Length && ! found
             if actual[index] == expected
-                return ; Found it
+                found = true
             endIf
             index += 1
         endWhile
     endIf
-    SkyUnit.FailExpectation("Expected " + actual + " to contain " + expected)
+    bool not = SkyUnit.Not()
+    if not && found
+        SkyUnit.FailExpectation("Expected " + actual + " not to contain '" + expected + "'")
+    elseIf ! not && ! found
+        SkyUnit.FailExpectation("Expected " + actual + " to contain '" + expected + "'")
+    endIf
 endFunction
 
 function ContainForm(Form expected) global
     Form[] actual = SkyUnit.GetExpectationData_Object_FormArray()
+    bool found = false
     if actual
         int index = 0
-        while index < actual.Length
+        while index < actual.Length && ! found
             if actual[index] == expected
-                return ; Found it
+                found = true
             endIf
             index += 1
         endWhile
     endIf
-    SkyUnit.FailExpectation("Expected " + actual + " to contain " + expected)
+    bool not = SkyUnit.Not()
+    if not && found
+        SkyUnit.FailExpectation("Expected " + actual + " not to contain '" + expected + "'")
+    elseIf ! not && ! found
+        SkyUnit.FailExpectation("Expected " + actual + " to contain '" + expected + "'")
+    endIf
 endFunction
 
 function EqualStringArray1(string a) global

@@ -16,6 +16,9 @@ int _testData
 ; Variable for getting individual locks for running tests one at a time
 float _testLock
 
+; The current script which owns a the current test lock
+SkyUnitTest _testLockScript
+
 ; The current SkyUnitTest
 SkyUnitTest _currentTestScript
 
@@ -562,8 +565,14 @@ endFunction
 ;; Lock for running one test at a time
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-function GetTestLock(float waitTime = 0.1, float lock = 0.0)
-    Debug("GetTestLock()")
+function GetTestLock(SkyUnitTest script, float waitTime = 0.1, float lock = 0.0)
+    ; A second Test() function is asking for a lock from the _same_ script.
+    ; This means that no Fn() was provided. Which is fine! We'll just release it
+    ; and give this test the lock.
+    if script == _testLockScript
+        return ; It's yours, my friend! Have it!
+    endIf
+
     if lock == 0.0
         lock = Utility.RandomFloat(1.0, 1000.0)
     endIf
@@ -578,19 +587,21 @@ function GetTestLock(float waitTime = 0.1, float lock = 0.0)
 
     if _testLock == lock
         if _testLock == lock
-            Debug("Test Lock Acquired")
+            _testLockScript = script
             return
         else
-            return GetTestLock(waitTime, lock)
+            return GetTestLock(script, waitTime, lock)
         endIf
     else
-        return GetTestLock(waitTime, lock)
+        return GetTestLock(script, waitTime, lock)
     endIf
 endFunction
 
-function ReleaseTestLock()
-    Debug("Test Lock Released")
-    _testLock = 0.0
+function ReleaseTestLock(SkyUnitTest script)
+    if _testLockScript == script
+        Debug("Test Lock Released")
+        _testLock = 0.0
+    endIf
 endFunction
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -637,13 +648,19 @@ int function GetFailedExpectationCount(SkyUnitTest test)
     return JMap.getInt(testMap, "failedExpectations")
 endFunction
 
+int function GetExpectationCount(SkyUnitTest test, string testName)
+    int testMap = GetTestMap(test, testName)
+    int expectations = JMap.getObj(testMap, "expectations")
+    return JArray.count(expectations)
+endFunction
+
 string function GetTestDisplayName(SkyUnitTest test)
     string scriptNameText = test
     int spaceIndex = StringUtil.Find(scriptNameText, " ")
     return StringUtil.Substring(scriptNameText, 1, spaceIndex - 1)    
 endFunction
 
-string function GetTestSummary(SkyUnitTest test, bool showFailureMessages = true, bool showPassingTestNames = true) ; TODO showAllExpectations
+string function GetTestSummary(SkyUnitTest test, bool showFailureMessages = true, bool showPassingTestNames = true)
     string testScriptName = GetTestDisplayName(test)
     bool allTestsPassed = AllTestsPassed(test)
     string summary
@@ -658,8 +675,12 @@ string function GetTestSummary(SkyUnitTest test, bool showFailureMessages = true
         bool testPassed = TestPassed(test, testName)
         if testPassed
             totalPassed += 1
-            if showPassingTestNames
-                summary += "[PASSED] " + testName + "\n"
+            if GetExpectationCount(test, testName) > 0
+                if showPassingTestNames
+                    summary += "[PASSED] " + testName + "\n"
+                endIf
+            else
+                summary += "[PENDING] " + testName + "\n" ; No expectations, basically "not implemented"
             endIf
         else
             totalFailed += 1

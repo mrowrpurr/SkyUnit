@@ -17,6 +17,7 @@ event OnInit()
             BeforeAll()
             Tests()
             AfterAll()
+            sdk.ReleaseTestLock(self)
         endIf
     endIf
 endEvent
@@ -27,6 +28,7 @@ bool function Run()
     BeforeAll()
     Tests()
     AfterAll()
+    sdk.ReleaseTestLock(self)
     return sdk.AllTestsPassed(self)
 endFunction
 
@@ -55,7 +57,7 @@ endFunction
 
 SkyUnitTest function Test(string testName)
     SkyUnit sdk = SkyUnit.GetInstance()
-    sdk.GetTestLock()
+    sdk.GetTestLock(self)
     sdk.BeginTest(self, testName)
     BeforeEach()
     return self
@@ -64,7 +66,7 @@ endFunction
 function Fn(bool testFunction)
     SkyUnit sdk = SkyUnit.GetInstance()
     AfterEach()
-    sdk.ReleaseTestLock()
+    sdk.ReleaseTestLock(self)
 endFunction
 
 SkyUnitTest function Not()
