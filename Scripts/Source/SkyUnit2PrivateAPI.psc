@@ -12,3 +12,7 @@ which provides a stable, documented API for working with SkyUnit.
 
 The internals of SkyUnitPrivateAPI *may change at any time*.
 }
+
+SkyUnit2PrivateAPI function GetPrivateAPI() global
+    return Game.GetFormFromFile(0x800, "SkyUnit2.esp") as SkyUnit2PrivateAPI
+endFunction

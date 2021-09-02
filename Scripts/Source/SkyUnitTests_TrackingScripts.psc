@@ -1,8 +1,8 @@
-scriptName SkyUnitTests_TrackingScripts extends SkyUnitTest
+scriptName SkyUnitTests_TrackingScripts extends SkyUnitTests_BaseTest
 {Tests for registering and tracking SkyUnitTest scripts}
 
 function Tests()
-    Test("Can register test scripts")
+    Test("Can register test scripts").Fn(CanRegisterTestScripts())
     Test("Different instances of SkyUnit have different sets of test scripts")
     Test("Can get a SkyUnit instance's script by name")
     Test("Can get the names of all test scripts in a SkyUnit instance")
@@ -11,4 +11,5 @@ function Tests()
 endFunction
 
 function CanRegisterTestScripts()
+    ExpectString("Hello").To(EqualString("Hi there."))
 endFunction
