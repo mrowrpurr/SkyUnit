@@ -26,6 +26,8 @@
 
 [latest]: https://github.com/mrowrpurr/SkyUnit/releases/download/v1.0-alpha/SkyUnit.7z
 
+_And then obviously install it with your favorite mod manager :)_
+
 ## #3. Create a new Quest
 
 > e.g. `MyCoolModTests`
