@@ -37,7 +37,7 @@ The quest will have attached `Scripts` for each group of tests that you write.
 - **Disable** `Start Game Enabled`
 - **Disable** `Run Once`
 
-## #4. Add a new script🧐
+## #4. Add a new script
 
 > e.g. `MyCoolModTests.psc`
 
