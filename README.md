@@ -85,7 +85,7 @@ function Tests()
 endFunction
 
 function QuestStartsOkTest()
-
+    ; Test goes here!
 endFunction
 ```
 
