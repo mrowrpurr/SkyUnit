@@ -138,7 +138,15 @@ function QuestStartsOkTest()
 endFunction
 ```
 
-## #9. Enjoy. Happy Modding!
+## #9. Run the game & run the tests!
+
+Once in game, your tests should be automatically detected!
+
+Use the `[SkyUnit] Run Tests` power to popup the test run chooser.
+
+Note: if any tests are detected, this power will be automatically equipped for you, so you can simply run the game and then press `Z`
+
+---
 
 _Documentation and videos coming soon!_
 
