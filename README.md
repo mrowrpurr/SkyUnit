@@ -8,13 +8,25 @@
 
 # Getting Started
 
-## #1. [Download][latest] the [latest release][latest] from GitHub.
+## #1. Install Dependencies
 
-> NexusMods release pending
+- [SKSE64][] ( _because "duh"_ )
+- [JContainers][] ( _for making it all work_ )
+- [UIExtensions][] ( _for the UI which is used to choose tests to run_ )
+- [PapyrusUtil][] ( _for printing out to the console_ )
 
-[latest]: #
+[SKSE64]: https://skse.silverlock.org/
+[JContainers]: https://www.nexusmods.com/skyrimspecialedition/mods/16495?tab=files
+[PapyrusUtil]: https://www.nexusmods.com/skyrimspecialedition/mods/13048?tab=files
+[UIExtensions]: https://www.nexusmods.com/skyrimspecialedition/mods/17561?tab=files
 
-## #2. Create a new Quest
+## #2. [Download][latest] the [latest release][latest] from GitHub.
+
+> _NexusMods release coming very soon!_
+
+[latest]: https://github.com/mrowrpurr/SkyUnit/releases/download/v1.0-alpha/SkyUnit.7z
+
+## #3. Create a new Quest
 
 > e.g. `MyCoolModTests`
 
@@ -23,7 +35,7 @@ The quest will have attached `Scripts` for each group of tests that you write.
 - **Disable** `Start Game Enabled`
 - **Disable** `Run Once`
 
-## #3. Add a new script🧐
+## #4. Add a new script🧐
 
 > e.g. `MyCoolModTests.psc`
 
@@ -31,7 +43,7 @@ This script will have a group of tests!
 
 You can organize your tests into multiple scripts or simply use one script.
 
-## #4. Update script to `extends SkyUnitTest`
+## #5. Update script to `extends SkyUnitTest`
 
 ### Example:
 
@@ -39,7 +51,7 @@ You can organize your tests into multiple scripts or simply use one script.
 scriptName MyCoolModTests extends SkyUnitTest
 ```
 
-## #5. Create a `function Tests()`
+## #6. Create a `function Tests()`
 
 In this function, you will declare all of your tests.
 
@@ -57,7 +69,7 @@ endFunction
 
 _See below for creating test functions._
 
-## #6. Create functions for each test scenario
+## #7. Create functions for each test scenario
 
 > e.g. `function QuestStartsOkTest()`
 
@@ -75,7 +87,7 @@ function QuestStartsOkTest()
 endFunction
 ```
 
-## #7. Add some "Expect" assertions to the test
+## #8. Add some "Expect" assertions to the test
 
 > e.g. `ExpectString("Hello").To(EqualString("Hello"))`
 
@@ -87,7 +99,7 @@ Other expectations are available via the `import` statement:
 
 > e.g. `import QuestAssertions`
 
-You can find documentation for all available assertions on the [Wiki][],
+You'll soon be able to find documentation for all available assertions on the [Wiki][],
 
 ### Example:
 
@@ -124,14 +136,8 @@ function QuestStartsOkTest()
 endFunction
 ```
 
-## #8. Checkout the [Wiki][] for examples and docs!
+## #9. Enjoy. Happy Modding!
 
-> https://github.com/mrowrpurr/SkyUnit/wiki
-
-You can also checkout [this playlist][playlist] on YouTube
-for tutorials on using SkyUnit.
+_Documentation and videos coming soon!_
 
 [Wiki]: https://github.com/mrowrpurr/SkyUnit/wiki
-[playerlist]: #
-
-## #9. Enjoy. Happy Modding!
