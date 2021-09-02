@@ -1,0 +1,3 @@
+scriptName SkyUnitTests_ExampleTest2 extends SkyUnit2Test
+{Example SkyUnitTest used by other tests.
+DO NOT add Tests() to this.}

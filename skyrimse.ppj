@@ -2,7 +2,7 @@
 <PapyrusProject xmlns="PapyrusProject.xsd" 
     Flags="TESV_Papyrus_Flags.flg" 
     Game="sse"
-    Anonymize="true" 
+    Anonymize="false" 
     Output="Scripts" 
     Optimize="false" 
     Release="false" 
@@ -21,7 +21,7 @@
         <Import>@ImportsFolder\SKSE64\Scripts\Source</Import>
         <!-- <Import>@ImportsFolder\Lilac\Scripts\Source</Import> -->
         <Import>@ImportsFolder\PapyrusUtil\Scripts\Source</Import>
-        <!-- <Import>@ImportsFolder\UIExtensions\scripts\source</Import> -->
+        <Import>@ImportsFolder\UIExtensions\scripts\source</Import>
         <Import>@ImportsFolder\JContainers\scripts\source</Import>
         <!-- <Import>@ImportsFolder\LibFire\Scripts\Source</Import> -->
         <!-- <Import>@ImportsFolder\iWantWidgets\Source\Scripts</Import> -->
