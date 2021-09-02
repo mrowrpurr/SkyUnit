@@ -252,6 +252,8 @@ function BeTrue()
         actualValue = SkyUnit.GetExpectationData_Object_FormArray()
     elseIf type == "BoolArray"
         actualValue = SkyUnit.GetExpectationData_Object_BoolArray()
+    elseIf StringUtil.Find(type, "Array") > -1
+        actualValue = SkyUnit.GetExpectationData_Object_Text() != "[]"
     else
         actualValue = SkyUnit.GetExpectationData_Object_Text()
     endIf
@@ -286,6 +288,8 @@ function BeFalse()
         actualValue = SkyUnit.GetExpectationData_Object_FormArray()
     elseIf type == "BoolArray"
         actualValue = SkyUnit.GetExpectationData_Object_BoolArray()
+    elseIf StringUtil.Find(type, "Array") > -1
+        actualValue = SkyUnit.GetExpectationData_Object_Text() != "[]"
     else
         actualValue = SkyUnit.GetExpectationData_Object_Text()
     endIf
@@ -296,8 +300,28 @@ function BeFalse()
     endIf
 endFunction
 
-; bool function BeGreaterThan(float value)
-; endFunction
+function BeNone()
+    BeFalse()
+endFunction
+
+function BeGreaterThan(float value)
+    string type = SkyUnit.GetExpectationData_MainObjectType()
+    bool not = SkyUnit.Not()
+    float actualValue
+    if type == "Int"
+        actualValue = SkyUnit.GetExpectationData_Object_Int()
+    elseIf type == "Float"
+        actualValue = SkyUnit.GetExpectationData_Object_Float()
+    else
+        SkyUnit.FailExpectation("BeGreaterThan() can only be called on Int or Float but was called on type: " + type)
+        return
+    endIf
+    if not && (actualValue > value)
+        SkyUnit.FailExpectation("Expected " + actualValue + " not to be greater than " + value)
+    elseIf ! not && ! (actualValue > value)
+        SkyUnit.FailExpectation("Expected " + actualValue + " to be greater than " + value)
+    endIf
+endFunction
 
 ; bool function BeGreaterThanOrEqualTo(float value)
 ; endFunction

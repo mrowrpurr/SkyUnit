@@ -11,5 +11,5 @@ function Tests()
 endFunction
 
 function CanRegisterTestScripts()
-    ExpectString("Hello").To(EqualString("Hi there."))
+    ; SkyUnit2TestSuite testSuite = 
 endFunction

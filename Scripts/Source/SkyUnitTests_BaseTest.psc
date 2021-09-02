@@ -5,6 +5,16 @@ SkyUnitTests_ExampleTest1 _exampleTest1
 SkyUnitTests_ExampleTest2 _exampleTest2
 SkyUnitTests_ExampleTest3 _exampleTest3
 
+function BeforeEach()
+  SkyUnit2PrivateAPI api = SkyUnit2PrivateAPI.GetPrivateAPI()
+  api.DeleteAllTestSuitesExceptDefault()
+endFunction
+
+function AfterAll()
+  SkyUnit2PrivateAPI api = SkyUnit2PrivateAPI.GetPrivateAPI()
+  api.DeleteAllTestSuitesExceptDefault()
+endFunction
+
 SkyUnitTests_ExampleTest1 property ExampleTest1
     SkyUnitTests_ExampleTest1 function get()
         if ! _exampleTest1
