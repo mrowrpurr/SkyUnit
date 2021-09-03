@@ -41,13 +41,13 @@ endEvent
 
 ; Debug() only goes to the Papyrus log
 function Debug(string text)
-    Debug.Trace("[SkyUnit] [Debug] " + text)
+    Debug.Trace("[SkyUnit2] [Debug] " + text)
 endFunction
 
 ; Log() goes to the Papyrus log and the ~ console (if ~ console support available)
 function Log(string text)
-    Debug.Trace("[SkyUnit] " + text)
-    SkyUnitConsole.Print("[SkyUnit] " + text)
+    Debug.Trace("[SkyUnit2] " + text)
+    SkyUnitConsole.Print("[SkyUnit2] " + text)
 endFunction
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -142,16 +142,17 @@ int function GetTestSuiteScriptsMap(int suite)
     return JMap.getObj(suite, "testScripts")
 endFunction
 
-int function GetTestSuiteTestScriptMap(int suite, SkyUnitTest script)
+int function GetTestSuiteTestScriptMap(int suite, SkyUnit2Test script)
     JMap.getObj(GetTestSuiteScriptsMap(suite), GetScriptDisplayName(script))
 endFunction
 
 ; This does NOT check to see if the test script already exists on this Test Suite (in the test suite's .testScripts map)
-int function CreateTestSuiteTestScriptMap(int suite, SkyUnitTest script, int scriptLookupArraySlotNumber)
+int function CreateTestSuiteTestScriptMap(int suite, SkyUnit2Test script, int scriptLookupArraySlotNumber)
     int scriptMap = JMap.object()
     JMap.setObj(GetTestSuiteScriptsMap(suite), GetScriptDisplayName(script), scriptMap)
     JMap.setStr(scriptMap, "name", GetScriptDisplayName(script))
     JMap.setInt(scriptMap, "arrayLookupSlotNumber", scriptLookupArraySlotNumber)
+    return scriptMap
 endFunction
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -204,22 +205,22 @@ function ResetGlobalDataStorage()
     ; Setup the map which tracks all SkyUnit information.
     ; This is currently simply used for:
     ; 1. Tracking Test Suites
-    ; 2. Tracking SkyUnitTest Scripts (used by Test Suites)
+    ; 2. Tracking SkyUnit2Test Scripts (used by Test Suites)
     GlobalDataMap = JMap.object()
     JValue.retain(GlobalDataMap)
 
     ; Map of Test Suite objects keyed on name
     JMap.setObj(GlobalDataMap, "testSuites", JMap.object())
 
-    ; Map of SkyUnitTest scripts keyed on "display name" (e.g. FooTest rather than [FooText <Something>(123)])
+    ; Map of SkyUnit2Test scripts keyed on "display name" (e.g. FooTest rather than [FooText <Something>(123)])
     ; The value of each is an integer which maps to the # "slot" the script is stored in in the arrays
     JMap.setObj(GlobalDataMap, "testScripts", JMap.object())
 
-    ; Setup the arrays which store references to all SkyUnitTest scripts
-    SkyUnitTestScriptArraySetup()
+    ; Setup the arrays which store references to all SkyUnit2Test scripts
+    SkyUnit2TestScriptArraySetup()
 
     ; Add availableScriptIndexes which tracks all of the available "slot #'s" in
-    ; the arrays of SkyUnitTest which are available for usage.
+    ; the arrays of SkyUnit2Test which are available for usage.
     ; We are currently limited to 1,280 scripts (but this can be very easily expanded if necessary)
     int availableScriptIndexes = JArray.object()
     JMap.setObj(GlobalDataMap, "availableScriptIndexes", availableScriptIndexes)
@@ -230,7 +231,7 @@ function ResetGlobalDataStorage()
 endFunction
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; SkyUnitTest script instance tracking
+;; SkyUnit2Test script instance tracking
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 int property TestScriptLookupMap
@@ -244,16 +245,16 @@ int _skyUnitTestScript_AvailableSlots_TemplateArray
 ; For support of multiple test suites or large test suites,
 ; we support 1,280 scripts being loaded at one time
 ; but this number can very easily be increased if necessary
-SkyUnitTest[] _skyUnitTestScripts0
-SkyUnitTest[] _skyUnitTestScripts1
-SkyUnitTest[] _skyUnitTestScripts2
-SkyUnitTest[] _skyUnitTestScripts3
-SkyUnitTest[] _skyUnitTestScripts4
-SkyUnitTest[] _skyUnitTestScripts5
-SkyUnitTest[] _skyUnitTestScripts6
-SkyUnitTest[] _skyUnitTestScripts7
-SkyUnitTest[] _skyUnitTestScripts8
-SkyUnitTest[] _skyUnitTestScripts9
+SkyUnit2Test[] _skyUnitTestScripts0
+SkyUnit2Test[] _skyUnitTestScripts1
+SkyUnit2Test[] _skyUnitTestScripts2
+SkyUnit2Test[] _skyUnitTestScripts3
+SkyUnit2Test[] _skyUnitTestScripts4
+SkyUnit2Test[] _skyUnitTestScripts5
+SkyUnit2Test[] _skyUnitTestScripts6
+SkyUnit2Test[] _skyUnitTestScripts7
+SkyUnit2Test[] _skyUnitTestScripts8
+SkyUnit2Test[] _skyUnitTestScripts9
 
 int property AvailableScriptIndexesArray
     int function get()
@@ -269,7 +270,9 @@ float _currentlyAddingScriptLock
 ; Registration and unregistration require a lock because they alter the array
 ; which stores available slots (global.availableScriptIndexes) which requires a lock
 ; (especially when the game loads and a number of tests are all trying to register themselves at the same time)
-function AddScriptToTestSuite(SkyUnitTest script, int testSuite, float lock = 0.0)
+function AddScriptToTestSuite(SkyUnit2Test script, int testSuite, float lock = 0.0)
+    Debug("AddScriptToTestSuite() " + script)
+
     ; First check to see if it's already in a slot
     int existingIndex = JMap.getInt(TestScriptLookupMap, GetScriptDisplayName(script))
     if existingIndex
@@ -301,12 +304,17 @@ function AddScriptToTestSuite(SkyUnitTest script, int testSuite, float lock = 0.
                 if slotNumber == 0
                     Log("Cannot register test " + GetScriptDisplayName(script) + " (are there 1,280 scripts registered? that is the max)")
                 else
+                    Debug("Adding " + script + " ...")
                     ; Add to top-level registration map which tracks ALL scripts by name
                     JMap.setInt(TestScriptLookupMap, GetScriptDisplayName(script), slotNumber)
                     ; Add to this specific test suite as a new script
+                    Debug("CreateTestSuiteTestScriptMap(" + testSuite + ", " + script + ", " + slotNumber)
                     CreateTestSuiteTestScriptMap(testSuite, script, slotNumber)
                     ; Remove this index so other scripts won't take it
                     JArray.eraseIndex(AvailableScriptIndexesArray, availableCount - 1)
+                    ; Add the script to an array
+                    AddScriptToSlot(script, slotNumber)
+                    Debug("Added " + script + " to slot # " + slotNumber)
                 endIf
             else
                 Log("Cannot register test " + GetScriptDisplayName(script) + " (are there 1,280 scripts registered? that is the max)")
@@ -320,7 +328,7 @@ function AddScriptToTestSuite(SkyUnitTest script, int testSuite, float lock = 0.
     endIf
 endFunction
 
-function SkyUnitTestScriptArraySetup()
+function SkyUnit2TestScriptArraySetup()
     ; Create template array to use for script slot tracking
     if _skyUnitTestScript_AvailableSlots_TemplateArray == 0
         _skyUnitTestScript_AvailableSlots_TemplateArray = JArray.object()
@@ -333,19 +341,19 @@ function SkyUnitTestScriptArraySetup()
     endIf
 
     ; Initialize the arrays
-    _skyUnitTestScripts0 = new SkyUnitTest[128]
-    _skyUnitTestScripts1 = new SkyUnitTest[128]
-    _skyUnitTestScripts2 = new SkyUnitTest[128]
-    _skyUnitTestScripts3 = new SkyUnitTest[128]
-    _skyUnitTestScripts4 = new SkyUnitTest[128]
-    _skyUnitTestScripts5 = new SkyUnitTest[128]
-    _skyUnitTestScripts6 = new SkyUnitTest[128]
-    _skyUnitTestScripts7 = new SkyUnitTest[128]
-    _skyUnitTestScripts8 = new SkyUnitTest[128]
-    _skyUnitTestScripts9 = new SkyUnitTest[128]
+    _skyUnitTestScripts0 = new SkyUnit2Test[128]
+    _skyUnitTestScripts1 = new SkyUnit2Test[128]
+    _skyUnitTestScripts2 = new SkyUnit2Test[128]
+    _skyUnitTestScripts3 = new SkyUnit2Test[128]
+    _skyUnitTestScripts4 = new SkyUnit2Test[128]
+    _skyUnitTestScripts5 = new SkyUnit2Test[128]
+    _skyUnitTestScripts6 = new SkyUnit2Test[128]
+    _skyUnitTestScripts7 = new SkyUnit2Test[128]
+    _skyUnitTestScripts8 = new SkyUnit2Test[128]
+    _skyUnitTestScripts9 = new SkyUnit2Test[128]
 endFunction
 
-function AddScriptToSlot(SkyUnitTest script, int slotNumber)
+function AddScriptToSlot(SkyUnit2Test script, int slotNumber)
     int arrayNumber = slotNumber / 128
     int arrayIndex = slotNumber % 128
     if arrayNumber == 0
@@ -371,7 +379,7 @@ function AddScriptToSlot(SkyUnitTest script, int slotNumber)
     endIf
 endFunction
 
-SkyUnitTest function GetScriptFromSlot(SkyUnitTest script, int slotNumber)
+SkyUnit2Test function GetScriptFromSlot(SkyUnit2Test script, int slotNumber)
     int arrayNumber = slotNumber / 128
     int arrayIndex = slotNumber % 128
     if arrayNumber == 0

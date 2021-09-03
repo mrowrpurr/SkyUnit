@@ -20,11 +20,11 @@ function CanRegisterTestScripts()
     testSuite.AddScript(ExampleTest1)
 
     ExpectInt(testSuite.ScriptCount).To(EqualInt(1))
-    ExpectStringArray(testSuite.ScriptNames).To(EqualStringArray1("ExampleTest1"))
+    ExpectStringArray(testSuite.ScriptNames).To(EqualStringArray1("SkyUnitTests_ExampleTest1"))
 
     testSuite.AddScript(ExampleTest2)
 
     ExpectInt(testSuite.ScriptCount).To(EqualInt(2))
-    ExpectStringArray(testSuite.ScriptNames).To(ContainString("ExampleTest1"))
-    ExpectStringArray(testSuite.ScriptNames).To(ContainString("ExampleTest2"))
+    ExpectStringArray(testSuite.ScriptNames).To(ContainString("SkyUnitTests_ExampleTest1"))
+    ExpectStringArray(testSuite.ScriptNames).To(ContainString("SkyUnitTests_ExampleTest2"))
 endFunction
