@@ -25,7 +25,7 @@ function CanAddTestSuite_Test()
 
     SkyUnit2TestSuite testSuite = SkyUnit2.CreateTestSuite(suiteName)
 
-    ExpectString(testSuite.GetSuiteName()).To(EqualString(suiteName))
+    ExpectString(testSuite.GetName()).To(EqualString(suiteName))
     ExpectInt(testSuite.GetSuiteID()).To(BeGreaterThan(0))
     ExpectStringArray(SkyUnit2.TestSuiteNames()).To(ContainString(suiteName))
 endFunction
@@ -37,7 +37,7 @@ function CanGetTestSuiteByName_Test()
     SkyUnit2.CreateTestSuite(suiteName)
 
     testSuite = SkyUnit2.GetTestSuite(suiteName)
-    ExpectString(testSuite.GetSuiteName()).To(EqualString(suiteName))
+    ExpectString(testSuite.GetName()).To(EqualString(suiteName))
     ExpectStringArray(SkyUnit2.TestSuiteNames()).To(ContainString(suiteName))
 endFunction
 
@@ -45,7 +45,7 @@ function CanRemoveTestSuiteByName_Test()
     string suiteName = "CoolTestSuite"
     SkyUnit2.CreateTestSuite(suiteName)
     SkyUnit2TestSuite testSuite = SkyUnit2.GetTestSuite(suiteName)
-    ExpectString(testSuite.GetSuiteName()).To(EqualString(suiteName))
+    ExpectString(testSuite.GetName()).To(EqualString(suiteName))
     ExpectStringArray(SkyUnit2.TestSuiteNames()).To(ContainString(suiteName))
 
     SkyUnit2.DeleteTestSuite(suiteName)

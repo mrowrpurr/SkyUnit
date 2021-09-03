@@ -101,9 +101,9 @@ int function CreateTestSuite(string name)
         ; Set "name" on the test suite
         JMap.setStr(suite, "name", name)
 
-        ; Every suite has a top-level "tests" key
+        ; Every suite has a top-level "testScripts" key
         ; which stores a map of [Test Script Name] => [...]
-        JMap.setObj(suite, "tests", JMap.object())
+        JMap.setObj(suite, "testScripts", JMap.object())
     endIf
     return suite
 endFunction
@@ -136,6 +136,22 @@ endFunction
 
 int function GetTestSuite(string name)
     return JMap.getObj(TestSuitesMap, name)
+endFunction
+
+int function GetTestSuiteScriptsMap(int suite)
+    return JMap.getObj(suite, "testScripts")
+endFunction
+
+int function GetTestSuiteTestScriptMap(int suite, SkyUnitTest script)
+    JMap.getObj(GetTestSuiteScriptsMap(suite), GetScriptDisplayName(script))
+endFunction
+
+; This does NOT check to see if the test script already exists on this Test Suite (in the test suite's .testScripts map)
+int function CreateTestSuiteTestScriptMap(int suite, SkyUnitTest script, int scriptLookupArraySlotNumber)
+    int scriptMap = JMap.object()
+    JMap.setObj(GetTestSuiteScriptsMap(suite), GetScriptDisplayName(script), scriptMap)
+    JMap.setStr(scriptMap, "name", GetScriptDisplayName(script))
+    JMap.setInt(scriptMap, "arrayLookupSlotNumber", scriptLookupArraySlotNumber)
 endFunction
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -202,6 +218,13 @@ function ResetGlobalDataStorage()
     ; Setup the arrays which store references to all SkyUnitTest scripts
     SkyUnitTestScriptArraySetup()
 
+    ; Add availableScriptIndexes which tracks all of the available "slot #'s" in
+    ; the arrays of SkyUnitTest which are available for usage.
+    ; We are currently limited to 1,280 scripts (but this can be very easily expanded if necessary)
+    int availableScriptIndexes = JArray.object()
+    JMap.setObj(GlobalDataMap, "availableScriptIndexes", availableScriptIndexes)
+    JArray.addFromArray(availableScriptIndexes, _skyUnitTestScript_AvailableSlots_TemplateArray) ; Adds the 1,280 elements (very quickly)
+
     _dataResetInProgress = false
     _dataSetupComplete = true ; Ok, done! API requests may come thru again!
 endFunction
@@ -220,6 +243,7 @@ int _skyUnitTestScript_AvailableSlots_TemplateArray
 
 ; For support of multiple test suites or large test suites,
 ; we support 1,280 scripts being loaded at one time
+; but this number can very easily be increased if necessary
 SkyUnitTest[] _skyUnitTestScripts0
 SkyUnitTest[] _skyUnitTestScripts1
 SkyUnitTest[] _skyUnitTestScripts2
@@ -230,6 +254,71 @@ SkyUnitTest[] _skyUnitTestScripts6
 SkyUnitTest[] _skyUnitTestScripts7
 SkyUnitTest[] _skyUnitTestScripts8
 SkyUnitTest[] _skyUnitTestScripts9
+
+int property AvailableScriptIndexesArray
+    int function get()
+        return JMap.getObj(GlobalDataMap, "availableScriptIndexes")
+    endFunction
+endProperty
+
+; Lock because we need it to claim slot #'s' for scripts
+; without other folks trying to claim the same number at the same time
+float _currentlyAddingScriptLock
+
+; Registers a script.
+; Registration and unregistration require a lock because they alter the array
+; which stores available slots (global.availableScriptIndexes) which requires a lock
+; (especially when the game loads and a number of tests are all trying to register themselves at the same time)
+function AddScriptToTestSuite(SkyUnitTest script, int testSuite, float lock = 0.0)
+    ; First check to see if it's already in a slot
+    int existingIndex = JMap.getInt(TestScriptLookupMap, GetScriptDisplayName(script))
+    if existingIndex
+        ; Just add it to this suite
+        CreateTestSuiteTestScriptMap(testSuite, script, existingIndex)
+        return
+    endIf
+
+    ; It's not already in a slot, so wait in line to add it to a slot ...
+    if lock == 0.0
+        lock = Utility.RandomFloat(0.0, 1000.0)
+    endIf
+
+    while _currentlyAddingScriptLock != 0.0
+        Utility.WaitMenuMode(0.1)
+    endWhile
+
+    _currentlyAddingScriptLock = lock
+
+    if _currentlyAddingScriptLock == lock
+        if _currentlyAddingScriptLock == lock
+            ; Get available count
+            int availableCount = JArray.count(AvailableScriptIndexesArray)
+            if availableCount > 0
+                int slotNumber = JArray.getInt(AvailableScriptIndexesArray, availableCount - 1)
+                if slotNumber == 0
+                    slotNumber = JArray.getInt(AvailableScriptIndexesArray, availableCount - 1)
+                endIf
+                if slotNumber == 0
+                    Log("Cannot register test " + GetScriptDisplayName(script) + " (are there 1,280 scripts registered? that is the max)")
+                else
+                    ; Add to top-level registration map which tracks ALL scripts by name
+                    JMap.setInt(TestScriptLookupMap, GetScriptDisplayName(script), slotNumber)
+                    ; Add to this specific test suite as a new script
+                    CreateTestSuiteTestScriptMap(testSuite, script, slotNumber)
+                    ; Remove this index so other scripts won't take it
+                    JArray.eraseIndex(AvailableScriptIndexesArray, availableCount - 1)
+                endIf
+            else
+                Log("Cannot register test " + GetScriptDisplayName(script) + " (are there 1,280 scripts registered? that is the max)")
+            endIf
+            _currentlyAddingScriptLock = 0.0
+        else
+            AddScriptToTestSuite(script, testSuite, lock)
+        endIf
+    else
+        AddScriptToTestSuite(script, testSuite, lock)
+    endIf
+endFunction
 
 function SkyUnitTestScriptArraySetup()
     ; Create template array to use for script slot tracking
@@ -256,7 +345,59 @@ function SkyUnitTestScriptArraySetup()
     _skyUnitTestScripts9 = new SkyUnitTest[128]
 endFunction
 
+function AddScriptToSlot(SkyUnitTest script, int slotNumber)
+    int arrayNumber = slotNumber / 128
+    int arrayIndex = slotNumber % 128
+    if arrayNumber == 0
+        _skyUnitTestScripts0[arrayIndex] = script
+    elseIf arrayNumber == 1
+        _skyUnitTestScripts1[arrayIndex] = script
+    elseIf arrayNumber == 2
+        _skyUnitTestScripts2[arrayIndex] = script
+    elseIf arrayNumber == 3
+        _skyUnitTestScripts3[arrayIndex] = script
+    elseIf arrayNumber == 4
+        _skyUnitTestScripts4[arrayIndex] = script
+    elseIf arrayNumber == 5
+        _skyUnitTestScripts5[arrayIndex] = script
+    elseIf arrayNumber == 6
+        _skyUnitTestScripts6[arrayIndex] = script
+    elseIf arrayNumber == 7
+        _skyUnitTestScripts7[arrayIndex] = script
+    elseIf arrayNumber == 8
+        _skyUnitTestScripts8[arrayIndex] = script
+    elseIf arrayNumber == 9
+        _skyUnitTestScripts9[arrayIndex] = script
+    endIf
+endFunction
+
+SkyUnitTest function GetScriptFromSlot(SkyUnitTest script, int slotNumber)
+    int arrayNumber = slotNumber / 128
+    int arrayIndex = slotNumber % 128
+    if arrayNumber == 0
+        return _skyUnitTestScripts0[arrayIndex]
+    elseIf arrayNumber == 1
+        return _skyUnitTestScripts1[arrayIndex]
+    elseIf arrayNumber == 2
+        return _skyUnitTestScripts2[arrayIndex]
+    elseIf arrayNumber == 3
+        return _skyUnitTestScripts3[arrayIndex]
+    elseIf arrayNumber == 4
+        return _skyUnitTestScripts4[arrayIndex]
+    elseIf arrayNumber == 5
+        return _skyUnitTestScripts5[arrayIndex]
+    elseIf arrayNumber == 6
+        return _skyUnitTestScripts6[arrayIndex]
+    elseIf arrayNumber == 7
+        return _skyUnitTestScripts7[arrayIndex]
+    elseIf arrayNumber == 8
+        return _skyUnitTestScripts8[arrayIndex]
+    elseIf arrayNumber == 9
+        return _skyUnitTestScripts9[arrayIndex]
+    endIf
+endFunction
+
 ; You can pass this function a script object (even though it takes a string parameter)
-string function GetScriptName(string script)
+string function GetScriptDisplayName(string script)
     return StringUtil.Substring(script, 1, StringUtil.Find(script, " ") - 1)
 endFunction

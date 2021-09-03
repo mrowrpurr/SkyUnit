@@ -24,11 +24,7 @@ function SetSuiteID(int suiteID)
 endFunction
 
 string function GetName()
-    ; Override default GetName()
-    return GetSuiteName()
-endFunction
-
-string function GetSuiteName()
+    ; Overrides SKSE Form.GetName()
     return JMap.getStr(_suiteID, "name")
 endFunction
 
@@ -38,4 +34,16 @@ SkyUnit2TestSuite function GetForID(int suiteID) global
     return testSuite
 endFunction
 
+function AddScript(SkyUnitTest script)
+    
+endFunction
 
+int property ScriptCount
+    int function get()
+    endFunction
+endProperty
+
+string[] property ScriptNames
+    string[] function get()
+    endFunction
+endProperty
