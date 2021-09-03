@@ -19,6 +19,10 @@ float function GetVersion() global
     return 1.0
 endFunction
 
+SkyUnit2Test function CurrentTest() global
+    return SkyUnit2PrivateAPI.GetPrivateAPI().CurrrentlyRunningTest
+endFunction
+
 function CreateTestSuite(string suiteName) global
     SkyUnit2PrivateAPI.GetPrivateAPI().CreateTestSuite(suiteName)
 endFunction
@@ -63,20 +67,42 @@ int function RunTestScript(string suiteName, SkyUnit2Test script) global
     return api.RunTestScript(suite, script)
 endFunction
 
-int function GetTestResultCount(string suiteName, SkyUnit2Test test) global
-
+int function GetTestResultCount(string suiteName, SkyUnit2Test script) global
+    SkyUnit2PrivateAPI api = SkyUnit2PrivateAPI.GetPrivateAPI()
+    int suite = api.GetTestSuite(suiteName)
+    int runsMapForThisScript = api.GetTestSuiteScriptRunsMap(suite, script)
+    int totalRunCount = JMap.count(runsMapForThisScript)
+    if totalRunCount > 0
+        return totalRunCount - 1 ; There is a special run map key which stores the latest run
+    else
+        return 0
+    endIf
 endFunction
 
-int function GetNthTestResult(string suiteName, SkyUnit2Test test) global
-
+string[] function GetTestResultKeys(string suiteName, SkyUnit2Test script) global
+    SkyUnit2PrivateAPI api = SkyUnit2PrivateAPI.GetPrivateAPI()
+    int suite = api.GetTestSuite(suiteName)
+    int runsMapForThisScript = api.GetTestSuiteScriptRunsMap(suite, script)
+    return JMap.allKeysPArray(runsMapForThisScript)
 endFunction
 
-int function GetLatestTestResult(string suiteName, SkyUnit2Test test) global
+int function GetTestResult(string suiteName, SkyUnit2Test script, string resultKey) global
+    SkyUnit2PrivateAPI api = SkyUnit2PrivateAPI.GetPrivateAPI()
+    int suite = api.GetTestSuite(suiteName)
+    int runsMapForThisScript = api.GetTestSuiteScriptRunsMap(suite, script)
+    return JMap.getObj(runsMapForThisScript, resultKey)
+endFunction
 
+int function GetLatestTestResult(string suiteName, SkyUnit2Test script) global
+    SkyUnit2PrivateAPI api = SkyUnit2PrivateAPI.GetPrivateAPI()
+    int suite = api.GetTestSuite(suiteName)
+    int runsMapForThisScript = api.GetTestSuiteScriptRunsMap(suite, script)
+    return JMap.getObj(runsMapForThisScript, SpecialTestRunDuration_LatestTest())
 endFunction
 
 string[] function TestResult_GetTestNames(int testResult) global
-
+    int testsMap = JMap.getObj(testResult, "tests")
+    return JMap.allKeysPArray(testsMap)
 endFunction
 
 string function TestResult_GetTestStatus(int testResult, string testName) global
@@ -121,4 +147,8 @@ endFunction
 
 string function SpecialTestNameFor_AfterAll() global
     return "[SkyUnit Test AfterAll()]"
+endFunction
+
+string function SpecialTestRunDuration_LatestTest() global
+    return "[SkyUnit Latest Test Run]"
 endFunction

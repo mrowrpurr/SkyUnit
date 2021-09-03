@@ -12,6 +12,6 @@ function PassingTestWithStringExpectation()
 endFunction
 
 function PassingTestWithIntExpectation()
-    ExpectInt(1).To(EqualInt(1))
+    ExpectInt(1).To(EqualInt(2))
     ExpectFloat(12.34).To(EqualFloat(12.34))
 endFunction

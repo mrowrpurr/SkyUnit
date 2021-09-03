@@ -439,16 +439,23 @@ int function RunTestScript(int suite, SkyUnit2Test script, float lock = 0.0)
             ; Yay, we can run our test! It's JUST US now, all alone. Ready to run our test script :)
             int testResult = RunTestScriptLocked(suite, script)
             _currentlyRunningTestLock = 0.0
+            return testResult
         else
             RunTestScript(suite, script, lock)
         endIf
     else
         RunTestScript(suite, script, lock)
     endIf
-
 endFunction
 
 SkyUnit2Test _currentlyRunningTestScript
+
+SkyUnit2Test property CurrrentlyRunningTest
+    SkyUnit2Test function get()
+        return _currentlyRunningTestScript
+    endFunction
+endProperty
+
 int _currentlyRunningTestScriptTestsMap
 
 int function RunTestScriptLocked(int suite, SkyUnit2Test script)
@@ -458,6 +465,7 @@ int function RunTestScriptLocked(int suite, SkyUnit2Test script)
     float testRunKey = Utility.GetCurrentRealTime()
     int testRun = JMap.object()
     JMap.setObj(runsMap, testRunKey, testRun)
+    JMap.setObj(runsMap, SkyUnit2.SpecialTestRunDuration_LatestTest(), testRun)
     _currentlyRunningTestScriptTestsMap = JMap.object()
     JMap.setObj(testRun, "tests", _currentlyRunningTestScriptTestsMap)
 
@@ -527,6 +535,7 @@ endFunction
 ; This should cleanup _currentlyRunningTestScriptIndividualTestMap
 ; which is how we know whether or not Fn() was called
 function EndTest()
+    _currentlyRunningTestScript.AfterEach()
     float endTime = Utility.GetCurrentRealTime()
     JMap.setFlt(_currentlyRunningTestScriptIndividualTestMap, "endTime", endTime)
     JMap.setFlt(_currentlyRunningTestScriptIndividualTestMap, "durationTime", endTime - _currentlyRunningTestScriptIndividualTestStartTime)

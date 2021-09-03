@@ -16,12 +16,18 @@ function RunOnePassingTest_Test()
     
     int result = SkyUnit2.RunTestScript("Suite_One", ExampleTest1)
 
-    ExpectInt(result).To(BeGreaterThan(0))
-    ExpectInt(SkyUnit2.GetLatestTestResult("Suite_One", ExampleTest1)).To(EqualInt(result))
+    JValue.writeToFile(result, "ThisIsTheTestResult.json")
 
-    ExpectStringArray(SkyUnit2.TestResult_GetTestNames(result)).To(HaveLength(2))
+    ; ExpectInt(result).To(BeGreaterThan(0))
+    ; ExpectInt(SkyUnit2.GetLatestTestResult("Suite_One", ExampleTest1)).To(EqualInt(result))
+
+    ExpectStringArray(SkyUnit2.TestResult_GetTestNames(result)).To(HaveLength(4))
+    ExpectStringArray(SkyUnit2.TestResult_GetTestNames(result)).To(ContainString(SkyUnit2.SpecialTestNameFor_BeforeAll()))
+    ExpectStringArray(SkyUnit2.TestResult_GetTestNames(result)).To(ContainString(SkyUnit2.SpecialTestNameFor_AfterAll()))
     ExpectStringArray(SkyUnit2.TestResult_GetTestNames(result)).To(ContainString("Passing test with string expectation"))
     ExpectStringArray(SkyUnit2.TestResult_GetTestNames(result)).To(ContainString("Passing test with int expectation"))
+
+    ;;;
 
     ; ExpectString(SkyUnit2.TestResult_GetTestStatus(result, "Passing test with string expectation")).To(EqualString(SkyUnit2.TestStatus_PASS()))
     ; ExpectString(SkyUnit2.TestResult_GetTestStatus(result, "Passing test with int expectation")).To(EqualString(SkyUnit2.TestStatus_PASS()))
