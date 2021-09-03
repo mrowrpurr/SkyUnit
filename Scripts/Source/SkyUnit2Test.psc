@@ -85,7 +85,7 @@ SkyUnit2Test function To(bool expectationFunction, string failureMessage = "")
 endFunction
 
 SkyUnit2Test function ExpectString(string value)
-    ; SkyUnit.BeginExpectation("ExpectString")
+    SkyUnit2.BeginExpectation("ExpectString")
     ; SkyUnit.SetExpectationData_Object_String(value)
     ; SkyUnit.SetExpectationData_MainObjectType("String")
     ; return SkyUnit.CurrentTest()
@@ -93,7 +93,7 @@ SkyUnit2Test function ExpectString(string value)
 endFunction
 
 SkyUnit2Test function ExpectInt(int value)
-    ; SkyUnit.BeginExpectation("ExpectInt")
+    SkyUnit2.BeginExpectation("ExpectInt")
     ; SkyUnit.SetExpectationData_Object_Int(value)
     ; return SkyUnit.CurrentTest()
     return self
@@ -107,7 +107,7 @@ SkyUnit2Test function ExpectBool(bool value)
 endFunction
 
 SkyUnit2Test function ExpectFloat(float value)
-    ; SkyUnit.BeginExpectation("ExpectFloat")
+    SkyUnit2.BeginExpectation("ExpectFloat")
     ; SkyUnit.SetExpectationData_Object_Float(value)
     ; return SkyUnit.CurrentTest()
     return self

@@ -502,6 +502,7 @@ endFunction
 
 int _currentlyRunningTestScriptIndividualTestMap
 float _currentlyRunningTestScriptIndividualTestStartTime
+int _currentlyRunningTestScriptIndividualTestExpectationsArray
 
 ; This is for SkyUnitTest.Test(<test name>)
 ; The current script is 
@@ -522,8 +523,9 @@ function BeginTest(string testName)
     int expectations = JArray.object()
     JMap.setObj(testMap, "expectations", expectations)
 
-    ; Quick test map lookup for Fn() and Expectation Data (etc) !
+    ; Quick lookups for Fn() and Expectation Data (etc) !
     _currentlyRunningTestScriptIndividualTestMap = testMap
+    _currentlyRunningTestScriptIndividualTestExpectationsArray = expectations
 
     _currentlyRunningTestScriptIndividualTestStartTime = Utility.GetCurrentRealTime()
     JMap.setFlt(testMap, "startTime", _currentlyRunningTestScriptIndividualTestStartTime)
@@ -548,3 +550,12 @@ endFunction
 ;; Expectations & Expectation Data!
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+; _currentlyRunningTestScriptIndividualTestMap <--- use this
+
+int _currentlyRunningExpectation
+
+function BeginExpectation(string expectationName)
+    _currentlyRunningExpectation = JMap.object()
+    JArray.addObj(_currentlyRunningTestScriptIndividualTestExpectationsArray, _currentlyRunningExpectation)
+    JMap.setStr(_currentlyRunningExpectation, "expectationName", expectationName)
+endFunction

@@ -11,34 +11,41 @@ endFunction
 function RunOnePassingTest_Test()
     SkyUnit2.CreateTestSuite("Suite_One")
     SkyUnit2.AddScriptToTestSuite("Suite_One", ExampleTest1)
-    ExpectInt(SkyUnit2.GetTestResultCount("Suite_One", ExampleTest1)).To(EqualInt(0))
-    ExpectInt(SkyUnit2.GetLatestTestResult("Suite_One", ExampleTest1)).To(EqualInt(0))
+    ExpectInt(SkyUnit2.GetScriptTestResultCount("Suite_One", ExampleTest1)).To(EqualInt(0))
+    ExpectInt(SkyUnit2.GetLatestScriptTestResult("Suite_One", ExampleTest1)).To(EqualInt(0))
     
     int result = SkyUnit2.RunTestScript("Suite_One", ExampleTest1)
 
     JValue.writeToFile(result, "ThisIsTheTestResult.json")
 
-    ; ExpectInt(result).To(BeGreaterThan(0))
     ; ExpectInt(SkyUnit2.GetLatestTestResult("Suite_One", ExampleTest1)).To(EqualInt(result))
 
-    ExpectStringArray(SkyUnit2.TestResult_GetTestNames(result)).To(HaveLength(4))
-    ExpectStringArray(SkyUnit2.TestResult_GetTestNames(result)).To(ContainString(SkyUnit2.SpecialTestNameFor_BeforeAll()))
-    ExpectStringArray(SkyUnit2.TestResult_GetTestNames(result)).To(ContainString(SkyUnit2.SpecialTestNameFor_AfterAll()))
-    ExpectStringArray(SkyUnit2.TestResult_GetTestNames(result)).To(ContainString("Passing test with string expectation"))
-    ExpectStringArray(SkyUnit2.TestResult_GetTestNames(result)).To(ContainString("Passing test with int expectation"))
+    string[] testNames = SkyUnit2.ScriptTestResult_GetTestNames(result)
+    ExpectStringArray(testNames).To(HaveLength(4))
+    ExpectStringArray(testNames).To(ContainString(SkyUnit2.SpecialTestNameFor_BeforeAll()))
+    ExpectStringArray(testNames).To(ContainString(SkyUnit2.SpecialTestNameFor_AfterAll()))
+    ExpectStringArray(testNames).To(ContainString("Passing test with string expectation"))
+    ExpectStringArray(testNames).To(ContainString("Passing test with int expectation"))
 
-    ;;;
+    int stringExpectationTest = SkyUnit2.ScriptTestResult_GetTestResult(result, "Passing test with string expectation")
+    int intExpectationTest = SkyUnit2.ScriptTestResult_GetTestResult(result, "Passing test with int expectation")
 
+    ; We'll do test status AFTER getting the expectations AND assertions
     ; ExpectString(SkyUnit2.TestResult_GetTestStatus(result, "Passing test with string expectation")).To(EqualString(SkyUnit2.TestStatus_PASS()))
     ; ExpectString(SkyUnit2.TestResult_GetTestStatus(result, "Passing test with int expectation")).To(EqualString(SkyUnit2.TestStatus_PASS()))
 
-    ; ExpectInt(SkyUnit2.TestResult_GetTestExpectationCount(result, "Passing test with string expectation")).To(EqualInt(1))
-    ; ExpectString(SkyUnit2.TestResult_GetNthTestExpectationType(result, "Passing test with string expectation", 0)).To(EqualString("ExpectString"))
+    ; Expectations
+    ExpectInt(SkyUnit2.TestResult_GetExpectationCount(stringExpectationTest)).To(EqualInt(1))
+    ExpectString(SkyUnit2.TestResult_GetNthExpectationName(stringExpectationTest, 0)).To(EqualString("ExpectString"))
 
-    ; ExpectInt(SkyUnit2.TestResult_GetTestExpectationCount(result, "Passing test with int expectation")).To(EqualInt(2))
-    ; ExpectString(SkyUnit2.TestResult_GetNthTestExpectationType(result, "Passing test with int expectation", 0)).To(EqualString("ExpectInt"))
-    ; ExpectString(SkyUnit2.TestResult_GetNthTestExpectationType(result, "Passing test with int expectation", 1)).To(EqualString("ExpectFloat"))
-    ; TODO MORE
+    ; Expectations
+    ExpectInt(SkyUnit2.TestResult_GetExpectationCount(intExpectationTest)).To(EqualInt(2))
+    ExpectString(SkyUnit2.TestResult_GetNthExpectationName(intExpectationTest, 0)).To(EqualString("ExpectInt"))
+    ExpectString(SkyUnit2.TestResult_GetNthExpectationName(intExpectationTest, 1)).To(EqualString("ExpectFloat"))
+
+    ; Assertions
+
+    ; TODO MORE ~ then move this stuff into other tests :p
 endFunction
 
 ; function PassingTestWithStringExpectation()
