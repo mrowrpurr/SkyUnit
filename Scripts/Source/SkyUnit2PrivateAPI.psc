@@ -77,6 +77,14 @@ endFunction
 
 string property DEFAULT_TEST_SUITE_NAME = "[SkyUnit Default Test Suite]" autoReadonly
 
+; This should be the root data source used for ALL full properties in this script
+; so that EVERYTHING is scoped to a Test Suite (allowing us to switch between them, especially to test SkyUnit with SkyUnit)
+int property CurrentTestSuiteID auto
+
+function SwitchToTestSuite(int suite)
+    CurrentTestSuiteID = suite
+endFunction
+
 int property TestSuitesMap
     int function get()
         return JMap.getObj(GlobalDataMap, "testSuites")
@@ -104,6 +112,13 @@ int function CreateTestSuite(string name)
         ; Every suite has a top-level "testScripts" key
         ; which stores a map of [Test Script Name] => [...]
         JMap.setObj(suite, "testScripts", JMap.object())
+
+        ; Map of a variety of variables to store the "current state"
+        ; about the test suite, e.g. storing which test is currently
+        ; running and which expectation is running etc.
+        ; These are stored in a map on the TestSuite so that you
+        ; can switch TestSuites without breaking the current state.
+        JMap.setObj(suite, "state", JMap.object())
     endIf
     return suite
 endFunction
@@ -137,6 +152,16 @@ endFunction
 int function GetTestSuite(string name)
     return JMap.getObj(TestSuitesMap, name)
 endFunction
+
+int function GetTestSuiteStateMap(int suite)
+    return JMap.getObj(suite, "state")
+endFunction
+
+int property CurrentState
+    int function get()
+        return GetTestSuiteStateMap(CurrentTestSuiteID)
+    endFunction
+endProperty
 
 int function GetTestSuiteScriptsMap(int suite)
     return JMap.getObj(suite, "testScripts")
@@ -408,6 +433,10 @@ SkyUnit2Test function GetScriptFromSlot(int slotNumber)
     endIf
 endFunction
 
+int function GetScriptSlotNumber(SkyUnit2Test script)
+    return JMap.getInt(TestScriptLookupMap, GetScriptDisplayName(script))
+endFunction
+
 ; You can pass this function a script object (even though it takes a string parameter)
 string function GetScriptDisplayName(string script)
     return StringUtil.Substring(script, 1, StringUtil.Find(script, " ") - 1)
@@ -448,7 +477,16 @@ int function RunTestScript(int suite, SkyUnit2Test script, float lock = 0.0)
     endIf
 endFunction
 
-SkyUnit2Test _currentlyRunningTestScript
+SkyUnit2Test property _currentlyRunningTestScript
+    SkyUnit2Test function get()
+        int slotNumber = JMap.getInt(CurrentState, "currentlyRunningTestScriptSlotNumber")
+        return GetScriptFromSlot(slotNumber)
+    endFunction
+    function set(SkyUnit2Test script)
+        int slotNumber = GetScriptSlotNumber(script)
+        JMap.setInt(CurrentState, "currentlyRunningTestScriptSlotNumber", slotNumber)
+    endFunction
+endProperty
 
 SkyUnit2Test property CurrrentlyRunningTest
     SkyUnit2Test function get()
@@ -457,6 +495,7 @@ SkyUnit2Test property CurrrentlyRunningTest
 endProperty
 
 int _currentlyRunningTestScriptMap
+
 int _currentlyRunningTestScriptTestsMap
 
 int function RunTestScriptLocked(int suite, SkyUnit2Test script)
