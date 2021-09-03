@@ -4,7 +4,7 @@ scriptName SkyUnitTests_TrackingScripts extends SkyUnitTests_BaseTest
 import ArrayAssertions
 
 function Tests()
-    Test("Can register test scripts").Fn(CanRegisterTestScripts())
+    Test("Can register test scripts").Fn(CanRegisterTestScripts_Test())
     Test("Different instances of SkyUnit have different sets of test scripts")
     Test("Can get a SkyUnit instance's script by name")
     Test("Can get the names of all test scripts in a SkyUnit instance")
@@ -12,19 +12,20 @@ function Tests()
     Test("Can register over a thousand test scripts")
 endFunction
 
-function CanRegisterTestScripts()
-    SkyUnit2TestSuite testSuite = SkyUnit2.CreateTestSuite("MySuite")
-    ExpectInt(testSuite.ScriptCount).To(EqualInt(0))
-    ExpectStringArray(testSuite.ScriptNames).To(BeEmpty())
+function CanRegisterTestScripts_Test()
+    SkyUnit2.CreateTestSuite("MySuite")
 
-    testSuite.AddScript(ExampleTest1)
+    SkyUnit2.AddScriptToTestSuite("MySuite", ExampleTest1)
 
-    ExpectInt(testSuite.ScriptCount).To(EqualInt(1))
-    ExpectStringArray(testSuite.ScriptNames).To(EqualStringArray1("SkyUnitTests_ExampleTest1"))
+    ExpectStringArray(SkyUnit2.GetTestSuiteScriptNames("MySuite")).To(EqualStringArray1("SkyUnitTests_ExampleTest1"))
 
-    testSuite.AddScript(ExampleTest2)
+    SkyUnit2.AddScriptToTestSuite("MySuite", ExampleTest2)
 
-    ExpectInt(testSuite.ScriptCount).To(EqualInt(2))
-    ExpectStringArray(testSuite.ScriptNames).To(ContainString("SkyUnitTests_ExampleTest1"))
-    ExpectStringArray(testSuite.ScriptNames).To(ContainString("SkyUnitTests_ExampleTest2"))
+    ExpectStringArray(SkyUnit2.GetTestSuiteScriptNames("MySuite")).To(ContainString("SkyUnitTests_ExampleTest1"))
+    ExpectStringArray(SkyUnit2.GetTestSuiteScriptNames("MySuite")).To(ContainString("SkyUnitTests_ExampleTest2"))
 endFunction
+
+; function DifferenceTestSuitesWithDifferentScripts_Test()
+;     SkyUnit2TestSuite testSuite = SkyUnit2.CreateTestSuite("MySuite")
+
+; endFunction

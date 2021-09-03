@@ -15,40 +15,24 @@ import ArrayAssertions
 
 function Tests()
     Test("Can add a test suite").Fn(CanAddTestSuite_Test())
-    Test("Can get a test suite by name").Fn(CanGetTestSuiteByName_Test())
     Test("Can remove a test suite").Fn(CanRemoveTestSuiteByName_Test())
 endFunction
 
 function CanAddTestSuite_Test()
     string suiteName = "CoolTestSuite"
-    ExpectStringArray(SkyUnit2.TestSuiteNames()).Not().To(ContainString(suiteName))
-
-    SkyUnit2TestSuite testSuite = SkyUnit2.CreateTestSuite(suiteName)
-
-    ExpectString(testSuite.GetName()).To(EqualString(suiteName))
-    ExpectInt(testSuite.GetSuiteID()).To(BeGreaterThan(0))
-    ExpectStringArray(SkyUnit2.TestSuiteNames()).To(ContainString(suiteName))
-endFunction
-
-function CanGetTestSuiteByName_Test()
-    string suiteName = "CoolTestSuite"
-    SkyUnit2TestSuite testSuite = SkyUnit2.GetTestSuite(suiteName)
+    ExpectStringArray(SkyUnit2.GetTestSuiteNames()).Not().To(ContainString(suiteName))
 
     SkyUnit2.CreateTestSuite(suiteName)
 
-    testSuite = SkyUnit2.GetTestSuite(suiteName)
-    ExpectString(testSuite.GetName()).To(EqualString(suiteName))
-    ExpectStringArray(SkyUnit2.TestSuiteNames()).To(ContainString(suiteName))
+    ExpectStringArray(SkyUnit2.GetTestSuiteNames()).To(ContainString(suiteName))
 endFunction
 
 function CanRemoveTestSuiteByName_Test()
     string suiteName = "CoolTestSuite"
     SkyUnit2.CreateTestSuite(suiteName)
-    SkyUnit2TestSuite testSuite = SkyUnit2.GetTestSuite(suiteName)
-    ExpectString(testSuite.GetName()).To(EqualString(suiteName))
-    ExpectStringArray(SkyUnit2.TestSuiteNames()).To(ContainString(suiteName))
+    ExpectStringArray(SkyUnit2.GetTestSuiteNames()).To(ContainString(suiteName))
 
     SkyUnit2.DeleteTestSuite(suiteName)
 
-    ExpectStringArray(SkyUnit2.TestSuiteNames()).Not().To(ContainString(suiteName))
+    ExpectStringArray(SkyUnit2.GetTestSuiteNames()).Not().To(ContainString(suiteName))
 endFunction

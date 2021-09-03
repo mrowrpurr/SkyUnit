@@ -16,27 +16,34 @@ To get an existing or new instance, see these functions:
 }
 
 float function GetVersion() global
-  return 1.0
+    return 1.0
 endFunction
 
-string[] function TestSuiteNames() global
-  SkyUnit2PrivateAPI api = SkyUnit2PrivateAPI.GetPrivateAPI()
-  return JMap.allKeysPArray(api.TestSuitesMap)
+function CreateTestSuite(string suiteName) global
+    SkyUnit2PrivateAPI.GetPrivateAPI().CreateTestSuite(suiteName)
 endFunction
 
-SkyUnit2TestSuite function CreateTestSuite(string name) global
-  SkyUnit2PrivateAPI api = SkyUnit2PrivateAPI.GetPrivateAPI()
-  int suite = api.CreateTestSuite(name)
-  return SkyUnit2TestSuite.GetForID(suite)
+function DeleteTestSuite(string suiteName) global
+    SkyUnit2PrivateAPI.GetPrivateAPI().DeleteTestSuite(suiteName)
 endFunction
 
-SkyUnit2TestSuite function GetTestSuite(string name) global
-  SkyUnit2PrivateAPI api = SkyUnit2PrivateAPI.GetPrivateAPI()
-  int suite = api.GetTestSuite(name)
-  return SkyUnit2TestSuite.GetForID(suite)
+int function GetTestSuiteCount() global
+    return JMap.count(SkyUnit2PrivateAPI.GetPrivateAPI().TestSuitesMap)
 endFunction
 
-function DeleteTestSuite(string name) global
-  SkyUnit2PrivateAPI api = SkyUnit2PrivateAPI.GetPrivateAPI()
-  api.DeleteTestSuite(name)
+string[] function GetTestSuiteNames() global
+    return JMap.allKeysPArray(SkyUnit2PrivateAPI.GetPrivateAPI().TestSuitesMap)
+endFunction
+
+function AddScriptToTestSuite(string suiteName, SkyUnit2Test script) global
+    SkyUnit2PrivateAPI api = SkyUnit2PrivateAPI.GetPrivateAPI()
+    int suite = api.GetTestSuite(suiteName)
+    api.AddScriptToTestSuite(script, suite)
+endFunction
+
+string[] function GetTestSuiteScriptNames(string suiteName) global
+    SkyUnit2PrivateAPI api = SkyUnit2PrivateAPI.GetPrivateAPI()
+    int suite = api.GetTestSuite(suiteName)
+    int suiteScriptsMap = SkyUnit2PrivateAPI.GetPrivateAPI().GetTestSuiteScriptsMap(suite)
+    return JMap.allKeysPArray(suiteScriptsMap)
 endFunction
