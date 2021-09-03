@@ -29,19 +29,6 @@ e.g.
 }
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; TODO CLEANUP BELOW
-;;
-;; MOVED THIS TO MAKE THINGS WORK
-;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Functions meant to be overridden
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -61,7 +48,7 @@ function AfterEach()
 endFunction
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Base included Expect[Type]() functions
+;; Main Interface for Tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 SkyUnit2Test function Test(string testName)
@@ -75,48 +62,46 @@ function Fn(bool testFunction)
 endFunction
 
 SkyUnit2Test function Not()
-    ; SkyUnit.GetInstance().SetNotExpectation() ; TODO
+    SkyUnit2PrivateAPI.GetPrivateAPI().SetNotExpectation()
     return self
 endFunction
 
 SkyUnit2Test function To(bool expectationFunction, string failureMessage = "")
-    ; SkyUnit.GetInstance().SetExpectationFailureMessage(failureMessage) ; TODO ADD TEST
+    SkyUnit2PrivateAPI.GetPrivateAPI().SetCustomFailureMessage(failureMessage)
     return self
 endFunction
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Base included Expect[Type]() functions
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 SkyUnit2Test function ExpectString(string value)
     SkyUnit2.BeginExpectation("ExpectString")
-    ; SkyUnit.SetExpectationData_Object_String(value)
-    ; SkyUnit.SetExpectationData_MainObjectType("String")
-    ; return SkyUnit.CurrentTest()
+    SkyUnit2.SetExpectationData_MainObject_String(value)
     return self
 endFunction
 
 SkyUnit2Test function ExpectInt(int value)
     SkyUnit2.BeginExpectation("ExpectInt")
-    ; SkyUnit.SetExpectationData_Object_Int(value)
-    ; return SkyUnit.CurrentTest()
+    SkyUnit2.SetExpectationData_MainObject_Int(value)
     return self
 endFunction
 
 SkyUnit2Test function ExpectBool(bool value)
-    ; SkyUnit.BeginExpectation("ExpectBool")
-    ; SkyUnit.SetExpectationData_Object_Bool(value)
-    ; return SkyUnit.CurrentTest()
+    SkyUnit2.BeginExpectation("ExpectBool")
+    SkyUnit2.SetExpectationData_MainObject_Bool(value)
     return self
 endFunction
 
 SkyUnit2Test function ExpectFloat(float value)
     SkyUnit2.BeginExpectation("ExpectFloat")
-    ; SkyUnit.SetExpectationData_Object_Float(value)
-    ; return SkyUnit.CurrentTest()
+    SkyUnit2.SetExpectationData_MainObject_Float(value)
     return self
 endFunction
 
 SkyUnit2Test function ExpectForm(Form value)
-    ; SkyUnit.BeginExpectation("ExpectForm")
-    ; SkyUnit.SetExpectationData_Object_Form(value)
-    ; return SkyUnit.CurrentTest()
+    SkyUnit2.BeginExpectation("ExpectForm")
+    SkyUnit2.SetExpectationData_MainObject_Form(value)
     return self
 endFunction
 
@@ -141,6 +126,7 @@ function EqualString(string expected)
 endFunction
 
 function EqualInt(int expected)
+    SkyUnit2.PassExpectation("EqualInt")
     ; int actual = SkyUnit.GetExpectationData_Object_Text() as int
     ; bool not = SkyUnit.Not()
     ; if not && actual == expected
@@ -151,6 +137,7 @@ function EqualInt(int expected)
 endFunction
 
 function EqualFloat(float expected)
+    SkyUnit2.PassExpectation("EqualFloat")
     ; float actual = SkyUnit.GetExpectationData_Object_Text() as float
     ; bool not = SkyUnit.Not()
     ; if not && actual == expected

@@ -4,11 +4,11 @@ scriptName SkyUnitTests_RunningTests extends SkyUnitTests_BaseTest
 import ArrayAssertions
 
 function Tests()
-    Test("Can run one passing test").Fn(RunOnePassingTest_Test())
-    Test("Can run one passing test and a failing test")
+    Test("Basic 'hello world' SkyUnit features are working test").Fn(TestVariousThings_HelloWorldSkyUnitFeatures_Test())
+    ; Test("Can run one passing test and a failing test").Fn(Example2_OnePassingOneFailing_Test())
 endFunction
 
-function RunOnePassingTest_Test()
+function TestVariousThings_HelloWorldSkyUnitFeatures_Test()
     SkyUnit2.CreateTestSuite("Suite_One")
     SkyUnit2.AddScriptToTestSuite("Suite_One", ExampleTest1)
     ExpectInt(SkyUnit2.GetScriptTestResultCount("Suite_One", ExampleTest1)).To(EqualInt(0))
@@ -30,9 +30,10 @@ function RunOnePassingTest_Test()
     int stringExpectationTest = SkyUnit2.ScriptTestResult_GetTestResult(result, "Passing test with string expectation")
     int intExpectationTest = SkyUnit2.ScriptTestResult_GetTestResult(result, "Passing test with int expectation")
 
-    ; We'll do test status AFTER getting the expectations AND assertions
-    ; ExpectString(SkyUnit2.TestResult_GetTestStatus(result, "Passing test with string expectation")).To(EqualString(SkyUnit2.TestStatus_PASS()))
-    ; ExpectString(SkyUnit2.TestResult_GetTestStatus(result, "Passing test with int expectation")).To(EqualString(SkyUnit2.TestStatus_PASS()))
+    ; Pass/Fail for whole script + individual tests
+    ExpectString(SkyUnit2.ScriptTestResult_GetScriptStatus(result)).To(EqualString(SkyUnit2.TestStatus_PASS()))
+    ExpectString(SkyUnit2.TestResult_GetTestStatus(stringExpectationTest)).To(EqualString(SkyUnit2.TestStatus_PASS()))
+    ExpectString(SkyUnit2.TestResult_GetTestStatus(intExpectationTest)).To(EqualString(SkyUnit2.TestStatus_PASS()))
 
     ; Expectations
     ExpectInt(SkyUnit2.TestResult_GetExpectationCount(stringExpectationTest)).To(EqualInt(1))
@@ -43,38 +44,42 @@ function RunOnePassingTest_Test()
     ExpectString(SkyUnit2.TestResult_GetNthExpectationName(intExpectationTest, 0)).To(EqualString("ExpectInt"))
     ExpectString(SkyUnit2.TestResult_GetNthExpectationName(intExpectationTest, 1)).To(EqualString("ExpectFloat"))
 
+    ; Expectations need to set data for assertions to use...
+    ExpectString(SkyUnit2.TestResult_GetNthExpectationMainObjectType(stringExpectationTest, 0)).To(EqualString("string"))
+    ExpectString(SkyUnit2.TestResult_GetNthExpectationMainObjectText(stringExpectationTest, 0)).To(EqualString("Hello"))
+    ExpectString(SkyUnit2.TestResult_GetNthExpectationMainObjectType(intExpectationTest, 0)).To(EqualString("int"))
+    ExpectString(SkyUnit2.TestResult_GetNthExpectationMainObjectText(intExpectationTest, 0)).To(EqualString("1"))
+    ExpectString(SkyUnit2.TestResult_GetNthExpectationMainObjectType(intExpectationTest, 1)).To(EqualString("float"))
+    ExpectString(SkyUnit2.TestResult_GetNthExpectationMainObjectText(intExpectationTest, 1)).To(ContainText("12.34"))
+
     ; Assertions
     ExpectString(SkyUnit2.TestResult_GetNthExpectationAssertionName(stringExpectationTest, 0)).To(EqualString("EqualString"))
-    ; ExpectString(SkyUnit2.TestResult_GetNthExpectationAssertionName(stringExpectationTest, 0)).To(EqualString("EqualString"))
-
-    ; TODO MORE ~ then move this stuff into other tests :p
+    ExpectString(SkyUnit2.TestResult_GetNthExpectationAssertionName(intExpectationTest, 0)).To(EqualString("EqualInt"))
+    ExpectString(SkyUnit2.TestResult_GetNthExpectationAssertionName(intExpectationTest, 1)).To(EqualString("EqualFloat"))
 endFunction
 
-; function PassingTestWithStringExpectation()
-;     ExpectString("Hello").To(EqualString("Hello"))
-; endFunction
-; function PassingTestWithIntExpectation()
-;     ExpectInt(1).To(EqualInt(1))
-; endFunction
+function Example2_OnePassingOneFailing_Test()
+    SkyUnit2.CreateTestSuite("Suite_One")
+    SkyUnit2.AddScriptToTestSuite("Suite_One", ExampleTest2)
 
+    ExampleTest2.OnePassingOneFailing = true
+    int result = SkyUnit2.RunTestScript("Suite_One", ExampleTest2)
+    ExampleTest2.OnePassingOneFailing = false
 
+    string[] testNames = SkyUnit2.ScriptTestResult_GetTestNames(result)
+    ExpectStringArray(testNames).To(ContainString("Simple string passing"))
+    ExpectStringArray(testNames).To(ContainString("Simple int failing"))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Below are the implementations of the
-;; tests which are "run on" our example
-;; test scripts.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    int passingTest = SkyUnit2.ScriptTestResult_GetTestResult(result, "Simple string passing")
+    int failingTest = SkyUnit2.ScriptTestResult_GetTestResult(result, "Simple int failing")
 
-function PassingTest()
-    ; Be sure that the testing context
-    ; is switched from this ACTUAL TEST
-    ; to this fake test (temporarily)
-    ExpectString("Hello").To(EqualString("Hello"))
-endFunction
+    ; Pass/Fail for whole script + individual tests
+    ExpectString(SkyUnit2.ScriptTestResult_GetScriptStatus(result)).To(EqualString(SkyUnit2.TestStatus_FAIL()))
+    ExpectString(SkyUnit2.TestResult_GetTestStatus(passingTest)).To(EqualString(SkyUnit2.TestStatus_PASS()))
+    ExpectString(SkyUnit2.TestResult_GetTestStatus(failingTest)).To(EqualString(SkyUnit2.TestStatus_FAIL()))
 
-function FailingTest()
-    ; Be sure that the testing context
-    ; is switched from this ACTUAL TEST
-    ; to this fake test (temporarily)
-    ExpectString("Hello").To(EqualString("NOT HELLO"))
+    ; Expectations
+
+    ; Assertions
+
 endFunction
