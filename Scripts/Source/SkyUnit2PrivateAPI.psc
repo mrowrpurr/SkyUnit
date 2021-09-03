@@ -271,8 +271,6 @@ float _currentlyAddingScriptLock
 ; which stores available slots (global.availableScriptIndexes) which requires a lock
 ; (especially when the game loads and a number of tests are all trying to register themselves at the same time)
 function AddScriptToTestSuite(SkyUnit2Test script, int testSuite, float lock = 0.0)
-    Debug("AddScriptToTestSuite() " + script)
-
     ; First check to see if it's already in a slot
     int existingIndex = JMap.getInt(TestScriptLookupMap, GetScriptDisplayName(script))
     if existingIndex
@@ -304,11 +302,9 @@ function AddScriptToTestSuite(SkyUnit2Test script, int testSuite, float lock = 0
                 if slotNumber == 0
                     Log("Cannot register test " + GetScriptDisplayName(script) + " (are there 1,280 scripts registered? that is the max)")
                 else
-                    Debug("Adding " + script + " ...")
                     ; Add to top-level registration map which tracks ALL scripts by name
                     JMap.setInt(TestScriptLookupMap, GetScriptDisplayName(script), slotNumber)
                     ; Add to this specific test suite as a new script
-                    Debug("CreateTestSuiteTestScriptMap(" + testSuite + ", " + script + ", " + slotNumber)
                     CreateTestSuiteTestScriptMap(testSuite, script, slotNumber)
                     ; Remove this index so other scripts won't take it
                     JArray.eraseIndex(AvailableScriptIndexesArray, availableCount - 1)
@@ -354,6 +350,9 @@ function SkyUnit2TestScriptArraySetup()
 endFunction
 
 function AddScriptToSlot(SkyUnit2Test script, int slotNumber)
+    if slotNumber == 0
+        return
+    endIf
     int arrayNumber = slotNumber / 128
     int arrayIndex = slotNumber % 128
     if arrayNumber == 0
@@ -379,7 +378,10 @@ function AddScriptToSlot(SkyUnit2Test script, int slotNumber)
     endIf
 endFunction
 
-SkyUnit2Test function GetScriptFromSlot(SkyUnit2Test script, int slotNumber)
+SkyUnit2Test function GetScriptFromSlot(int slotNumber)
+    if slotNumber == 0
+        return None
+    endIf
     int arrayNumber = slotNumber / 128
     int arrayIndex = slotNumber % 128
     if arrayNumber == 0

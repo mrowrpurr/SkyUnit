@@ -47,3 +47,12 @@ string[] function GetTestSuiteScriptNames(string suiteName) global
     int suiteScriptsMap = SkyUnit2PrivateAPI.GetPrivateAPI().GetTestSuiteScriptsMap(suite)
     return JMap.allKeysPArray(suiteScriptsMap)
 endFunction
+
+SkyUnit2Test function GetTestSuiteScript(string suiteName, string script) global
+    SkyUnit2PrivateAPI api = SkyUnit2PrivateAPI.GetPrivateAPI()
+    int suite = api.GetTestSuite(suiteName)
+    int suiteScriptsMap = SkyUnit2PrivateAPI.GetPrivateAPI().GetTestSuiteScriptsMap(suite)
+    int scriptMap = JMap.getObj(suiteScriptsMap, script)
+    int index = JMap.getInt(scriptMap, "arrayLookupSlotNumber")
+    return api.GetScriptFromSlot(index)
+endFunction
