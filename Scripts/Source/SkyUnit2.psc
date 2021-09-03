@@ -56,3 +56,69 @@ SkyUnit2Test function GetTestSuiteScript(string suiteName, string script) global
     int index = JMap.getInt(scriptMap, "arrayLookupSlotNumber")
     return api.GetScriptFromSlot(index)
 endFunction
+
+int function RunTestScript(string suiteName, SkyUnit2Test script) global
+    SkyUnit2PrivateAPI api = SkyUnit2PrivateAPI.GetPrivateAPI()
+    int suite = api.GetTestSuite(suiteName)
+    return api.RunTestScript(suite, script)
+endFunction
+
+int function GetTestResultCount(string suiteName, SkyUnit2Test test) global
+
+endFunction
+
+int function GetNthTestResult(string suiteName, SkyUnit2Test test) global
+
+endFunction
+
+int function GetLatestTestResult(string suiteName, SkyUnit2Test test) global
+
+endFunction
+
+string[] function TestResult_GetTestNames(int testResult) global
+
+endFunction
+
+string function TestResult_GetTestStatus(int testResult, string testName) global
+
+endFunction
+
+float function TestResult_GetTestRuntime(int testResult, string testName) global
+    return 123.456 ; TODO
+endFunction
+
+int function TestResult_GetTestExpectationCount(int testResult, string testName) global
+
+endFunction
+
+string function TestResult_GetNthTestExpectationType(int testResult, string testName, int index) global
+
+endFunction
+
+string function TestResult_GetNthTestExpectationResult(int testResult, string testName, int index) global
+
+endFunction
+
+string function TestResult_GetNthTestExpectationMessage(int testResult, string testName, int index) global
+
+endFunction
+
+string function TestStatus_PASS() global
+    return "PASS"
+endFunction
+
+string function TestStatus_FAIL() global
+    return "FAIL"
+endFunction
+
+string function TestStatus_PENDING() global
+    return "PENDING"
+endFunction
+
+string function SpecialTestNameFor_BeforeAll() global
+    return "[SkyUnit Test BeforeAll()]"
+endFunction
+
+string function SpecialTestNameFor_AfterAll() global
+    return "[SkyUnit Test AfterAll()]"
+endFunction

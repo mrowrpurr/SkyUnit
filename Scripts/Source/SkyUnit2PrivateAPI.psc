@@ -151,8 +151,9 @@ int function CreateTestSuiteTestScriptMap(int suite, SkyUnit2Test script, int sc
     int scriptMap = JMap.object()
     JMap.setObj(GetTestSuiteScriptsMap(suite), GetScriptDisplayName(script), scriptMap)
     JMap.setStr(scriptMap, "name", GetScriptDisplayName(script))
+    JMap.setObj(scriptMap, "testRuns", JMap.object())
     JMap.setInt(scriptMap, "arrayLookupSlotNumber", scriptLookupArraySlotNumber)
-    return scriptMap
+    return scriptMap   
 endFunction
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -281,7 +282,7 @@ function AddScriptToTestSuite(SkyUnit2Test script, int testSuite, float lock = 0
 
     ; It's not already in a slot, so wait in line to add it to a slot ...
     if lock == 0.0
-        lock = Utility.RandomFloat(0.0, 1000.0)
+        lock = Utility.RandomFloat(1.0, 1000.0)
     endIf
 
     while _currentlyAddingScriptLock != 0.0
@@ -411,3 +412,130 @@ endFunction
 string function GetScriptDisplayName(string script)
     return StringUtil.Substring(script, 1, StringUtil.Find(script, " ") - 1)
 endFunction
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Running Tests
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+int function GetTestSuiteScriptRunsMap(int suite, SkyUnit2Test script)
+    return JMap.getObj(GetTestSuiteScriptsMap(suite), "testRuns")
+endFunction
+
+float _currentlyRunningTestLock
+
+int function RunTestScript(int suite, SkyUnit2Test script, float lock = 0.0)
+    if lock == 0.0
+        lock = Utility.RandomFloat(1.0, 1000.0)
+    endIf
+
+    while _currentlyRunningTestLock != 0.0
+        Utility.WaitMenuMode(0.1)
+    endWhile
+
+    _currentlyRunningTestLock = lock
+
+    if _currentlyRunningTestLock == lock
+        if _currentlyRunningTestLock == lock
+            ; Yay, we can run our test! It's JUST US now, all alone. Ready to run our test script :)
+            int testResult = RunTestScriptLocked(suite, script)
+            _currentlyRunningTestLock = 0.0
+        else
+            RunTestScript(suite, script, lock)
+        endIf
+    else
+        RunTestScript(suite, script, lock)
+    endIf
+
+endFunction
+
+SkyUnit2Test _currentlyRunningTestScript
+int _currentlyRunningTestScriptTestsMap
+
+int function RunTestScriptLocked(int suite, SkyUnit2Test script)
+    int runsMap = GetTestSuiteScriptRunsMap(suite, script)
+
+    ; Create a new test suite result
+    float testRunKey = Utility.GetCurrentRealTime()
+    int testRun = JMap.object()
+    JMap.setObj(runsMap, testRunKey, testRun)
+    _currentlyRunningTestScriptTestsMap = JMap.object()
+    JMap.setObj(testRun, "tests", _currentlyRunningTestScriptTestsMap)
+
+    ; Run the test! (And track duration)
+    float startTime = Utility.GetCurrentRealTime()
+    JMap.setFlt(testRun, "startTime", startTime)
+    _currentlyRunningTestScript = script
+
+    ; BeforeAll() - Treated just like any other test!
+    BeginTest(SkyUnit2.SpecialTestNameFor_BeforeAll())
+    script.BeforeAll()
+    EndTest()
+
+    ; Tests()
+    script.Tests()
+
+    if _currentlyRunningTestScriptIndividualTestMap
+        ; This happens if the last test is a PENDING test with no Fn() to clean things up :)
+        EndTest()
+    endIf
+
+    ; AfterAll() - Treated just like any other test!
+    BeginTest(SkyUnit2.SpecialTestNameFor_AfterAll())
+    script.AfterAll()
+    EndTest()
+    
+    _currentlyRunningTestScript = None
+    float endTime = Utility.GetCurrentRealTime()
+    JMap.setFlt(testRun, "endTime", endTime)
+    JMap.setFlt(testRun, "durationTime", endTime - startTime)
+
+    return testRun
+endFunction
+
+int _currentlyRunningTestScriptIndividualTestMap
+float _currentlyRunningTestScriptIndividualTestStartTime
+
+; This is for SkyUnitTest.Test(<test name>)
+; The current script is 
+function BeginTest(string testName)
+    ; Check if the previous test is "Still Open", i.e. it's PENDING with no Fn()
+    if _currentlyRunningTestScriptIndividualTestMap
+        EndTest()
+    endIf
+
+    ; _currentlyRunningTestScriptTestsMap
+    ; ^---- this maps Test Name ==> Test Object (for the currently running test script)
+    int testMap = JMap.object()
+    JMap.setObj(_currentlyRunningTestScriptTestsMap, testName, testMap)
+    JMap.setStr(testMap, "name", testName)
+    JMap.setStr(testMap, "status", SkyUnit2.TestStatus_PENDING()) ; Default to PENDING (no Fn() hooked up)
+
+    ; Setup expectations array :)
+    int expectations = JArray.object()
+    JMap.setObj(testMap, "expectations", expectations)
+
+    ; Quick test map lookup for Fn() and Expectation Data (etc) !
+    _currentlyRunningTestScriptIndividualTestMap = testMap
+
+    _currentlyRunningTestScriptIndividualTestStartTime = Utility.GetCurrentRealTime()
+    JMap.setFlt(testMap, "startTime", _currentlyRunningTestScriptIndividualTestStartTime)
+    ; Now it'll run! If Fn() is provided.
+endFunction
+
+; This is called by Fn()
+; Or at the end of all of the tests if no Fn() was called
+; This should cleanup _currentlyRunningTestScriptIndividualTestMap
+; which is how we know whether or not Fn() was called
+function EndTest()
+    float endTime = Utility.GetCurrentRealTime()
+    JMap.setFlt(_currentlyRunningTestScriptIndividualTestMap, "endTime", endTime)
+    JMap.setFlt(_currentlyRunningTestScriptIndividualTestMap, "durationTime", endTime - _currentlyRunningTestScriptIndividualTestStartTime)
+
+    _currentlyRunningTestScriptIndividualTestMap = 0
+    _currentlyRunningTestScriptIndividualTestStartTime = 0.0
+endFunction
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Expectations & Expectation Data!
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
