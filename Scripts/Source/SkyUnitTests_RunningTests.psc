@@ -44,6 +44,8 @@ function RunOnePassingTest_Test()
     ExpectString(SkyUnit2.TestResult_GetNthExpectationName(intExpectationTest, 1)).To(EqualString("ExpectFloat"))
 
     ; Assertions
+    ExpectString(SkyUnit2.TestResult_GetNthExpectationAssertionName(stringExpectationTest, 0)).To(EqualString("EqualString"))
+    ; ExpectString(SkyUnit2.TestResult_GetNthExpectationAssertionName(stringExpectationTest, 0)).To(EqualString("EqualString"))
 
     ; TODO MORE ~ then move this stuff into other tests :p
 endFunction

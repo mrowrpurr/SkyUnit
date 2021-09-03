@@ -149,6 +149,12 @@ string function TestResult_GetNthExpectationMessage(int testResult, int index) g
 
 endFunction
 
+string function TestResult_GetNthExpectationAssertionName(int testResult, int index) global
+    int expectations = JMap.getObj(testResult, "expectations")
+    int expectation = JArray.getObj(expectations, index)
+    return JMap.getStr(expectation, "assertionName")
+endFunction
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Functions for Expectations
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -159,6 +165,14 @@ endFunction
 
 function BeginExpectation(string expectationName) global
     SkyUnit2PrivateAPI.GetPrivateAPI().BeginExpectation(expectationName)
+endFunction
+
+function PassExpectation(string assertionName) global
+    SkyUnit2PrivateAPI.GetPrivateAPI().PassExpectation(assertionName)
+endFunction
+
+function FailExpectation(string assertionName, string failureMessage = "") global
+    SkyUnit2PrivateAPI.GetPrivateAPI().FailExpectation(assertionName, failureMessage)
 endFunction
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

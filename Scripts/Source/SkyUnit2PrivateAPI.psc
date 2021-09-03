@@ -536,12 +536,26 @@ endFunction
 ; Or at the end of all of the tests if no Fn() was called
 ; This should cleanup _currentlyRunningTestScriptIndividualTestMap
 ; which is how we know whether or not Fn() was called
-function EndTest()
+function EndTest(bool fnCalled = false)
+    ; If it was ended by calling Fn() then mark the function as PASSED if it was previously PENDING
+    ; i.e. if there were no assertions. We could keep no assertions at PENDING but... if you do Fn() we'll make it NOT PENDING
+    if fnCalled
+        if JMap.getStr(_currentlyRunningTestScriptIndividualTestMap, "status") == SkyUnit2.TestStatus_PENDING()
+            JMap.setStr(_currentlyRunningTestScriptIndividualTestMap, "status", SkyUnit2.TestStatus_PASS())
+        endIf
+    endIf
+
     _currentlyRunningTestScript.AfterEach()
     float endTime = Utility.GetCurrentRealTime()
     JMap.setFlt(_currentlyRunningTestScriptIndividualTestMap, "endTime", endTime)
     JMap.setFlt(_currentlyRunningTestScriptIndividualTestMap, "durationTime", endTime - _currentlyRunningTestScriptIndividualTestStartTime)
 
+    ; If nothing failed in the BeforeEach / Test / AfterEach then status will still be PENDING. Update it to PASSED.
+    if JMap.getStr(_currentlyRunningTestScriptIndividualTestMap, "status") == SkyUnit2.TestStatus_PENDING()
+        JMap.setStr(_currentlyRunningTestScriptIndividualTestMap, "status", SkyUnit2.TestStatus_PASS())
+    endIf
+
+    ; Test is done :) Reset
     _currentlyRunningTestScriptIndividualTestMap = 0
     _currentlyRunningTestScriptIndividualTestStartTime = 0.0
 endFunction
@@ -550,12 +564,26 @@ endFunction
 ;; Expectations & Expectation Data!
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-; _currentlyRunningTestScriptIndividualTestMap <--- use this
-
 int _currentlyRunningExpectation
 
 function BeginExpectation(string expectationName)
     _currentlyRunningExpectation = JMap.object()
     JArray.addObj(_currentlyRunningTestScriptIndividualTestExpectationsArray, _currentlyRunningExpectation)
     JMap.setStr(_currentlyRunningExpectation, "expectationName", expectationName)
+endFunction
+
+function PassExpectation(string assertionName)
+    JMap.setStr(_currentlyRunningExpectation, "assertionName", assertionName)
+    JMap.setStr(_currentlyRunningTestScriptIndividualTestMap, "status", SkyUnit2.TestStatus_PASS())
+    JMap.setInt(_currentlyRunningExpectation, "failed", 0)
+endFunction
+
+function FailExpectation(string assertionName, string failureMessage = "")
+    JMap.setStr(_currentlyRunningExpectation, "assertionName", assertionName)
+    JMap.setStr(_currentlyRunningTestScriptIndividualTestMap, "status", SkyUnit2.TestStatus_FAIL())
+    JMap.setInt(_currentlyRunningExpectation, "failed", 1)
+    JMap.setStr(_currentlyRunningExpectation, "failureMessage", failureMessage)
+
+    ; Mark the whole test as failing because there was at least 1 failed expectation
+    JMap.setInt(_currentlyRunningTestScriptTestsMap, "failed", 1)
 endFunction

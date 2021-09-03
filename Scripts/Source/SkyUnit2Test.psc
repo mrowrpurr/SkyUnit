@@ -71,7 +71,7 @@ SkyUnit2Test function Test(string testName)
 endFunction
 
 function Fn(bool testFunction)
-    SkyUnit2PrivateAPI.GetPrivateAPI().EndTest()
+    SkyUnit2PrivateAPI.GetPrivateAPI().EndTest(fnCalled = true)
 endFunction
 
 SkyUnit2Test function Not()
@@ -80,7 +80,7 @@ SkyUnit2Test function Not()
 endFunction
 
 SkyUnit2Test function To(bool expectationFunction, string failureMessage = "")
-    ; SkyUnit.GetInstance().SetExpectationFailureMessage(failureMessage)
+    ; SkyUnit.GetInstance().SetExpectationFailureMessage(failureMessage) ; TODO ADD TEST
     return self
 endFunction
 
@@ -128,6 +128,9 @@ endFunction
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 function EqualString(string expected)
+    ; This should be added via either Pass or Fail
+    SkyUnit2.PassExpectation("EqualString")
+
     ; string actual = SkyUnit.GetExpectationData_Object_Text()
     ; bool not = SkyUnit.Not()
     ; if not && actual == expected
