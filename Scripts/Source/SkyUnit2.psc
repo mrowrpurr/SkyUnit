@@ -27,8 +27,12 @@ endFunction
 ;; Functions for Managing Tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-function CreateTestSuite(string suiteName) global
-    SkyUnit2PrivateAPI.GetPrivateAPI().CreateTestSuite(suiteName)
+function CreateTestSuite(string suiteName, bool switchTo = false) global
+    SkyUnit2PrivateAPI api = SkyUnit2PrivateAPI.GetPrivateAPI()
+    int testSuite = api.CreateTestSuite(suiteName)
+    if switchTo
+        api.SwitchToTestSuite(testSuite)
+    endIf
 endFunction
 
 function DeleteTestSuite(string suiteName) global
@@ -178,7 +182,7 @@ endFunction
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 SkyUnit2Test function CurrentTest() global
-    return SkyUnit2PrivateAPI.GetPrivateAPI().CurrrentlyRunningTest
+    return SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningTest
 endFunction
 
 bool function Not() global

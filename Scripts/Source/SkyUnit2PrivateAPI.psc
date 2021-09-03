@@ -488,15 +488,32 @@ SkyUnit2Test property _currentlyRunningTestScript
     endFunction
 endProperty
 
-SkyUnit2Test property CurrrentlyRunningTest
+; TODO REMOVE AND REPLACE WITH PROPERTY ABOVE
+;
+; JUST NEED TO DO THE *Map and *TestsMap first :)
+SkyUnit2Test property CurrentlyRunningTest
     SkyUnit2Test function get()
         return _currentlyRunningTestScript
     endFunction
 endProperty
 
-int _currentlyRunningTestScriptMap
+int property _currentlyRunningTestScriptMap
+    int function get()
+        return JMap.getInt(CurrentState, "currentlyRunningTestScriptMap")
+    endFunction
+    function set(int value)
+        JMap.setInt(CurrentState, "currentlyRunningTestScriptMap", value)
+    endFunction
+endProperty
 
-int _currentlyRunningTestScriptTestsMap
+int property _currentlyRunningTestScriptTestsMap
+    int function get()
+        return JMap.getInt(CurrentState, "currentlyRunningTestScriptTestsMap")
+    endFunction
+    function set(int value)
+        JMap.setInt(CurrentState, "currentlyRunningTestScriptTestsMap", value)
+    endFunction
+endProperty
 
 int function RunTestScriptLocked(int suite, SkyUnit2Test script)
     int runsMap = GetTestSuiteScriptRunsMap(suite, script)
@@ -542,9 +559,32 @@ int function RunTestScriptLocked(int suite, SkyUnit2Test script)
     return testRun
 endFunction
 
-int _currentlyRunningTestScriptIndividualTestMap
-float _currentlyRunningTestScriptIndividualTestStartTime
-int property CurrentlyRunningTestScriptIndividualTestExpectationsArray auto
+int property _currentlyRunningTestScriptIndividualTestMap
+    int function get()
+        return JMap.getInt(CurrentState, "currentlyRunningTestScriptIndividualTestMap")
+    endFunction
+    function set(int value)
+        JMap.setInt(CurrentState, "currentlyRunningTestScriptIndividualTestMap", value)
+    endFunction
+endProperty
+
+float property _currentlyRunningTestScriptIndividualTestStartTime
+    float function get()
+        return JMap.getFlt(CurrentState, "currentlyRunningTestScriptIndividualTestStartTime")
+    endFunction
+    function set(float value)
+        JMap.setFlt(CurrentState, "currentlyRunningTestScriptIndividualTestStartTime", value)
+    endFunction
+endProperty
+
+int property CurrentlyRunningTestScriptIndividualTestExpectationsArray
+    int function get()
+        return JMap.getInt(CurrentState, "currentlyRunningTestScriptIndividualTestExpectationsArray")
+    endFunction
+    function set(int value)
+        JMap.setInt(CurrentState, "currentlyRunningTestScriptIndividualTestExpectationsArray", value)
+    endFunction
+endProperty
 
 ; This is for SkyUnitTest.Test(<test name>)
 ; The current script is 
@@ -606,11 +646,50 @@ endFunction
 ;; Expectations & Expectation Data
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-int _currentlyRunningExpectation
-int _currentlyRunningExpectationDataMap
-int property CurrentlyRunningExpectationMainDataMap auto
-int property CurrentlyRunningExpectationCustomDataMap auto
-int property CurrentlyRunningExpectationAssertionDataMap auto
+int property _currentlyRunningExpectation
+    int function get()
+        return JMap.getInt(CurrentState, "_currentlyRunningExpectation")
+    endFunction
+    function set(int value)
+        JMap.setInt(CurrentState, "_currentlyRunningExpectation", value)
+    endFunction
+endProperty
+
+int property _currentlyRunningExpectationDataMap
+    int function get()
+        return JMap.getInt(CurrentState, "_currentlyRunningExpectationDataMap")
+    endFunction
+    function set(int value)
+        JMap.setInt(CurrentState, "_currentlyRunningExpectationDataMap", value)
+    endFunction
+endProperty
+
+int property CurrentlyRunningExpectationMainDataMap
+    int function get()
+        return JMap.getInt(CurrentState, "CurrentlyRunningExpectationMainDataMap")
+    endFunction
+    function set(int value)
+        JMap.setInt(CurrentState, "CurrentlyRunningExpectationMainDataMap", value)
+    endFunction
+endProperty
+
+int property CurrentlyRunningExpectationCustomDataMap
+    int function get()
+        return JMap.getInt(CurrentState, "CurrentlyRunningExpectationCustomDataMap")
+    endFunction
+    function set(int value)
+        JMap.setInt(CurrentState, "CurrentlyRunningExpectationCustomDataMap", value)
+    endFunction
+endProperty
+
+int property CurrentlyRunningExpectationAssertionDataMap
+    int function get()
+        return JMap.getInt(CurrentState, "CurrentlyRunningExpectationAssertionDataMap")
+    endFunction
+    function set(int value)
+        JMap.setInt(CurrentState, "CurrentlyRunningExpectationAssertionDataMap", value)
+    endFunction
+endProperty
 
 function SetNotExpectation()
     if JMap.getInt(_currentlyRunningExpectation, "not")

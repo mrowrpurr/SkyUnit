@@ -9,7 +9,7 @@ function Tests()
 endFunction
 
 function TestVariousThings_HelloWorldSkyUnitFeatures_Test()
-    SkyUnit2.CreateTestSuite("Suite_One")
+    SkyUnit2.CreateTestSuite("Suite_One", switchTo = true)
     SkyUnit2.AddScriptToTestSuite("Suite_One", ExampleTest1)
     ExpectInt(SkyUnit2.GetScriptTestResultCount("Suite_One", ExampleTest1)).To(EqualInt(0))
     ExpectInt(SkyUnit2.GetLatestScriptTestResult("Suite_One", ExampleTest1)).To(EqualInt(0))
