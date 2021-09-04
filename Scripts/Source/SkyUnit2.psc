@@ -1,19 +1,7 @@
 scriptName SkyUnit2
-{Global interface for integrating with SkyUnit.
+{Global interface for integrating with **SkyUnit**
 
-For writing tests, please see SkyUnitTest.
-
-To access functionality, use SkyUnit.DefaultTestSuite()
-which will give you back a SkyUnit test suite instance with all
-of the lovely functions you want for interacting with test suites!
-
-Note: there can be multiple SkyUnit test suites at the same
-time. Each stores its own test suite, e.g. SkyUniTest scripts etc.
-To get an existing or new instance, see these functions:
-
-  SkyUnitTestSuite testSuite = SkyUnit.CreateTestSuite("<name your test suite>")
-  SkyUnitTestSuite testSuite = SkyUnit.GetTestSuite("<name of test suite>")
-}
+For writing tests, please see `SkyUnitTest`}
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Check version of SkyUnit
@@ -28,11 +16,7 @@ endFunction
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 function CreateTestSuite(string suiteName, bool switchTo = false) global
-    SkyUnit2PrivateAPI api = SkyUnit2PrivateAPI.GetPrivateAPI()
-    int testSuite = api.CreateTestSuite(suiteName)
-    if switchTo
-        api.SwitchToTestSuite(testSuite)
-    endIf
+    SkyUnit2PrivateAPI.GetPrivateAPI().CreateTestSuite(suiteName, switchTo)
 endFunction
 
 function DeleteTestSuite(string suiteName) global
@@ -63,15 +47,35 @@ int function RunTestScript(string suiteName, SkyUnit2Test script) global
     return api.RunTestScript(suite, script)
 endFunction
 
+int function RunTestScriptByName(string suiteName, string script) global
+    SkyUnit2PrivateAPI api = SkyUnit2PrivateAPI.GetPrivateAPI()
+    int suite = api.GetTestSuite(suiteName)
+    SkyUnit2Test test = GetTestSuiteScript(suiteName, script)
+    return api.RunTestScript(suite, test)
+endFunction
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Getting Test Result Info
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-string[] function GetTestSuiteScriptNames(string suiteName) global
+string[] function GetTestSuiteScriptNames(string suiteName = "") global
     SkyUnit2PrivateAPI api = SkyUnit2PrivateAPI.GetPrivateAPI()
+    if ! suiteName
+        suiteName = api.DEFAULT_TEST_SUITE_NAME
+    endIf
     int suite = api.GetTestSuite(suiteName)
     int suiteScriptsMap = SkyUnit2PrivateAPI.GetPrivateAPI().GetTestSuiteScriptsMap(suite)
     return JMap.allKeysPArray(suiteScriptsMap)
+endFunction
+
+int function GetTestSuiteScriptCount(string suiteName = "") global
+    SkyUnit2PrivateAPI api = SkyUnit2PrivateAPI.GetPrivateAPI()
+    if ! suiteName
+        suiteName = api.DEFAULT_TEST_SUITE_NAME
+    endIf
+    int suite = api.GetTestSuite(suiteName)
+    int suiteScriptsMap = SkyUnit2PrivateAPI.GetPrivateAPI().GetTestSuiteScriptsMap(suite)
+    return JMap.count(suiteScriptsMap)
 endFunction
 
 SkyUnit2Test function GetTestSuiteScript(string suiteName, string script) global
@@ -102,13 +106,6 @@ string[] function GetScriptTestResultKeys(string suiteName, SkyUnit2Test script)
     return JMap.allKeysPArray(runsMapForThisScript)
 endFunction
 
-; int function GetScriptTestResult(string suiteName, SkyUnit2Test script, string resultKey) global
-;     SkyUnit2PrivateAPI api = SkyUnit2PrivateAPI.GetPrivateAPI()
-;     int suite = api.GetTestSuite(suiteName)
-;     int runsMapForThisScript = api.GetTestSuiteScriptRunsMap(suite, script)
-;     return JMap.getObj(runsMapForThisScript, resultKey)
-; endFunction
-
 int function GetLatestScriptTestResult(string suiteName, SkyUnit2Test script) global
     SkyUnit2PrivateAPI api = SkyUnit2PrivateAPI.GetPrivateAPI()
     int suite = api.GetTestSuite(suiteName)
@@ -121,6 +118,10 @@ string[] function ScriptTestResult_GetTestNames(int scriptTestsResult) global
     return JMap.allKeysPArray(testsMap)
 endFunction
 
+string function ScriptTestResult_GetScriptNames(int scriptTestsResult) global
+    return JMap.getStr(scriptTestsResult, "name")
+endFunction
+
 int function ScriptTestResult_GetTestResult(int scriptTestsResult, string testName) global
     int testsMap = JMap.getObj(scriptTestsResult, "tests")
     return JMap.getObj(testsMap, testName)
@@ -128,6 +129,10 @@ endFunction
 
 string function ScriptTestResult_GetScriptStatus(int scriptTestsResult) global
     return JMap.getStr(scriptTestsResult, "status")
+endFunction
+
+bool function ScriptTestResult_GetScriptPassed(int scriptTestsResult) global
+    return JMap.getStr(scriptTestsResult, "status") == TestStatus_PASS()
 endFunction
 
 string function TestResult_GetTestStatus(int testResult) global
@@ -550,4 +555,8 @@ endFunction
 
 string function SpecialTestRunDuration_LatestTest() global
     return "[SkyUnit Latest Test Run]"
+endFunction
+
+string function DefaultTestSuite() global
+    return SkyUnit2PrivateAPI.GetPrivateAPI().DEFAULT_TEST_SUITE_NAME
 endFunction

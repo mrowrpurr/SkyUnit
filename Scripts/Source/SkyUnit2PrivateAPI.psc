@@ -27,6 +27,7 @@ float property CurrentlyInstalledVersion auto
 ; Only Runs on First Mod Installation
 event OnInit()
     CurrentlyInstalledVersion = SkyUnit2.GetVersion()
+    EnsureSetupAndReadyForApiRequests()
 endEvent
 
 ; Runs On Every Load Game Event
@@ -63,7 +64,6 @@ endFunction
 SkyUnit2PrivateAPI function EnsureSetupAndReadyForApiRequests()
     if ! _dataSetupComplete
         SetupGlobalDataStorage()
-        SetupDefaultTestSuite()
     endIf
     while ! _dataSetupComplete
         Utility.WaitMenuMode(0.05)
@@ -81,8 +81,12 @@ string property DEFAULT_TEST_SUITE_NAME = "[SkyUnit Default Test Suite]" autoRea
 ; so that EVERYTHING is scoped to a Test Suite (allowing us to switch between them, especially to test SkyUnit with SkyUnit)
 int property CurrentTestSuiteID auto
 
-function SwitchToTestSuite(int suite)
+function SwitchToTestSuiteByID(int suite)
     CurrentTestSuiteID = suite
+endFunction
+
+function SwitchToTestSuiteByName(string suite)
+    CurrentTestSuiteID = GetTestSuite(suite)
 endFunction
 
 int property TestSuitesMap
@@ -92,10 +96,10 @@ int property TestSuitesMap
 endProperty
 
 int function SetupDefaultTestSuite()
-    return CreateTestSuite(DEFAULT_TEST_SUITE_NAME)
+    return CreateTestSuite(DEFAULT_TEST_SUITE_NAME, switchTo = true)
 endFunction
 
-int function CreateTestSuite(string name)
+int function CreateTestSuite(string name, bool switchTo = false)
     int testSuites = TestSuitesMap
     int suite = JMap.getObj(testSuites, name)
     if suite
@@ -119,6 +123,9 @@ int function CreateTestSuite(string name)
         ; These are stored in a map on the TestSuite so that you
         ; can switch TestSuites without breaking the current state.
         JMap.setObj(suite, "state", JMap.object())
+    endIf
+    if switchTo
+        SwitchToTestSuiteByID(suite)
     endIf
     return suite
 endFunction
@@ -251,6 +258,10 @@ function ResetGlobalDataStorage()
     int availableScriptIndexes = JArray.object()
     JMap.setObj(GlobalDataMap, "availableScriptIndexes", availableScriptIndexes)
     JArray.addFromArray(availableScriptIndexes, _skyUnitTestScript_AvailableSlots_TemplateArray) ; Adds the 1,280 elements (very quickly)
+
+    ; Before we return and are therefore "ready" for API requests,
+    ; make a default test suite and activate it :)
+    SetupDefaultTestSuite()
 
     _dataResetInProgress = false
     _dataSetupComplete = true ; Ok, done! API requests may come thru again!
@@ -525,6 +536,7 @@ int function RunTestScriptLocked(int suite, SkyUnit2Test script)
     JMap.setObj(runsMap, testRunKey, testRun)
     JMap.setObj(runsMap, SkyUnit2.SpecialTestRunDuration_LatestTest(), testRun)
     _currentlyRunningTestScriptTestsMap = JMap.object()
+    JMap.setStr(testRun, "name", GetScriptDisplayName(script)) ; Copy the pretty name of the script onto the result (cuz most folks just work with results)
     JMap.setObj(testRun, "tests", _currentlyRunningTestScriptTestsMap)
     JMap.setStr(testRun, "status", SkyUnit2.TestStatus_PASS()) ; Default to pass, any failure will update this to FAIL
 

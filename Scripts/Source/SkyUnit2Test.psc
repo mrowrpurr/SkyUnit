@@ -29,6 +29,20 @@ e.g.
 }
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Register self on init
+;;
+;; This will register with the default
+;; test suite.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+event OnInit()
+    SkyUnit2PrivateAPi api = SkyUnit2PrivateAPI.GetPrivateAPI()
+    if api.CurrentTestSuiteID
+        api.AddScriptToTestSuite(self, api.CurrentTestSuiteID)
+    endIf
+endEvent
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Functions meant to be overridden
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
