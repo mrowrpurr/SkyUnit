@@ -1,4 +1,4 @@
-scriptName SkyUnitTests_Versioning extends SkyUnitTests_BaseTest
+scriptName SkyUnitTests_Versioning extends SkyUnit2_BaseTest
 {Tests for upgrading SkyUnit etc
 
 To start with, this simply verifies users can get the current version

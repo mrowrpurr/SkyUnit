@@ -1,10 +1,10 @@
 scriptName ActorAssertions hidden
 {SkyUnit test assertions for Actors}
 
-SkyUnitTest function ExpectActor(Actor theActor) global
-    SkyUnit.BeginExpectation()
+SkyUnit2Test function ExpectActor(Actor theActor) global
+    SkyUnit2.BeginExpectation("ExpectActor")
     SkyUnit.SetExpectationData_Form("Actor", theActor)
-    return SkyUnit.CurrentTest()
+    return SkyUnit2.CurrentTest()
 endFunction
 
 function BeAlive() global

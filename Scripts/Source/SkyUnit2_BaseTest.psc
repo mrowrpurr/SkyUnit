@@ -1,5 +1,5 @@
-scriptName SkyUnitTests_BaseTest extends SkyUnit2Test
-{Base test script for all SkyUnit tests for SkyUnit}
+scriptName SkyUnit2_BaseTest extends SkyUnit2Test hidden
+{Base SkyUnit test for testing SkyUnit tests}
 
 SkyUnitTests_ExampleTest1 _exampleTest1
 SkyUnitTests_ExampleTest2 _exampleTest2

@@ -66,7 +66,15 @@ endFunction
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 SkyUnit2Test function Test(string testName)
-    SkyUnit2PrivateAPI.GetPrivateAPI().BeginTest(testName)
+    SkyUnit2PrivateAPI api = SkyUnit2PrivateAPI.GetPrivateAPI()
+
+    ; If filter provided but this test doesn't match it, return (Fn() will not run)
+    if api.CurrentTestRunFilter && StringUtil.Find(testName, api.CurrentTestRunFilter) == -1
+        api.Debug("Skipping test " + testName + " (filter: \"" + api.CurrentTestRunFilter + "\")")
+        return None
+    endIf
+
+    api.BeginTest(testName)
     BeforeEach()
     return self
 endFunction
@@ -127,193 +135,254 @@ endFunction
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 function EqualString(string expected)
-    ; This should be added via either Pass or Fail
+    SkyUnit2.SetAssertionData_MainObject_String(expected)
+    string actual = SkyUnit2.GetExpectationData_MainObject_Text()
+    if SkyUnit2.GetExpectationData_MainObject_Type() == "String"
+        actual = SkyUnit2.GetExpectationData_MainObject_String()
+    endIf
+    bool not = SkyUnit2.Not()
+    if not && actual == expected
+        SkyUnit2.FailExpectation("EqualString", "Expected '" + actual + "' not to equal '" + expected + "'")
+        return
+    elseIf ! not && actual != expected
+        SkyUnit2.FailExpectation("EqualString", "Expected '" + actual + "' to equal '" + expected + "'")
+        return
+    endIf
     SkyUnit2.PassExpectation("EqualString")
-
-    ; string actual = SkyUnit.GetExpectationData_Object_Text()
-    ; bool not = SkyUnit.Not()
-    ; if not && actual == expected
-    ;     SkyUnit.FailExpectation("Expected '" + actual + "' not to equal '" + expected + "'")
-    ; elseIf ! not && actual != expected
-    ;     SkyUnit.FailExpectation("Expected '" + actual + "' to equal '" + expected + "'")
-    ; endIf
 endFunction
 
 function EqualInt(int expected)
+    SkyUnit2.SetAssertionData_MainObject_Int(expected)
+    int actual = SkyUnit2.GetExpectationData_MainObject_Int()
+    bool not = SkyUnit2.Not()
+    if not && actual == expected
+        SkyUnit2.FailExpectation("EqualInt", "Expected " + actual + " not to equal " + expected)
+        return
+    elseIf ! not && actual != expected
+        SkyUnit2.FailExpectation("EqualInt", "Expected " + actual + " to equal " + expected)
+        return
+    endIf
     SkyUnit2.PassExpectation("EqualInt")
-    ; int actual = SkyUnit.GetExpectationData_Object_Text() as int
-    ; bool not = SkyUnit.Not()
-    ; if not && actual == expected
-    ;     SkyUnit.FailExpectation("Expected " + actual + " not to equal " + expected)
-    ; elseIf ! not && actual != expected
-    ;     SkyUnit.FailExpectation("Expected " + actual + " to equal " + expected)
-    ; endIf
 endFunction
 
 function EqualFloat(float expected)
+    SkyUnit2.SetAssertionData_MainObject_Float(expected)
+    float actual = SkyUnit2.GetExpectationData_MainObject_Text() as float
+    bool not = SkyUnit2.Not()
+    if not && actual == expected
+        SkyUnit2.FailExpectation("EqualFloat", "Expected " + actual + " not to equal " + expected)
+        return
+    elseIf ! not && actual != expected
+        SkyUnit2.FailExpectation("EqualFloat", "Expected " + actual + " to equal " + expected)
+        return
+    endIf
     SkyUnit2.PassExpectation("EqualFloat")
-    ; float actual = SkyUnit.GetExpectationData_Object_Text() as float
-    ; bool not = SkyUnit.Not()
-    ; if not && actual == expected
-    ;     SkyUnit.FailExpectation("Expected " + actual + " not to equal " + expected)
-    ; elseIf ! not && actual != expected
-    ;     SkyUnit.FailExpectation("Expected " + actual + " to equal " + expected)
-    ; endIf
 endFunction
 
-; function EqualForm(Form expected)
-;     Form actual = SkyUnit.GetExpectationData_Object_Form()
-;     bool not = SkyUnit.Not()
-;     if not && actual == expected
-;         SkyUnit.FailExpectation("Expected " + actual + " not to equal " + expected)
-;     elseIf ! not && actual != expected
-;         SkyUnit.FailExpectation("Expected " + actual + " to equal " + expected)
-;     endIf
-; endFunction
+function EqualForm(Form expected)
+    SkyUnit2.SetAssertionData_MainObject_Form(expected)
+    Form actual = SkyUnit2.GetExpectationData_MainObject_Form()
+    bool not = SkyUnit2.Not()
+    if not && actual == expected
+        SkyUnit2.FailExpectation("EqualForm", "Expected " + actual + " not to equal " + expected)
+        return
+    elseIf ! not && actual != expected
+        SkyUnit2.FailExpectation("EqualForm", "Expected " + actual + " to equal " + expected)
+        return
+    endIf
+    SkyUnit2.PassExpectation("EqualForm")
+endFunction
 
-; function ContainText(string expect)
-;     string actual = SkyUnit.GetExpectationData_Object_Text()
-;     bool not = SkyUnit.Not()
-;     if not && StringUtil.Find(actual, expect) > -1
-;         SkyUnit.FailExpectation("Expected '" + actual + "' not to contain text '" + expect + "'")
-;     elseIf ! not && StringUtil.Find(actual, expect) == -1
-;         SkyUnit.FailExpectation("Expected '" + actual + "' to contain text '" + expect + "'")
-;     endIf
-; endFunction
+function ContainText(string expect)
+    SkyUnit2.SetAssertionData_MainObject_String(expect)
+    string actual = SkyUnit2.GetExpectationData_MainObject_Text()
+    bool not = SkyUnit2.Not()
+    if not && StringUtil.Find(actual, expect) > -1
+        SkyUnit2.FailExpectation("ContainText", "Expected '" + actual + "' not to contain text '" + expect + "'")
+        return
+    elseIf ! not && StringUtil.Find(actual, expect) == -1
+        SkyUnit2.FailExpectation("ContainText", "Expected '" + actual + "' to contain text '" + expect + "'")
+        return
+    endIf
+    SkyUnit2.PassExpectation("ContainText")
+endFunction
 
-; function BeEmpty()
-;     string actual = SkyUnit.GetExpectationData_Object_Text()
-;     bool not = SkyUnit.Not()
-;     string type = SkyUnit.GetExpectationData_MainObjectType()
-;     bool isEmpty = ! actual
-;     if StringUtil.Find(type, "Array") > -1
-;         isEmpty = actual == "[]"
-;     endIf
-;     if not && isEmpty
-;         SkyUnit.FailExpectation("Expected " + type + " not to be empty but it was empty")
-;     elseIf ! not && ! isEmpty
-;         SkyUnit.FailExpectation("Expected " + type + " to be empty but it was not empty: " + actual)
-;     endIf
-; endFunction
+function BeEmpty()
+    string actual = SkyUnit2.GetExpectationData_MainObject_Text()
+    bool not = SkyUnit2.Not()
+    string type = SkyUnit2.GetExpectationData_MainObject_Type()
+    bool isEmpty = ! actual
+    if StringUtil.Find(type, "Array") > -1
+        isEmpty = actual == "[]"
+    endIf
+    if not && isEmpty
+        SkyUnit2.FailExpectation("BeEmpty", "Expected " + type + " not to be empty but it was empty")
+        return
+    elseIf ! not && ! isEmpty
+        SkyUnit2.FailExpectation("BeEmpty", "Expected " + type + " to be empty but it was not empty: " + actual)
+        return
+    endIf
+    SkyUnit2.PassExpectation("BeEmpty")
+endFunction
 
-; function HaveLength(int expectedLength)
-;     string type = SkyUnit.GetExpectationData_MainObjectType()
-;     bool not = SkyUnit.Not()
-;     int actualLength
-;     if type == "String"
-;         actualLength = StringUtil.GetLength(SkyUnit.GetExpectationData_Object_String())
-;     elseIf type == "StringArray"
-;         actualLength = SkyUnit.GetExpectationData_Object_StringArray().Length
-;     elseIf type == "IntArray"
-;         actualLength = SkyUnit.GetExpectationData_Object_IntArray().Length
-;     elseIf type == "FloatArray"
-;         actualLength = SkyUnit.GetExpectationData_Object_FloatArray().Length
-;     elseIf type == "FormArray"
-;         actualLength = SkyUnit.GetExpectationData_Object_FormArray().Length
-;     elseIf type == "BoolArray"
-;         actualLength = SkyUnit.GetExpectationData_Object_BoolArray().Length
-;     else
-;         Log("HaveLength() called with unsupported type " + type + " " + SkyUnit.GetExpectationData_Object_Text())
-;     endIf
-;     if not && expectedLength == actualLength
-;         SkyUnit.FailExpectation("Expected value not to have length " + expectedLength + ": " + SkyUnit.GetExpectationData_Object_Text())
-;     elseIf ! not && expectedLength != actualLength
-;         SkyUnit.FailExpectation("Expected value to have length " + expectedLength + ": " + SkyUnit.GetExpectationData_Object_Text())
-;     endIf
-; endFunction
+function HaveLength(int expectedLength)
+    string type = SkyUnit2.GetExpectationData_MainObject_Type()
+    bool not = SkyUnit2.Not()
+    int actualLength
+    if type == "String"
+        actualLength = StringUtil.GetLength(SkyUnit2.GetAssertionData_MainObject_String())
+    elseIf type == "StringArray"
+        actualLength = SkyUnit2.GetExpectationData_MainObject_StringArray().Length
+    elseIf type == "IntArray"
+        actualLength = SkyUnit2.GetExpectationData_MainObject_IntArray().Length
+    elseIf type == "FloatArray"
+        actualLength = SkyUnit2.GetExpectationData_MainObject_FloatArray().Length
+    elseIf type == "FormArray"
+        actualLength = SkyUnit2.GetExpectationData_MainObject_FormArray().Length
+    elseIf type == "BoolArray"
+        actualLength = SkyUnit2.GetExpectationData_MainObject_BoolArray().Length
+    else
+        Log("HaveLength() called with unsupported type " + type + " " + SkyUnit2.GetAssertionData_MainObject_Text())
+    endIf
+    if not && expectedLength == actualLength
+        SkyUnit2.FailExpectation("HaveLength", "Expected value not to have length " + expectedLength + ": " + SkyUnit2.GetAssertionData_MainObject_Text())
+        return
+    elseIf ! not && expectedLength != actualLength
+        SkyUnit2.FailExpectation("HaveLength", "Expected value to have length " + expectedLength + ": " + SkyUnit2.GetAssertionData_MainObject_Text())
+        return
+    endIf
+endFunction
 
 ; function BeTrue()
-;     string type = SkyUnit.GetExpectationData_MainObjectType()
-;     bool not = SkyUnit.Not()
+;     string type = SkyUnit2.GetExpectationData_MainObjectType()
+;     bool not = SkyUnit2.Not()
 ;     bool actualValue
 ;     if type == "Bool"
-;         actualValue = SkyUnit.GetExpectationData_Object_Bool()
+;         actualValue = SkyUnit2.GetExpectationData_Object_Bool()
 ;     elseIf type == "String"
-;         actualValue = SkyUnit.GetExpectationData_Object_String()
+;         actualValue = SkyUnit2.GetExpectationData_Object_String()
 ;     elseIf type == "Int"
-;         actualValue = SkyUnit.GetExpectationData_Object_Int()
+;         actualValue = SkyUnit2.GetExpectationData_Object_Int()
 ;     elseIf type == "Float"
-;         actualValue = SkyUnit.GetExpectationData_Object_Float()
+;         actualValue = SkyUnit2.GetExpectationData_Object_Float()
 ;     elseIf type == "Form"
-;         actualValue = SkyUnit.GetExpectationData_Object_Form()
+;         actualValue = SkyUnit2.GetExpectationData_Object_Form()
 ;     elseIf type == "StringArray"
-;         actualValue = SkyUnit.GetExpectationData_Object_StringArray()
+;         actualValue = SkyUnit2.GetExpectationData_Object_StringArray()
 ;     elseIf type == "IntArray"
-;         actualValue = SkyUnit.GetExpectationData_Object_IntArray()
+;         actualValue = SkyUnit2.GetExpectationData_Object_IntArray()
 ;     elseIf type == "FloatArray"
-;         actualValue = SkyUnit.GetExpectationData_Object_FloatArray()
+;         actualValue = SkyUnit2.GetExpectationData_Object_FloatArray()
 ;     elseIf type == "FormArray"
-;         actualValue = SkyUnit.GetExpectationData_Object_FormArray()
+;         actualValue = SkyUnit2.GetExpectationData_Object_FormArray()
 ;     elseIf type == "BoolArray"
-;         actualValue = SkyUnit.GetExpectationData_Object_BoolArray()
+;         actualValue = SkyUnit2.GetExpectationData_Object_BoolArray()
 ;     elseIf StringUtil.Find(type, "Array") > -1
-;         actualValue = SkyUnit.GetExpectationData_Object_Text() != "[]"
+;         actualValue = SkyUnit2.GetExpectationData_Object_Text() != "[]"
 ;     else
-;         actualValue = SkyUnit.GetExpectationData_Object_Text()
+;         actualValue = SkyUnit2.GetExpectationData_Object_Text()
 ;     endIf
 ;     if not && actualValue
-;         SkyUnit.FailExpectation("Expected value not to be true: " + actualValue)
+;         SkyUnit2.FailExpectation("Expected value not to be true: " + actualValue)
 ;     elseIf ! not && ! actualValue
-;         SkyUnit.FailExpectation("Expected value to be true: " + actualValue)
+;         SkyUnit2.FailExpectation("Expected value to be true: " + actualValue)
 ;     endIf
 ; endFunction
 
-; function BeFalse()
-;     string type = SkyUnit.GetExpectationData_MainObjectType()
-;     bool not = SkyUnit.Not()
-;     bool actualValue
-;     if type == "Bool"
-;         actualValue = SkyUnit.GetExpectationData_Object_Bool()
-;     elseIf type == "String"
-;         actualValue = SkyUnit.GetExpectationData_Object_String()
-;     elseIf type == "Int"
-;         actualValue = SkyUnit.GetExpectationData_Object_Int()
-;     elseIf type == "Float"
-;         actualValue = SkyUnit.GetExpectationData_Object_Float()
-;     elseIf type == "Form"
-;         actualValue = SkyUnit.GetExpectationData_Object_Form()
-;     elseIf type == "StringArray"
-;         actualValue = SkyUnit.GetExpectationData_Object_StringArray()
-;     elseIf type == "IntArray"
-;         actualValue = SkyUnit.GetExpectationData_Object_IntArray()
-;     elseIf type == "FloatArray"
-;         actualValue = SkyUnit.GetExpectationData_Object_FloatArray()
-;     elseIf type == "FormArray"
-;         actualValue = SkyUnit.GetExpectationData_Object_FormArray()
-;     elseIf type == "BoolArray"
-;         actualValue = SkyUnit.GetExpectationData_Object_BoolArray()
-;     elseIf StringUtil.Find(type, "Array") > -1
-;         actualValue = SkyUnit.GetExpectationData_Object_Text() != "[]"
-;     else
-;         actualValue = SkyUnit.GetExpectationData_Object_Text()
-;     endIf
-;     if not && ! actualValue
-;         SkyUnit.FailExpectation("Expected value not to be false: " + actualValue)
-;     elseIf ! not && actualValue
-;         SkyUnit.FailExpectation("Expected value to be false: " + actualValue)
-;     endIf
-; endFunction
+function BeFalse()
+    string type = SkyUnit2.GetAssertionData_MainObject_Type()
+    bool not = SkyUnit2.Not()
+    bool actualValue
+    if type == "Bool"
+        actualValue = SkyUnit2.GetExpectationData_MainObject_Bool()
+    elseIf type == "String"
+        actualValue = SkyUnit2.GetExpectationData_MainObject_Bool()
+    elseIf type == "Int"
+        actualValue = SkyUnit2.GetExpectationData_MainObject_Bool()
+    elseIf type == "Float"
+        actualValue = SkyUnit2.GetExpectationData_MainObject_Bool()
+    elseIf type == "Form"
+        actualValue = SkyUnit2.GetExpectationData_MainObject_Bool()
+    elseIf type == "StringArray"
+        actualValue = SkyUnit2.GetExpectationData_MainObject_Bool()
+    elseIf type == "IntArray"
+        actualValue = SkyUnit2.GetExpectationData_MainObject_Bool()
+    elseIf type == "FloatArray"
+        actualValue = SkyUnit2.GetExpectationData_MainObject_Bool()
+    elseIf type == "FormArray"
+        actualValue = SkyUnit2.GetExpectationData_MainObject_Bool()
+    elseIf type == "BoolArray"
+        actualValue = SkyUnit2.GetExpectationData_MainObject_Bool()
+    elseIf StringUtil.Find(type, "Array") > -1
+        actualValue = SkyUnit2.GetExpectationData_MainObject_Text() != "[]"
+    else
+        actualValue = SkyUnit2.GetExpectationData_MainObject_Text()
+    endIf
+    if not && ! actualValue
+        SkyUnit2.FailExpectation("BeFalse", "Expected value not to be false: " + actualValue)
+        return
+    elseIf ! not && actualValue
+        SkyUnit2.FailExpectation("BeFalse", "Expected value to be false: " + actualValue)
+        return
+    endIf
+    return SkyUnit2.PassExpectation("BeFalse")
+endFunction
 
-; function BeNone()
-;     BeFalse()
-; endFunction
+function BeNone()
+    string type = SkyUnit2.GetAssertionData_MainObject_Type()
+    bool not = SkyUnit2.Not()
+    bool actualValue
+    if type == "Bool"
+        actualValue = SkyUnit2.GetExpectationData_MainObject_Bool()
+    elseIf type == "String"
+        actualValue = SkyUnit2.GetExpectationData_MainObject_Bool()
+    elseIf type == "Int"
+        actualValue = SkyUnit2.GetExpectationData_MainObject_Bool()
+    elseIf type == "Float"
+        actualValue = SkyUnit2.GetExpectationData_MainObject_Bool()
+    elseIf type == "Form"
+        actualValue = SkyUnit2.GetExpectationData_MainObject_Bool()
+    elseIf type == "StringArray"
+        actualValue = SkyUnit2.GetExpectationData_MainObject_Bool()
+    elseIf type == "IntArray"
+        actualValue = SkyUnit2.GetExpectationData_MainObject_Bool()
+    elseIf type == "FloatArray"
+        actualValue = SkyUnit2.GetExpectationData_MainObject_Bool()
+    elseIf type == "FormArray"
+        actualValue = SkyUnit2.GetExpectationData_MainObject_Bool()
+    elseIf type == "BoolArray"
+        actualValue = SkyUnit2.GetExpectationData_MainObject_Bool()
+    elseIf StringUtil.Find(type, "Array") > -1
+        actualValue = SkyUnit2.GetExpectationData_MainObject_Text() != "[]"
+    else
+        actualValue = SkyUnit2.GetExpectationData_MainObject_Text()
+    endIf
+    if not && ! actualValue
+        SkyUnit2.FailExpectation("BeNone", "Expected value not to be false: " + actualValue)
+        return
+    elseIf ! not && actualValue
+        SkyUnit2.FailExpectation("BeNone", "Expected value to be false: " + actualValue)
+        return
+    endIf
+    return SkyUnit2.PassExpectation("BeNone")
+endFunction
 
 ; function BeGreaterThan(float value)
-;     string type = SkyUnit.GetExpectationData_MainObjectType()
-;     bool not = SkyUnit.Not()
+;     string type = SkyUnit2.GetExpectationData_MainObjectType()
+;     bool not = SkyUnit2.Not()
 ;     float actualValue
 ;     if type == "Int"
-;         actualValue = SkyUnit.GetExpectationData_Object_Int()
+;         actualValue = SkyUnit2.GetExpectationData_Object_Int()
 ;     elseIf type == "Float"
-;         actualValue = SkyUnit.GetExpectationData_Object_Float()
+;         actualValue = SkyUnit2.GetExpectationData_Object_Float()
 ;     else
-;         SkyUnit.FailExpectation("BeGreaterThan() can only be called on Int or Float but was called on type: " + type)
+;         SkyUnit2.FailExpectation("BeGreaterThan() can only be called on Int or Float but was called on type: " + type)
 ;         return
 ;     endIf
 ;     if not && (actualValue > value)
-;         SkyUnit.FailExpectation("Expected " + actualValue + " not to be greater than " + value)
+;         SkyUnit2.FailExpectation("Expected " + actualValue + " not to be greater than " + value)
 ;     elseIf ! not && ! (actualValue > value)
-;         SkyUnit.FailExpectation("Expected " + actualValue + " to be greater than " + value)
+;         SkyUnit2.FailExpectation("Expected " + actualValue + " to be greater than " + value)
 ;     endIf
 ; endFunction
 

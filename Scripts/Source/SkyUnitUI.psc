@@ -8,16 +8,20 @@ SkyUnitUI function GetInstance() global
     return Game.GetFormFromFile(0x800, "SkyUnitUI.esp") as SkyUnitUI
 endFunction
 
+function Debug(string text)
+    Debug.Trace("[SkyUnit UI] " + text)
+endFunction
+
 event OnInit()
     RegisterForMenu("Console")
     Utility.WaitMenuMode(0.5)
-    int skyUnitTestCount = SkyUnit2.GetTestSuiteScriptCount(SkyUnit2.DefaultTestSuite())
-    if skyUnitTestCount
+    int SkyUnit2TestCount = SkyUnit2.GetTestSuiteScriptCount(SkyUnit2.DefaultTestSuite())
+    if SkyUnit2TestCount
         ; Automatically equip the power to run tests
         Spell runTestsSpell = Game.GetFormFromFile(0x802, "SkyUnitUI.esp") as Spell
         Actor player = Game.GetPlayer()
         player.EquipSpell(runTestsSpell, 0)
-        Debug.Notification(skyUnitTestCount + " tests found")
+        Debug.Notification(SkyUnit2TestCount + " tests found")
         Debug.Notification("SkyUnit UI Ready")
     endIf
 endEvent
@@ -79,10 +83,11 @@ function ShowTestChooser()
 endFunction
 
 function RunAllTestScripts()
-
+    ; TODO
 endFunction
 
 function RunTestScriptByName(string name)
+    Debug("Running " + name)
     int result = SkyUnit2.RunTestScriptByName(SkyUnit2.DefaultTestSuite(), name)
     GenerateScriptSummaryParts(result, printToConsole = true)
 endFunction
@@ -90,13 +95,46 @@ endFunction
 string SummaryPart_OneLineTotals
 string SummaryPart_OnlyFailed
 
-function GenerateScriptSummaryParts(int result, bool printToConsole = true)
-    string[] testNames = SkyUnit2.ScriptTestResult_GetTestNames(result)
+function GenerateScriptSummaryParts(int scriptResult, bool printToConsole = true)
+    string[] testNames = SkyUnit2.ScriptTestResult_GetTestNames(scriptResult)
+    Debug("Tests: " + testNames)
     int totalPassed
     int totalPending
     int totalFailed
-    if printToConsole
-        SkyUnitConsole.Print("[" + SkyUnit2.ScriptTestResult_GetScriptNames(result) + "]")
-    endIf
+    int totalSkipped
+    PrintToConsole("[" + SkyUnit2.ScriptTestResult_GetScriptNames(scriptResult) + "]")
+    int testIndex = 0
+    while testIndex < testNames.Length
+        string testName = testNames[testIndex]
+        int testResult = SkyUnit2.ScriptTestResult_GetTestResult(scriptResult, testName)
+        string testStatus = SkyUnit2.ScriptTestResult_GetScriptStatus(scriptResult)
+        if testStatus == SkyUnit2.TestStatus_PASS()
+            totalPassed += 1
+            PrintToConsole("[PASSED] " + testName)
+        elseIf testStatus == SkyUnit2.TestStatus_FAIL()
+            totalFailed += 1
+            PrintToConsole("[FAILED] " + testName)
+        elseIf testStatus == SkyUnit2.TestStatus_PENDING()
+            totalPending += 1
+            PrintToConsole("[PENDING] " + testName)
+        elseIf testStatus == SkyUnit2.TestStatus_SKIPPED()
+            PrintToConsole("[SKIPPED] " + testName)
+            totalSkipped += 1
+        else
+            PrintToConsole("[" + testStatus + "] " + testName)
+        endIf
+        int expectationCount = SkyUnit2.TestResult_GetExpectationCount(testResult)
+        int expectationIndex = 0
+        while expectationIndex < expectationCount
+            bool expectationPassed = SkyUnit2.TestResult_GetNthExpectationPassed(testResult, expectationIndex)
+            if ! expectationPassed
+                string failureMessage = SkyUnit2.TestResult_GetNthAssertionFailureMessage(testResult, expectationIndex)
+                string expectationType = SkyUnit2.TestResult_GetNthExpectationType(testResult, expectationIndex)
+                PrintToConsole(" - #" + (expectationIndex + 1) + " " + expectationType + " " + failureMessage)
+            endIf
+            expectationIndex += 1
+        endWhile
+        testIndex += 1
+    endWhile
 endFunction
 

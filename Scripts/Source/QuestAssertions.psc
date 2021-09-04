@@ -1,24 +1,24 @@
 scriptName QuestAssertions hidden
 {SkyUnit test assertions for Quests}
 
-SkyUnitTest function ExpectQuest(Quest theQuest) global
-    SkyUnit.BeginExpectation()
+SkyUnit2Test function ExpectQuest(Quest theQuest) global
+    SkyUnit2.BeginExpectation("ExpectQuest")
     SkyUnit.SetExpectationData_Form("Quest", theQuest)
-    return SkyUnit.CurrentTest()
+    return SkyUnit2.CurrentTest()
 endFunction
 
-SkyUnitTest function ExpectQuestObjective(Quest theQuest, int objective) global
-    SkyUnit.BeginExpectation()
+SkyUnit2Test function ExpectQuestObjective(Quest theQuest, int objective) global
+    SkyUnit2.BeginExpectation("ExpectQuest")
     SkyUnit.SetExpectationData_Form("Quest", theQuest)
     SkyUnit.SetExpectationData_Int("Objective", objective)
-    return SkyUnit.CurrentTest()
+    return SkyUnit2.CurrentTest()
 endFunction
 
-SkyUnitTest function ExpectQuestStage(Quest theQuest, int stage) global
-    SkyUnit.BeginExpectation()
+SkyUnit2Test function ExpectQuestStage(Quest theQuest, int stage) global
+    SkyUnit2.BeginExpectation("ExpectQuest")
     SkyUnit.SetExpectationData_Form("Quest", theQuest)
     SkyUnit.SetExpectationData_Int("Stage", stage)
-    return SkyUnit.CurrentTest()
+    return SkyUnit2.CurrentTest()
 endFunction
 
 function BeComplete() global

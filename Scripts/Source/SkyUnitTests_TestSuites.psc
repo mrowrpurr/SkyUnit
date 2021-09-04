@@ -1,4 +1,4 @@
-scriptName SkyUnitTests_TestSuites extends SkyUnitTests_BaseTest
+scriptName SkyUnitTests_TestSuites extends SkyUnit2_BaseTest
 {Tests for managing SkyUnit test suites}
 
 import ArrayAssertions

@@ -1,7 +1,7 @@
 scriptName SkyUnit2
 {Global interface for integrating with **SkyUnit**
 
-For writing tests, please see `SkyUnitTest`}
+For writing tests, please see `SkyUnit2Test`}
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Check version of SkyUnit
@@ -14,6 +14,14 @@ endFunction
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Functions for Managing Tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+function SwitchToTestSuite(string name) global
+    SkyUnit2PrivateAPI.GetPrivateAPI().SwitchToTestSuiteByName(name)
+endFunction
+
+function UseDefaultTestSuite() global
+    SkyUnit2PrivateAPI.GetPrivateAPI().SwitchToTestSuiteByName(SkyUnit2.DefaultTestSuite())
+endFunction
 
 function CreateTestSuite(string suiteName, bool switchTo = false) global
     SkyUnit2PrivateAPI.GetPrivateAPI().CreateTestSuite(suiteName, switchTo)
@@ -41,10 +49,11 @@ endFunction
 ;; Run Tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-int function RunTestScript(string suiteName, SkyUnit2Test script) global
+int function RunTestScript(string suiteName, SkyUnit2Test script, string filter = "") global
     SkyUnit2PrivateAPI api = SkyUnit2PrivateAPI.GetPrivateAPI()
+    api.Debug("Run Test Script " + script + " for " + suiteName)
     int suite = api.GetTestSuite(suiteName)
-    return api.RunTestScript(suite, script)
+    return api.RunTestScript(suite, script, filter)
 endFunction
 
 int function RunTestScriptByName(string suiteName, string script) global
@@ -170,11 +179,29 @@ string function TestResult_GetNthExpectationMainObjectText(int testResult, int i
     return JMap.getStr(mainData, "text")
 endFunction
 
-; string function TestResult_GetNthExpectationResult(int testResult, int index) global
-; endFunction
+bool function TestResult_GetNthExpectationPassed(int testResult, int index) global
+    int expectations = JMap.getObj(testResult, "expectations")
+    int expectation = JArray.getObj(expectations, index)
+    return JMap.getInt(expectation, "failed") != 1
+endFunction
 
-; string function TestResult_GetNthExpectationMessage(int testResult, int index) global
-; endFunction
+string function TestResult_GetNthExpectationType(int testResult, int index) global
+    int expectations = JMap.getObj(testResult, "expectations")
+    int expectation = JArray.getObj(expectations, index)
+    return JMap.getStr(expectation, "expectationName")
+endFunction
+
+string function TestResult_GetNthAssertionType(int testResult, int index) global
+    int expectations = JMap.getObj(testResult, "expectations")
+    int expectation = JArray.getObj(expectations, index)
+    return JMap.getStr(expectation, "assertionName")
+endFunction
+
+string function TestResult_GetNthAssertionFailureMessage(int testResult, int index) global
+    int expectations = JMap.getObj(testResult, "expectations")
+    int expectation = JArray.getObj(expectations, index)
+    return JMap.getStr(expectation, "failureMessage")
+endFunction
 
 string function TestResult_GetNthExpectationAssertionName(int testResult, int index) global
     int expectations = JMap.getObj(testResult, "expectations")
@@ -195,40 +222,46 @@ bool function Not() global
 endFunction
 
 function BeginExpectation(string expectationName) global
-    SkyUnit2PrivateAPI.GetPrivateAPI().BeginExpectation(expectationName)
+    SkyUnit2PrivateAPI api = SkyUnit2PrivateAPI.GetPrivateAPI()
+    api.Debug("Begin Expectation " + expectationName)
+    api.BeginExpectation(expectationName)
 endFunction
 
 function PassExpectation(string assertionName) global
-    SkyUnit2PrivateAPI.GetPrivateAPI().PassExpectation(assertionName)
+    SkyUnit2PrivateAPI api = SkyUnit2PrivateAPI.GetPrivateAPI()
+    api.Debug("Pass Expectation " + assertionName)
+    api.PassExpectation(assertionName)
 endFunction
 
-function FailExpectation(string assertionName, string failureMessage = "") global
-    SkyUnit2PrivateAPI.GetPrivateAPI().FailExpectation(assertionName, failureMessage)
+function FailExpectation(string assertionName, string failureMessage) global
+    SkyUnit2PrivateAPI api = SkyUnit2PrivateAPI.GetPrivateAPI()
+    api.Debug("Fail Expectation " + assertionName)
+    api.FailExpectation(assertionName, failureMessage)
 endFunction
 
 ;; Data ~ "Main" Expectation data (and Text representation)
 
 function SetExpectationData_MainObject_String(string value) global
     JMap.setStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationMainDataMap, "value", value)
-    JMap.setStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationMainDataMap, "type", "string")
+    JMap.setStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationMainDataMap, "type", "String")
     JMap.setStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationMainDataMap, "text", value)
 endFunction
 
 function SetExpectationData_MainObject_Bool(bool value) global
     JMap.setInt(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationMainDataMap, "value", value as int)
-    JMap.setStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationMainDataMap, "type", "bool")
+    JMap.setStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationMainDataMap, "type", "Bool")
     JMap.setStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationMainDataMap, "text", value)
 endFunction
 
 function SetExpectationData_MainObject_Int(int value) global
     JMap.setInt(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationMainDataMap, "value", value)
-    JMap.setStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationMainDataMap, "type", "int")
+    JMap.setStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationMainDataMap, "type", "Int")
     JMap.setStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationMainDataMap, "text", value)
 endFunction
 
 function SetExpectationData_MainObject_Float(float value) global
     JMap.setFlt(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationMainDataMap, "value", value)
-    JMap.setStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationMainDataMap, "type", "float")
+    JMap.setStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationMainDataMap, "type", "Float")
     JMap.setStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationMainDataMap, "text", value)
 endFunction
 
@@ -246,34 +279,42 @@ endFunction
 
 ;; [ GETTERS ]
 
+string function GetExpectationData_MainObject_Type() global
+    return JMap.getStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationMainDataMap, "type")
+endFunction
+
+string function GetExpectationData_MainObject_Text() global
+    return JMap.getStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationMainDataMap, "text")
+endFunction
+
 string function GetExpectationData_MainObject_String() global
-    JMap.getStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationMainDataMap, "value")
+    return JMap.getStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationMainDataMap, "value")
 endFunction
 
 bool function GetExpectationData_MainObject_Bool() global
-    JMap.getInt(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationMainDataMap, "value")
+    return JMap.getInt(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationMainDataMap, "value")
 endFunction
 
 int function GetExpectationData_MainObject_Int() global
-    JMap.getInt(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationMainDataMap, "value")
+    return JMap.getInt(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationMainDataMap, "value")
 endFunction
 
 float function GetExpectationData_MainObject_Float() global
-    JMap.getFlt(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationMainDataMap, "value")
+    return JMap.getFlt(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationMainDataMap, "value")
 endFunction
 
 Form function GetExpectationData_MainObject_Form() global
-    JMap.getForm(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationMainDataMap, "value")
+    return JMap.getForm(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationMainDataMap, "value")
 endFunction
 
 int function GetExpectationData_MainObject_JObject() global
-    JMap.getObj(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationMainDataMap, "value")
+    return JMap.getObj(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationMainDataMap, "value")
 endFunction
 
 ;; ~ Arrays ~~
 
 function SetExpectationData_MainObject_StringArray(string[] value) global
-    JMap.setStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationMainDataMap, "type", "string")
+    JMap.setStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationMainDataMap, "type", "StringArray")
     JMap.setStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationMainDataMap, "text", value)
     int array = JArray.object()
     JMap.setObj(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationMainDataMap, "value", array)
@@ -285,7 +326,7 @@ function SetExpectationData_MainObject_StringArray(string[] value) global
 endFunction
 
 function SetExpectationData_MainObject_BoolArray(bool[] value) global
-    JMap.setStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationMainDataMap, "type", "bool")
+    JMap.setStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationMainDataMap, "type", "BoolArray")
     JMap.setStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationMainDataMap, "text", value)
     int array = JArray.object()
     JMap.setObj(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationMainDataMap, "value", array)
@@ -297,7 +338,7 @@ function SetExpectationData_MainObject_BoolArray(bool[] value) global
 endFunction
 
 function SetExpectationData_MainObject_IntArray(int[] value) global
-    JMap.setStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationMainDataMap, "type", "int")
+    JMap.setStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationMainDataMap, "type", "IntArray")
     JMap.setStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationMainDataMap, "text", value)
     int array = JArray.object()
     JMap.setObj(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationMainDataMap, "value", array)
@@ -309,7 +350,7 @@ function SetExpectationData_MainObject_IntArray(int[] value) global
 endFunction
 
 function SetExpectationData_MainObject_FloatArray(float[] value) global
-    JMap.setStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationMainDataMap, "type", "float")
+    JMap.setStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationMainDataMap, "type", "FloatArray")
     JMap.setStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationMainDataMap, "text", value)
     int array = JArray.object()
     JMap.setObj(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationMainDataMap, "value", array)
@@ -321,7 +362,7 @@ function SetExpectationData_MainObject_FloatArray(float[] value) global
 endFunction
 
 function SetExpectationData_MainObject_FormArray(Form[] value) global
-    JMap.setStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationMainDataMap, "type", "Form")
+    JMap.setStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationMainDataMap, "type", "FormArray")
     JMap.setStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationMainDataMap, "text", value)
     int array = JArray.object()
     JMap.setObj(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationMainDataMap, "value", array)
@@ -343,9 +384,10 @@ bool[] function GetExpectationData_MainObject_BoolArray() global
     bool[] bools = Utility.CreateBoolArray(boolInts.Length)
     int i = 0
     while i < boolInts.Length
-
+        bools[i] = boolInts[i]
         i += 1
     endWhile
+    return bools
 endFunction
 
 int[] function GetExpectationData_MainObject_IntArray() global
@@ -466,31 +508,83 @@ endFunction
 
 ;; Data ~ Assertion data (to store what was passed to an assertion)
 
-function SetAssertionData_String(string dataKey, string value) global
-    JMap.setStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationAssertionDataMap, dataKey, value)
+function SetAssertionData_MainObject_String(string value) global
+    JMap.setStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationAssertionDataMap, "value", value)
+    JMap.setStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationAssertionDataMap, "type", "String")
+    JMap.setStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationAssertionDataMap, "text", value)
 endFunction
 
-function SetAssertionData_Int(string dataKey, int value) global
-    JMap.setInt(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationAssertionDataMap, dataKey, value)
+function SetAssertionData_MainObject_Bool(bool value) global
+    JMap.setInt(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationAssertionDataMap, "value", value as int)
+    JMap.setStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationAssertionDataMap, "type", "Bool")
+    JMap.setStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationAssertionDataMap, "text", value)
 endFunction
 
-function SetAssertionData_Float(string dataKey, float value) global
-    JMap.setFlt(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationAssertionDataMap, dataKey, value)
+function SetAssertionData_MainObject_Int(int value) global
+    JMap.setInt(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationAssertionDataMap, "value", value)
+    JMap.setStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationAssertionDataMap, "type", "Int")
+    JMap.setStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationAssertionDataMap, "text", value)
 endFunction
 
-function SetAssertionData_Form(string dataKey, Form value) global
-    JMap.setForm(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationAssertionDataMap, dataKey, value)
+function SetAssertionData_MainObject_Float(float value) global
+    JMap.setFlt(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationAssertionDataMap, "value", value)
+    JMap.setStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationAssertionDataMap, "type", "Float")
+    JMap.setStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationAssertionDataMap, "text", value)
 endFunction
 
-function SetAssertionData_JObject(string dataKey, int objectID) global
-    JMap.setObj(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationAssertionDataMap, dataKey, objectID)
+function SetAssertionData_MainObject_Form(Form value) global
+    JMap.setForm(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationAssertionDataMap, "value", value)
+    JMap.setStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationAssertionDataMap, "type", "Form")
+    JMap.setStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationAssertionDataMap, "text", value)
 endFunction
 
-;; ~ Arrays ~
+function SetAssertionData_MainObject_JObject(int objectID) global
+    JMap.setObj(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationAssertionDataMap, "value", objectID)
+    JMap.setStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationAssertionDataMap, "type", "JObject")
+    JMap.setStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationAssertionDataMap, "text", objectID)
+endFunction
 
-function SetAssertionData_StringArray(string dataKey, string[] value) global
+;; [ GETTERS ]
+
+string function GetAssertionData_MainObject_Type() global
+    return JMap.getStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationAssertionDataMap, "type")
+endFunction
+
+string function GetAssertionData_MainObject_Text() global
+    return JMap.getStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationAssertionDataMap, "text")
+endFunction
+
+string function GetAssertionData_MainObject_String() global
+    return JMap.getStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationAssertionDataMap, "value")
+endFunction
+
+bool function GetAssertionData_MainObject_Bool() global
+    return JMap.getInt(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationAssertionDataMap, "value")
+endFunction
+
+int function GetAssertionData_MainObject_Int() global
+    return JMap.getInt(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationAssertionDataMap, "value")
+endFunction
+
+float function GetAssertionData_MainObject_Float() global
+    return JMap.getFlt(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationAssertionDataMap, "value")
+endFunction
+
+Form function GetAssertionData_MainObject_Form() global
+    return JMap.getForm(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationAssertionDataMap, "value")
+endFunction
+
+int function GetAssertionData_MainObject_JObject() global
+    return JMap.getObj(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationAssertionDataMap, "value")
+endFunction
+
+;; ~ Arrays ~~
+
+function SetAssertionData_MainObject_StringArray(string[] value) global
+    JMap.setStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationAssertionDataMap, "type", "StringArray")
+    JMap.setStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationAssertionDataMap, "text", value)
     int array = JArray.object()
-    JMap.setStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationAssertionDataMap, dataKey, array)
+    JMap.setObj(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationAssertionDataMap, "value", array)
     int i = 0
     while i < value.Length
         JArray.addStr(array, value[i])
@@ -498,9 +592,23 @@ function SetAssertionData_StringArray(string dataKey, string[] value) global
     endWhile
 endFunction
 
-function SetAssertionData_IntArray(string dataKey, int[] value) global
+function SetAssertionData_MainObject_BoolArray(bool[] value) global
+    JMap.setStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationAssertionDataMap, "type", "BoolArray")
+    JMap.setStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationAssertionDataMap, "text", value)
     int array = JArray.object()
-    JMap.setStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationAssertionDataMap, dataKey, array)
+    JMap.setObj(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationAssertionDataMap, "value", array)
+    int i = 0
+    while i < value.Length
+        JArray.addInt(array, value[i] as int)
+        i += 1
+    endWhile
+endFunction
+
+function SetAssertionData_MainObject_IntArray(int[] value) global
+    JMap.setStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationAssertionDataMap, "type", "IntArray")
+    JMap.setStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationAssertionDataMap, "text", value)
+    int array = JArray.object()
+    JMap.setObj(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationAssertionDataMap, "value", array)
     int i = 0
     while i < value.Length
         JArray.addInt(array, value[i])
@@ -508,9 +616,11 @@ function SetAssertionData_IntArray(string dataKey, int[] value) global
     endWhile
 endFunction
 
-function SetAssertionData_FloatArray(string dataKey, float[] value) global
+function SetAssertionData_MainObject_FloatArray(float[] value) global
+    JMap.setStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationAssertionDataMap, "type", "FloatArray")
+    JMap.setStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationAssertionDataMap, "text", value)
     int array = JArray.object()
-    JMap.setStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationAssertionDataMap, dataKey, array)
+    JMap.setObj(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationAssertionDataMap, "value", array)
     int i = 0
     while i < value.Length
         JArray.addFlt(array, value[i])
@@ -518,10 +628,11 @@ function SetAssertionData_FloatArray(string dataKey, float[] value) global
     endWhile
 endFunction
 
-function SetAssertionData_FormArray(string dataKey, Form[] value) global
-    ; JMap.setForm(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationAssertionDataMap, dataKey, value)
+function SetAssertionData_MainObject_FormArray(Form[] value) global
+    JMap.setStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationAssertionDataMap, "type", "FormArray")
+    JMap.setStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationAssertionDataMap, "text", value)
     int array = JArray.object()
-    JMap.setStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationAssertionDataMap, dataKey, array)
+    JMap.setObj(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationAssertionDataMap, "value", array)
     int i = 0
     while i < value.Length
         JArray.addForm(array, value[i])
@@ -529,20 +640,53 @@ function SetAssertionData_FormArray(string dataKey, Form[] value) global
     endWhile
 endFunction
 
+;; [ GETTERS ]
+
+string[] function GetAssertionData_MainObject_StringArray() global
+    return JArray.asStringArray(JMap.getObj(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationAssertionDataMap, "value"))
+endFunction
+
+bool[] function GetAssertionData_MainObject_BoolArray() global
+    int[] boolInts = JArray.asIntArray(JMap.getObj(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationAssertionDataMap, "value"))
+    bool[] bools = Utility.CreateBoolArray(boolInts.Length)
+    int i = 0
+    while i < boolInts.Length
+        bools[i] = boolInts[i]
+        i += 1
+    endWhile
+    return bools
+endFunction
+
+int[] function GetAssertionData_MainObject_IntArray() global
+    return JArray.asIntArray(JMap.getObj(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationAssertionDataMap, "value"))
+endFunction
+
+float[] function GetAssertionData_MainObject_FloatArray() global
+    return JArray.asFloatArray(JMap.getObj(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationAssertionDataMap, "value"))
+endFunction
+
+Form[] function GetAssertionData_MainObject_FormArray() global
+    return JArray.asFormArray(JMap.getObj(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationAssertionDataMap, "value"))
+endFunction
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Various "Enum" Values
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 string function TestStatus_PASS() global
-    return "PASS"
+    return "PASSED"
 endFunction
 
 string function TestStatus_FAIL() global
-    return "FAIL"
+    return "FAILED"
 endFunction
 
 string function TestStatus_PENDING() global
     return "PENDING"
+endFunction
+
+string function TestStatus_SKIPPED() global
+    return "SKIPPED"
 endFunction
 
 string function SpecialTestNameFor_BeforeAll() global

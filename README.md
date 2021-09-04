@@ -45,12 +45,12 @@ This script will have a group of tests!
 
 You can organize your tests into multiple scripts or simply use one script.
 
-## #5. Update script to `extends SkyUnitTest`
+## #5. Update script to `extends SkyUnit2Test`
 
 ### Example:
 
 ```psc
-scriptName MyCoolModTests extends SkyUnitTest
+scriptName MyCoolModTests extends SkyUnit2Test
 ```
 
 ## #6. Create a `function Tests()`
@@ -62,7 +62,7 @@ Each test maps to a function which you define!
 ### Example:
 
 ```psc
-scriptName MyCoolModTests extends SkyUnitTest
+scriptName MyCoolModTests extends SkyUnit2Test
 
 function Tests()
     Test("Quest starts OK").Fn(<name of test function>())
@@ -78,7 +78,7 @@ _See below for creating test functions._
 ### Example:
 
 ```psc
-scriptName MyCoolModTests extends SkyUnitTest
+scriptName MyCoolModTests extends SkyUnit2Test
 
 function Tests()
     Test("Quest starts OK").Fn(QuestStartsOkTest())
@@ -93,7 +93,7 @@ endFunction
 
 > e.g. `ExpectString("Hello").To(EqualString("Hello"))`
 
-Note: certain expectations are built-in to `SkyUnitTest`:
+Note: certain expectations are built-in to `SkyUnit2Test`:
 - `ExpectString`, `ExpectInt`, `ExpectFloat`, `ExpectBool`, `ExpectForm`
 - `ExpectStringArray`, `ExpectIntArray`, `ExpectFloatArray`, `ExpectBoolArray`, `ExpectFormArray`
 
@@ -106,7 +106,7 @@ You'll soon be able to find documentation for all available assertions on the [W
 ### Example:
 
 ```psc
-scriptName MyCoolModTests extends SkyUnitTest
+scriptName MyCoolModTests extends SkyUnit2Test
 
 ; As an example, maybe you added some properties
 ; including a reference to a quest and an actor

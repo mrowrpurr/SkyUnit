@@ -1,5 +1,5 @@
-scriptName SkyUnitTests_TrackingScripts extends SkyUnitTests_BaseTest
-{Tests for registering and tracking SkyUnitTest scripts}
+scriptName SkyUnitTests_TrackingScripts extends SkyUnit2_BaseTest
+{Tests for registering and tracking SkyUnit2Test scripts}
 
 import ArrayAssertions
 

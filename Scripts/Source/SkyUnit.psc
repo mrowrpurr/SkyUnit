@@ -17,15 +17,15 @@ int _testData
 float _testLock
 
 ; The current script which owns a the current test lock
-SkyUnitTest _testLockScript
+SkyUnit2Test _testLockScript
 
-; The current SkyUnitTest
-SkyUnitTest _currentTestScript
+; The current SkyUnit2Test
+SkyUnit2Test _currentTestScript
 
-; The current map for the script which stores test names and maps them top test objects (for the current SkyUnitTest)
+; The current map for the script which stores test names and maps them top test objects (for the current SkyUnit2Test)
 int _currentTestScriptMap
 
-; The current "tests" map which maps test names to test objects (for the current SkyUnitTest)
+; The current "tests" map which maps test names to test objects (for the current SkyUnit2Test)
 int _currentTestScriptTestsMap
 
 ; The current test object for the current running test
@@ -52,8 +52,8 @@ int _currentExpectationDataMap
 ; Arrays of registered test scripts which can be run
 int _registeredTestScriptsLookupMap
 int _registeredTestScriptsNextIndex
-SkyUnitTest[] _registeredTestScripts1
-SkyUnitTest[] _registeredTestScripts2
+SkyUnit2Test[] _registeredTestScripts1
+SkyUnit2Test[] _registeredTestScripts2
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Main OnInit() for mod installation
@@ -75,8 +75,8 @@ endFunction
 ;; Read-only getters
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-SkyUnitTest property CurrentTestScript
-    SkyUnitTest function get()
+SkyUnit2Test property CurrentTestScript
+    SkyUnit2Test function get()
         Debug("Returning Current Test Script: " + _currentTestScript)
         return _currentTestScript
     endFunction
@@ -108,21 +108,21 @@ function ResetTestData()
     JValue.retain(_testData)
     JMap.setObj(_testData, "testScripts", JMap.object())
     if ! _registeredTestScripts1
-        ResetSkyUnitTestArrays()
+        ResetSkyUnit2TestArrays()
     endIf
     _testRegistrationAvailable = true
 endFunction
 
-function ResetSkyUnitTestArrays()
+function ResetSkyUnit2TestArrays()
     _testRegistrationAvailable = false
-    Debug("Reset SkyUnitTest Storage Arrays")
+    Debug("Reset SkyUnit2Test Storage Arrays")
     if _registeredTestScriptsLookupMap
         JValue.release(_registeredTestScriptsLookupMap)
     endIf
     _registeredTestScriptsLookupMap = JMap.object()
     JValue.retain(_registeredTestScriptsLookupMap)
-    _registeredTestScripts1 = new SkyUnitTest[128]
-    _registeredTestScripts2 = new SkyUnitTest[128]
+    _registeredTestScripts1 = new SkyUnit2Test[128]
+    _registeredTestScripts2 = new SkyUnit2Test[128]
     _testRegistrationAvailable = true
 endFunction
 
@@ -130,7 +130,7 @@ SkyUnit function GetInstance() global
     return Game.GetFormFromFile(0x800, "SkyUnit.esp") as SkyUnit
 endFunction
 
-SkyUnitTest function CurrentTest() global
+SkyUnit2Test function CurrentTest() global
     return GetInstance().CurrentTestScript
 endFunction
 
@@ -138,13 +138,13 @@ endFunction
 ;; Test Script Registration Management
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-function RegisterSkyUnitTest(SkyUnitTest test)
+function RegisterSkyUnit2Test(SkyUnit2Test test)
     WaitUntilReady()
     int existingIndex = JMap.getInt(_registeredTestScriptsLookupMap, test)
     if existingIndex
         return ; Already registered
     endIf
-    Debug("Register SkyUnitTest script " + test)
+    Debug("Register SkyUnit2Test script " + test)
     JMap.setInt(_registeredTestScriptsLookupMap, test, _registeredTestScriptsNextIndex)
     if _registeredTestScriptsNextIndex < 128
         _registeredTestScripts1[_registeredTestScriptsNextIndex] = test
@@ -153,7 +153,7 @@ function RegisterSkyUnitTest(SkyUnitTest test)
         _registeredTestScripts1[_registeredTestScriptsNextIndex - 128] = test
         _registeredTestScriptsNextIndex += 1
     else
-        Debug("Cannot register SkyUnitTest " + test + " because 256 tests are already registered (that is currently the max)")
+        Debug("Cannot register SkyUnit2Test " + test + " because 256 tests are already registered (that is currently the max)")
     endIf
 endFunction
 
@@ -171,17 +171,17 @@ int function GetTestScriptCount() global
     return GetInstance().InstanceGetTestScriptCount()
 endFunction
 
-SkyUnitTest function InstanceGetNthTestScript(int index)
+SkyUnit2Test function InstanceGetNthTestScript(int index)
     if index < 128
         return _registeredTestScripts1[index]
     elseIf index < 256
         return _registeredTestScripts1[index - 128]
     else
-        Debug("Cannot get SkyUnitTest " + index + " because 255 is the highest allowed index")
+        Debug("Cannot get SkyUnit2Test " + index + " because 255 is the highest allowed index")
     endIf
 endFunction
 
-SkyUnitTest function GetNthTestScript(int index) global
+SkyUnit2Test function GetNthTestScript(int index) global
     return GetInstance().InstanceGetNthTestScript(index)
 endFunction
 
@@ -189,7 +189,7 @@ endFunction
 ;; Test Script and individual Test Setup
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-function BeginTestScript(SkyUnitTest test)
+function BeginTestScript(SkyUnit2Test test)
     Debug("Begin Test Script: " + test)
     int testScripts = JMap.getObj(_testData, "testScripts")
     int testScript = JMap.object()
@@ -201,7 +201,7 @@ function BeginTestScript(SkyUnitTest test)
     _currentTestScript = test
 endFunction
 
-function BeginTest(SkyUnitTest test, string testName)
+function BeginTest(SkyUnit2Test test, string testName)
     Debug("Begin Test: " + test + " ~ " + testName)
     int testObj = JMap.object()
     JMap.setObj(_currentTestScriptTestsMap, testName, testObj)
@@ -565,7 +565,7 @@ endFunction
 ;; Lock for running one test at a time
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-function GetTestLock(SkyUnitTest script, float waitTime = 0.1, float lock = 0.0)
+function GetTestLock(SkyUnit2Test script, float waitTime = 0.1, float lock = 0.0)
     ; A second Test() function is asking for a lock from the _same_ script.
     ; This means that no Fn() was provided. Which is fine! We'll just release it
     ; and give this test the lock.
@@ -597,7 +597,7 @@ function GetTestLock(SkyUnitTest script, float waitTime = 0.1, float lock = 0.0)
     endIf
 endFunction
 
-function ReleaseTestLock(SkyUnitTest script)
+function ReleaseTestLock(SkyUnit2Test script)
     if _testLockScript == script
         Debug("Test Lock Released")
         _testLock = 0.0
@@ -608,59 +608,59 @@ endFunction
 ;; Test Result Queries
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-int function GetMapForSkyUnitTestResults(SkyUnitTest test)
+int function GetMapForSkyUnit2TestResults(SkyUnit2Test test)
     int testScripts = JMap.getObj(_testData, "testScripts")
     return JMap.getObj(testScripts, test)
 endFunction
 
-int function GetTestCount(SkyUnitTest test)
-    int testsMap = JMap.getObj(GetMapForSkyUnitTestResults(test), "tests")
+int function GetTestCount(SkyUnit2Test test)
+    int testsMap = JMap.getObj(GetMapForSkyUnit2TestResults(test), "tests")
     return JMap.count(testsMap)
 endFunction
 
-string[] function GetTestNames(SkyUnitTest test)
-    int testsMap = JMap.getObj(GetMapForSkyUnitTestResults(test), "tests")
+string[] function GetTestNames(SkyUnit2Test test)
+    int testsMap = JMap.getObj(GetMapForSkyUnit2TestResults(test), "tests")
     return JMap.allKeysPArray(testsMap)
 endFunction
 
-int function GetTestMap(SkyUnitTest test, string testName)
-    int testsMap = JMap.getObj(GetMapForSkyUnitTestResults(test), "tests")
+int function GetTestMap(SkyUnit2Test test, string testName)
+    int testsMap = JMap.getObj(GetMapForSkyUnit2TestResults(test), "tests")
     return JMap.getObj(testsMap, testName)
 endFunction
 
-bool function TestPassed(SkyUnitTest test, string testName)
+bool function TestPassed(SkyUnit2Test test, string testName)
     int testMap = GetTestMap(test, testName)
     return JMap.getInt(testMap, "failedExpectations") == 0
 endFunction
 
-string[] function GetTestFailureMessages(SkyUnitTest test, string testName)
+string[] function GetTestFailureMessages(SkyUnit2Test test, string testName)
     int testMap = GetTestMap(test, testName)
     int failureMessagesArray = JMap.getObj(testMap, "expectationFailureMessages")
     return JArray.asStringArray(failureMessagesArray)
 endFunction
 
-bool function AllTestsPassed(SkyUnitTest test)
+bool function AllTestsPassed(SkyUnit2Test test)
     return GetFailedExpectationCount(test) == 0
 endFunction
 
-int function GetFailedExpectationCount(SkyUnitTest test)
-    int testMap = GetMapForSkyUnitTestResults(test)
+int function GetFailedExpectationCount(SkyUnit2Test test)
+    int testMap = GetMapForSkyUnit2TestResults(test)
     return JMap.getInt(testMap, "failedExpectations")
 endFunction
 
-int function GetExpectationCount(SkyUnitTest test, string testName)
+int function GetExpectationCount(SkyUnit2Test test, string testName)
     int testMap = GetTestMap(test, testName)
     int expectations = JMap.getObj(testMap, "expectations")
     return JArray.count(expectations)
 endFunction
 
-string function GetTestDisplayName(SkyUnitTest test)
+string function GetTestDisplayName(SkyUnit2Test test)
     string scriptNameText = test
     int spaceIndex = StringUtil.Find(scriptNameText, " ")
     return StringUtil.Substring(scriptNameText, 1, spaceIndex - 1)    
 endFunction
 
-string function GetTestSummary(SkyUnitTest test, bool showFailureMessages = true, bool showPassingTestNames = true)
+string function GetTestSummary(SkyUnit2Test test, bool showFailureMessages = true, bool showPassingTestNames = true)
     string testScriptName = GetTestDisplayName(test)
     bool allTestsPassed = AllTestsPassed(test)
     string summary

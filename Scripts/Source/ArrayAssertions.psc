@@ -1,34 +1,34 @@
 scriptName ArrayAssertions hidden
 {SkyUnit test assertions for arrays}
 
-SkyUnitTest function ExpectStringArray(string[] value) global
-    SkyUnit.BeginExpectation("ExpectStringArray")
+SkyUnit2Test function ExpectStringArray(string[] value) global
+    SkyUnit2.BeginExpectation("ExpectStringArray")
     SkyUnit.SetExpectationData_Object_StringArray(value)
-    return SkyUnit.CurrentTest()
+    return SkyUnit2.CurrentTest()
 endFunction
 
-SkyUnitTest function ExpectIntArray(int[] value) global
-    SkyUnit.BeginExpectation("ExpectIntArray")
+SkyUnit2Test function ExpectIntArray(int[] value) global
+    SkyUnit2.BeginExpectation("ExpectIntArray")
     SkyUnit.SetExpectationData_Object_IntArray(value)
-    return SkyUnit.CurrentTest()
+    return SkyUnit2.CurrentTest()
 endFunction
 
-SkyUnitTest function ExpectBoolArray(bool[] value) global
-    SkyUnit.BeginExpectation("ExpectBoolArray")
+SkyUnit2Test function ExpectBoolArray(bool[] value) global
+    SkyUnit2.BeginExpectation("ExpectBoolArray")
     SkyUnit.SetExpectationData_Object_BoolArray(value)
-    return SkyUnit.CurrentTest()
+    return SkyUnit2.CurrentTest()
 endFunction
 
-SkyUnitTest function ExpectFloatArray(float[] value) global
-    SkyUnit.BeginExpectation("ExpectFloatArray")
+SkyUnit2Test function ExpectFloatArray(float[] value) global
+    SkyUnit2.BeginExpectation("ExpectFloatArray")
     SkyUnit.SetExpectationData_Object_FloatArray(value)
-    return SkyUnit.CurrentTest()
+    return SkyUnit2.CurrentTest()
 endFunction
 
-SkyUnitTest function ExpectFormArray(Form[] value) global
-    SkyUnit.BeginExpectation("ExpectFormArray")
+SkyUnit2Test function ExpectFormArray(Form[] value) global
+    SkyUnit2.BeginExpectation("ExpectFormArray")
     SkyUnit.SetExpectationData_Object_FormArray(value)
-    return SkyUnit.CurrentTest()
+    return SkyUnit2.CurrentTest()
 endFunction
 
 function ContainBool(bool expected) global

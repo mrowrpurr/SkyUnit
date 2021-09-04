@@ -1,11 +1,17 @@
-scriptName SkyUnitTests_RunningTests extends SkyUnitTests_BaseTest
-{Tests for running **SkyUnit** tests (functions) in `SkyUnitTest` scripts}
+scriptName SkyUnitTests_RunningTests extends SkyUnit2_BaseTest
+{Tests for running **SkyUnit** tests (functions) in `SkyUnit2Test` scripts}
 
 import ArrayAssertions
 
 function Tests()
     Test("Basic 'hello world' SkyUnit features are working test").Fn(TestVariousThings_HelloWorldSkyUnitFeatures_Test())
+    ; Test("Filtering tests by name").Fn(FilteringTestsByName_Test())
     ; Test("Can run one passing test and a failing test").Fn(Example2_OnePassingOneFailing_Test())
+endFunction
+
+function AfterAll()
+    parent.AfterAll()
+    ExampleTest2.OnePassingOneFailing = false
 endFunction
 
 function TestVariousThings_HelloWorldSkyUnitFeatures_Test()
@@ -14,12 +20,17 @@ function TestVariousThings_HelloWorldSkyUnitFeatures_Test()
     ExpectInt(SkyUnit2.GetScriptTestResultCount("Suite_One", ExampleTest1)).To(EqualInt(0))
     ExpectInt(SkyUnit2.GetLatestScriptTestResult("Suite_One", ExampleTest1)).To(EqualInt(0))
     
+    Debug.Trace("GONNA RUN ExampleTest1")
+    SkyUnit2.SwitchToTestSuite("Suite_One")
     int result = SkyUnit2.RunTestScript("Suite_One", ExampleTest1)
+    SkyUnit2.UseDefaultTestSuite()
+    Debug.Trace("AFTER ExampleTest1")
 
     JValue.writeToFile(result, "ThisIsTheTestResult.json")
 
     ; ExpectInt(SkyUnit2.GetLatestTestResult("Suite_One", ExampleTest1)).To(EqualInt(result))
 
+    Debug.Trace("ASSERTIONS FOR STUFFS")
     string[] testNames = SkyUnit2.ScriptTestResult_GetTestNames(result)
     ExpectStringArray(testNames).To(HaveLength(4))
     ExpectStringArray(testNames).To(ContainString(SkyUnit2.SpecialTestNameFor_BeforeAll()))
@@ -56,6 +67,38 @@ function TestVariousThings_HelloWorldSkyUnitFeatures_Test()
     ExpectString(SkyUnit2.TestResult_GetNthExpectationAssertionName(stringExpectationTest, 0)).To(EqualString("EqualString"))
     ExpectString(SkyUnit2.TestResult_GetNthExpectationAssertionName(intExpectationTest, 0)).To(EqualString("EqualInt"))
     ExpectString(SkyUnit2.TestResult_GetNthExpectationAssertionName(intExpectationTest, 1)).To(EqualString("EqualFloat"))
+    Debug.Trace("END OF THE TEST")
+endFunction
+
+function FilteringTestsByName_Test()
+    SkyUnit2.CreateTestSuite("Suite_One", switchTo = true)
+    SkyUnit2.AddScriptToTestSuite("Suite_One", ExampleTest1)
+    ExampleTest2.OnePassingOneFailing = false
+    SkyUnit2.AddScriptToTestSuite("Suite_One", ExampleTest2)
+    
+    int result = SkyUnit2.RunTestScript("Suite_One", ExampleTest1, filter = "Simple")
+    string[] testNames = SkyUnit2.ScriptTestResult_GetTestNames(result)
+    ExpectStringArray(testNames).To(HaveLength(4))
+    ExpectStringArray(testNames).To(ContainString("Simple string passing"))
+    ExpectStringArray(testNames).To(ContainString("Simple int failing"))
+    ExpectStringArray(testNames).Not().To(ContainString("Passing test with string expectation"))
+    ExpectStringArray(testNames).Not().To(ContainString("Passing test with int expectation"))
+
+    result = SkyUnit2.RunTestScript("Suite_One", ExampleTest1, filter = "string")
+    testNames = SkyUnit2.ScriptTestResult_GetTestNames(result)
+    ExpectStringArray(testNames).To(HaveLength(4))
+    ExpectStringArray(testNames).To(ContainString("Simple string passing"))
+    ExpectStringArray(testNames).To(ContainString("Passing test with string expectation"))
+    ExpectStringArray(testNames).Not().To(ContainString("Simple int failing"))
+    ExpectStringArray(testNames).Not().To(ContainString("Passing test with int expectation"))
+
+    result = SkyUnit2.RunTestScript("Suite_One", ExampleTest1, filter = "passing")
+    testNames = SkyUnit2.ScriptTestResult_GetTestNames(result)
+    ExpectStringArray(testNames).To(HaveLength(3))
+    ExpectStringArray(testNames).To(ContainString("Simple string passing"))
+    ExpectStringArray(testNames).Not().To(ContainString("Passing test with string expectation"))
+    ExpectStringArray(testNames).Not().To(ContainString("Simple int failing"))
+    ExpectStringArray(testNames).Not().To(ContainString("Passing test with int expectation"))
 endFunction
 
 function Example2_OnePassingOneFailing_Test()
