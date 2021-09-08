@@ -1,1 +1,1 @@
-Scriptname SkyUnitTests_SkyUnitTest extends Quest  
+scriptName SkyUnitTests_SkyUnitTest extends Quest  

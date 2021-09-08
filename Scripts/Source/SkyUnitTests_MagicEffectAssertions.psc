@@ -1,0 +1,1 @@
+scriptName SkyUnitTests_MagicEffectAssertions extends Quest  

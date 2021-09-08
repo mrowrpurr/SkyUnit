@@ -1,8 +1,6 @@
 scriptName SkyUnit extends Quest hidden
-{Global functions for assertions to interact with, etc}
 
-; TODO look at doing fluent assertions
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; !!! WE'RE DESTROYING THIS !!! MOVING AWAY !!!
 
 ; Whether SkyUnit is setup and ready (data structures ready for test registration)
 bool _testRegistrationAvailable = false
@@ -661,7 +659,7 @@ string function GetTestDisplayName(SkyUnit2Test test)
 endFunction
 
 string function GetTestSummary(SkyUnit2Test test, bool showFailureMessages = true, bool showPassingTestNames = true)
-    string testScriptName = GetTestDisplayName(test)
+    string testscriptName = GetTestDisplayName(test)
     bool allTestsPassed = AllTestsPassed(test)
     string summary
 

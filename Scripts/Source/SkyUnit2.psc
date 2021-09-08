@@ -67,7 +67,7 @@ endFunction
 ;; Getting Test Result Info
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-string[] function GetTestSuiteScriptNames(string suiteName = "") global
+string[] function GetTestSuitescriptNames(string suiteName = "") global
     SkyUnit2PrivateAPI api = SkyUnit2PrivateAPI.GetPrivateAPI()
     if ! suiteName
         suiteName = api.DEFAULT_TEST_SUITE_NAME
@@ -127,7 +127,7 @@ string[] function ScriptTestResult_GetTestNames(int scriptTestsResult) global
     return JMap.allKeysPArray(testsMap)
 endFunction
 
-string function ScriptTestResult_GetScriptNames(int scriptTestsResult) global
+string function ScriptTestResult_GetscriptNames(int scriptTestsResult) global
     return JMap.getStr(scriptTestsResult, "name")
 endFunction
 

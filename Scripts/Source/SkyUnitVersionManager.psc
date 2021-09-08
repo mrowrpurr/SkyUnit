@@ -1,4 +1,4 @@
-Scriptname SkyUnitVersionManager extends ReferenceAlias  
+scriptName SkyUnitVersionManager extends ReferenceAlias  
 {Handles OnPlayerLoadGame and OnInit mod installation events for SkyUnit}
 
 float property CurrentlyInstalledVersion auto
