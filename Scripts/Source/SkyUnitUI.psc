@@ -89,6 +89,8 @@ endFunction
 function RunTestScriptByName(string name)
     Debug("Running " + name)
     int result = SkyUnit2.RunTestScriptByName(SkyUnit2.DefaultTestSuite(), name)
+    JValue.writeToFile(result, "TestResult_" + name + ".json")
+    Debug.Notification("Wrote file: TestResult_" + name + ".json")
     GenerateScriptSummaryParts(result, printToConsole = true)
 endFunction
 

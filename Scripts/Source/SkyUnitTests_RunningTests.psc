@@ -32,6 +32,7 @@ function TestVariousThings_HelloWorldSkyUnitFeatures_Test()
 
     Debug.Trace("ASSERTIONS FOR STUFFS")
     string[] testNames = SkyUnit2.ScriptTestResult_GetTestNames(result)
+    Debug.Trace("SkyUnit --- THE ARRAY IS: " + testNames)
     ExpectStringArray(testNames).To(HaveLength(4))
     ExpectStringArray(testNames).To(ContainString(SkyUnit2.SpecialTestNameFor_BeforeAll()))
     ExpectStringArray(testNames).To(ContainString(SkyUnit2.SpecialTestNameFor_AfterAll()))
@@ -42,31 +43,31 @@ function TestVariousThings_HelloWorldSkyUnitFeatures_Test()
     int intExpectationTest = SkyUnit2.ScriptTestResult_GetTestResult(result, "Passing test with int expectation")
 
     ; Pass/Fail for whole script + individual tests
-    ExpectString(SkyUnit2.ScriptTestResult_GetScriptStatus(result)).To(EqualString(SkyUnit2.TestStatus_PASS()))
-    ExpectString(SkyUnit2.TestResult_GetTestStatus(stringExpectationTest)).To(EqualString(SkyUnit2.TestStatus_PASS()))
-    ExpectString(SkyUnit2.TestResult_GetTestStatus(intExpectationTest)).To(EqualString(SkyUnit2.TestStatus_PASS()))
+    ; ExpectString(SkyUnit2.ScriptTestResult_GetScriptStatus(result)).To(EqualString(SkyUnit2.TestStatus_PASS()))
+    ; ExpectString(SkyUnit2.TestResult_GetTestStatus(stringExpectationTest)).To(EqualString(SkyUnit2.TestStatus_PASS()))
+    ; ExpectString(SkyUnit2.TestResult_GetTestStatus(intExpectationTest)).To(EqualString(SkyUnit2.TestStatus_PASS()))
 
-    ; Expectations
-    ExpectInt(SkyUnit2.TestResult_GetExpectationCount(stringExpectationTest)).To(EqualInt(1))
-    ExpectString(SkyUnit2.TestResult_GetNthExpectationName(stringExpectationTest, 0)).To(EqualString("ExpectString"))
+    ; ; Expectations
+    ; ExpectInt(SkyUnit2.TestResult_GetExpectationCount(stringExpectationTest)).To(EqualInt(1))
+    ; ExpectString(SkyUnit2.TestResult_GetNthExpectationName(stringExpectationTest, 0)).To(EqualString("ExpectString"))
 
-    ; Expectations
-    ExpectInt(SkyUnit2.TestResult_GetExpectationCount(intExpectationTest)).To(EqualInt(2))
-    ExpectString(SkyUnit2.TestResult_GetNthExpectationName(intExpectationTest, 0)).To(EqualString("ExpectInt"))
-    ExpectString(SkyUnit2.TestResult_GetNthExpectationName(intExpectationTest, 1)).To(EqualString("ExpectFloat"))
+    ; ; Expectations
+    ; ExpectInt(SkyUnit2.TestResult_GetExpectationCount(intExpectationTest)).To(EqualInt(2))
+    ; ExpectString(SkyUnit2.TestResult_GetNthExpectationName(intExpectationTest, 0)).To(EqualString("ExpectInt"))
+    ; ExpectString(SkyUnit2.TestResult_GetNthExpectationName(intExpectationTest, 1)).To(EqualString("ExpectFloat"))
 
-    ; Expectations need to set data for assertions to use...
-    ExpectString(SkyUnit2.TestResult_GetNthExpectationMainObjectType(stringExpectationTest, 0)).To(EqualString("string"))
-    ExpectString(SkyUnit2.TestResult_GetNthExpectationMainObjectText(stringExpectationTest, 0)).To(EqualString("Hello"))
-    ExpectString(SkyUnit2.TestResult_GetNthExpectationMainObjectType(intExpectationTest, 0)).To(EqualString("int"))
-    ExpectString(SkyUnit2.TestResult_GetNthExpectationMainObjectText(intExpectationTest, 0)).To(EqualString("1"))
-    ExpectString(SkyUnit2.TestResult_GetNthExpectationMainObjectType(intExpectationTest, 1)).To(EqualString("float"))
-    ExpectString(SkyUnit2.TestResult_GetNthExpectationMainObjectText(intExpectationTest, 1)).To(ContainText("12.34"))
+    ; ; Expectations need to set data for assertions to use...
+    ; ExpectString(SkyUnit2.TestResult_GetNthExpectationMainObjectType(stringExpectationTest, 0)).To(EqualString("string"))
+    ; ExpectString(SkyUnit2.TestResult_GetNthExpectationMainObjectText(stringExpectationTest, 0)).To(EqualString("Hello"))
+    ; ExpectString(SkyUnit2.TestResult_GetNthExpectationMainObjectType(intExpectationTest, 0)).To(EqualString("int"))
+    ; ExpectString(SkyUnit2.TestResult_GetNthExpectationMainObjectText(intExpectationTest, 0)).To(EqualString("1"))
+    ; ExpectString(SkyUnit2.TestResult_GetNthExpectationMainObjectType(intExpectationTest, 1)).To(EqualString("float"))
+    ; ExpectString(SkyUnit2.TestResult_GetNthExpectationMainObjectText(intExpectationTest, 1)).To(ContainText("12.34"))
 
-    ; Assertions
-    ExpectString(SkyUnit2.TestResult_GetNthExpectationAssertionName(stringExpectationTest, 0)).To(EqualString("EqualString"))
-    ExpectString(SkyUnit2.TestResult_GetNthExpectationAssertionName(intExpectationTest, 0)).To(EqualString("EqualInt"))
-    ExpectString(SkyUnit2.TestResult_GetNthExpectationAssertionName(intExpectationTest, 1)).To(EqualString("EqualFloat"))
+    ; ; Assertions
+    ; ExpectString(SkyUnit2.TestResult_GetNthExpectationAssertionName(stringExpectationTest, 0)).To(EqualString("EqualString"))
+    ; ExpectString(SkyUnit2.TestResult_GetNthExpectationAssertionName(intExpectationTest, 0)).To(EqualString("EqualInt"))
+    ; ExpectString(SkyUnit2.TestResult_GetNthExpectationAssertionName(intExpectationTest, 1)).To(EqualString("EqualFloat"))
     Debug.Trace("END OF THE TEST")
 endFunction
 

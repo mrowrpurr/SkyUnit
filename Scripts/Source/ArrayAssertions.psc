@@ -3,31 +3,31 @@ scriptName ArrayAssertions hidden
 
 SkyUnit2Test function ExpectStringArray(string[] value) global
     SkyUnit2.BeginExpectation("ExpectStringArray")
-    SkyUnit.SetExpectationData_Object_StringArray(value)
+    SkyUnit2.SetExpectationData_MainObject_StringArray(value)
     return SkyUnit2.CurrentTest()
 endFunction
 
 SkyUnit2Test function ExpectIntArray(int[] value) global
     SkyUnit2.BeginExpectation("ExpectIntArray")
-    SkyUnit.SetExpectationData_Object_IntArray(value)
+    SkyUnit2.SetExpectationData_MainObject_IntArray(value)
     return SkyUnit2.CurrentTest()
 endFunction
 
 SkyUnit2Test function ExpectBoolArray(bool[] value) global
     SkyUnit2.BeginExpectation("ExpectBoolArray")
-    SkyUnit.SetExpectationData_Object_BoolArray(value)
+    SkyUnit2.SetExpectationData_MainObject_BoolArray(value)
     return SkyUnit2.CurrentTest()
 endFunction
 
 SkyUnit2Test function ExpectFloatArray(float[] value) global
     SkyUnit2.BeginExpectation("ExpectFloatArray")
-    SkyUnit.SetExpectationData_Object_FloatArray(value)
+    SkyUnit2.SetExpectationData_MainObject_FloatArray(value)
     return SkyUnit2.CurrentTest()
 endFunction
 
 SkyUnit2Test function ExpectFormArray(Form[] value) global
     SkyUnit2.BeginExpectation("ExpectFormArray")
-    SkyUnit.SetExpectationData_Object_FormArray(value)
+    SkyUnit2.SetExpectationData_MainObject_FormArray(value)
     return SkyUnit2.CurrentTest()
 endFunction
 

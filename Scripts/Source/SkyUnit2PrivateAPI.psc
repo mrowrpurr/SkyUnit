@@ -781,10 +781,6 @@ function FailExpectation(string assertionName, string failureMessage)
     JMap.setStr(_currentlyRunningExpectation, "failureMessage", failureMessage)
 
     ; Mark the whole test as failing because there was at least 1 failed expectation
-    JMap.setInt(_currentlyRunningTestScriptTestsMap, "failed", 1)
-    JMap.setStr(_currentlyRunningTestScriptTestsMap, "status", SkyUnit2.TestStatus_FAIL())
-
-    ; And make the whole script fail too!
     JMap.setInt(_currentlyRunningTestScriptMap, "failed", 1)
     JMap.setStr(_currentlyRunningTestScriptMap, "status", SkyUnit2.TestStatus_FAIL())
 endFunction

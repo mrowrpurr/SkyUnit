@@ -241,6 +241,8 @@ endFunction
 
 ;; Data ~ "Main" Expectation data (and Text representation)
 
+; TODO ---> This does GetFormFromFile 3x times, GetPrivateAPI() and then RE-USE IT plz :)
+
 function SetExpectationData_MainObject_String(string value) global
     JMap.setStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationMainDataMap, "value", value)
     JMap.setStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationMainDataMap, "type", "String")

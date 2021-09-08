@@ -227,6 +227,7 @@ endFunction
 
 function HaveLength(int expectedLength)
     string type = SkyUnit2.GetExpectationData_MainObject_Type()
+    Debug.MessageBox("Have Length, type is: " + type)
     bool not = SkyUnit2.Not()
     int actualLength
     if type == "String"
