@@ -74,7 +74,7 @@ function ShowTestChooser()
 
     if selectedIndex > -1
         if selectedIndex == 0
-            RunAllTestScripts()
+            RunAllTestScripts(testScriptNames)
         else
             string testName = testScriptNames[selectedIndex - 1]
             RunTestScriptByName(testName)
@@ -82,8 +82,48 @@ function ShowTestChooser()
     endIf
 endFunction
 
-function RunAllTestScripts()
-    ; TODO
+function RunAllTestScripts(string[] testScriptNames)
+    Debug("Running All Tests")
+    string output = ""
+    int totalPassed
+    int totalPending
+    int totalFailed
+    int totalSkipped
+    int testScriptIndex = 0
+    while testScriptIndex < testScriptNames.Length
+        string name = testScriptNames[testScriptIndex]
+        Debug("Running " + name)
+        int result = SkyUnit2.RunTestScriptByName(SkyUnit2.DefaultTestSuite(), name)
+        JValue.writeToFile(result, "TestResult_" + name + ".json")
+        string resultText = TestScriptSummary(name, result, showMessageBox = false)
+        if resultText == SkyUnit2.TestStatus_PASS()
+            totalPassed += 1
+        elseIf resultText == SkyUnit2.TestStatus_FAIL()
+            totalFailed += 1
+            output += "[FAILED] " + name + "\n"
+        elseIf resultText == SkyUnit2.TestStatus_PENDING()
+            totalPending +=1
+            output += "[PENDING] " + name + "\n"
+        elseIf resultText == SkyUnit2.TestStatus_SKIPPED()
+            totalSkipped +=1
+        endIf
+        testScriptIndex += 1
+    endWhile
+    Debug.Notification("Wrote files: TestResult_*.json")
+    string summary = ""
+    if totalPassed
+        summary += totalPassed + " passed\n"
+    endIf
+    if totalFailed
+        summary += totalFailed + " failed\n"
+    endIf
+    if totalPending
+        summary += totalPending + " pending\n"
+    endIf
+    if totalSkipped
+        summary += totalSkipped + " skipped\n"
+    endIf
+    Debug.MessageBox(summary + "\n" + output)
 endFunction
 
 function RunTestScriptByName(string name)
@@ -91,13 +131,13 @@ function RunTestScriptByName(string name)
     int result = SkyUnit2.RunTestScriptByName(SkyUnit2.DefaultTestSuite(), name)
     JValue.writeToFile(result, "TestResult_" + name + ".json")
     Debug.Notification("Wrote file: TestResult_" + name + ".json")
-    GenerateScriptSummaryParts(name, result, printToConsole = true)
+    TestScriptSummary(name, result)
 endFunction
 
 string SummaryPart_OneLineTotals
 string SummaryPart_OnlyFailed
 
-function GenerateScriptSummaryParts(string name, int scriptResult, bool printToConsole = true)
+string function TestScriptSummary(string name, int scriptResult, bool showMessageBox = true)
     string[] testNames = SkyUnit2.ScriptTestResult_GetTestNames(scriptResult)
     Debug("Tests: " + testNames)
     string output = ""
@@ -143,19 +183,31 @@ function GenerateScriptSummaryParts(string name, int scriptResult, bool printToC
         endWhile
         testIndex += 1
     endWhile
+    string resultText = SkyUnit2.TestStatus_PENDING()
     string summary = ""
     if totalPassed
         summary += totalPassed + " passed\n"
+        resultText = SkyUnit2.TestStatus_PASS()
     endIf
     if totalFailed
         summary += totalFailed + " failed\n"
+        resultText = SkyUnit2.TestStatus_FAIL()
     endIf
     if totalPending
         summary += totalPending + " pending\n"
+        if ! totalPassed && ! totalFailed
+            resultText = SkyUnit2.TestStatus_PENDING()
+        endIf
     endIf
     if totalSkipped
         summary += totalSkipped + " skipped\n"
+        if ! totalPassed && ! totalFailed && ! totalPending
+            resultText = SkyUnit2.TestStatus_SKIPPED()
+        endIf
     endIf
     PrintToConsole("\n" + summary)
-    Debug.MessageBox("[" + name + "]\n\n" + summary + "\n" + output)
+    if showMessageBox
+        Debug.MessageBox("[" + name + "]\n\n" + summary + "\n" + output)
+    endIf
+    return resultText
 endFunction
