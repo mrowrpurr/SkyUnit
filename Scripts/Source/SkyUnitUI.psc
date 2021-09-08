@@ -91,15 +91,16 @@ function RunTestScriptByName(string name)
     int result = SkyUnit2.RunTestScriptByName(SkyUnit2.DefaultTestSuite(), name)
     JValue.writeToFile(result, "TestResult_" + name + ".json")
     Debug.Notification("Wrote file: TestResult_" + name + ".json")
-    GenerateScriptSummaryParts(result, printToConsole = true)
+    GenerateScriptSummaryParts(name, result, printToConsole = true)
 endFunction
 
 string SummaryPart_OneLineTotals
 string SummaryPart_OnlyFailed
 
-function GenerateScriptSummaryParts(int scriptResult, bool printToConsole = true)
+function GenerateScriptSummaryParts(string name, int scriptResult, bool printToConsole = true)
     string[] testNames = SkyUnit2.ScriptTestResult_GetTestNames(scriptResult)
     Debug("Tests: " + testNames)
+    string output = ""
     int totalPassed
     int totalPending
     int totalFailed
@@ -111,13 +112,17 @@ function GenerateScriptSummaryParts(int scriptResult, bool printToConsole = true
         int testResult = SkyUnit2.ScriptTestResult_GetTestResult(scriptResult, testName)
         string testStatus = SkyUnit2.ScriptTestResult_GetScriptStatus(scriptResult)
         if testStatus == SkyUnit2.TestStatus_PASS()
-            totalPassed += 1
-            PrintToConsole("[PASSED] " + testName)
+            if (testName != SkyUnit2.SpecialTestNameFor_BeforeAll() && testName != SkyUnit2.SpecialTestNameFor_AfterAll())
+                totalPassed += 1
+                PrintToConsole("[PASSED] " + testName)
+            endIf
         elseIf testStatus == SkyUnit2.TestStatus_FAIL()
             totalFailed += 1
+            output += "[FAILED] " + testName + "\n"
             PrintToConsole("[FAILED] " + testName)
         elseIf testStatus == SkyUnit2.TestStatus_PENDING()
             totalPending += 1
+            output += "[PENDING] " + testName + "\n"
             PrintToConsole("[PENDING] " + testName)
         elseIf testStatus == SkyUnit2.TestStatus_SKIPPED()
             PrintToConsole("[SKIPPED] " + testName)
@@ -138,5 +143,19 @@ function GenerateScriptSummaryParts(int scriptResult, bool printToConsole = true
         endWhile
         testIndex += 1
     endWhile
+    string summary = ""
+    if totalPassed
+        summary += totalPassed + " passed\n"
+    endIf
+    if totalFailed
+        summary += totalFailed + " failed\n"
+    endIf
+    if totalPending
+        summary += totalPending + " pending\n"
+    endIf
+    if totalSkipped
+        summary += totalSkipped + " skipped\n"
+    endIf
+    PrintToConsole("\n" + summary)
+    Debug.MessageBox("[" + name + "]\n\n" + summary + "\n" + output)
 endFunction
-
