@@ -1,5 +1,5 @@
-scriptName SkyUnitTests_BaseTest extends SkyUnit2Test
-{Base test script for all SkyUnit tests for SkyUnit}
+scriptName SkyUnitTests_BaseTest extends SkyUnitTest hidden
+{Base SkyUnit test for testing SkyUnit tests}
 
 SkyUnitTests_ExampleTest1 _exampleTest1
 SkyUnitTests_ExampleTest2 _exampleTest2
@@ -13,6 +13,20 @@ endFunction
 function AfterAll()
   SkyUnit2PrivateAPI api = SkyUnit2PrivateAPI.GetPrivateAPI()
   api.DeleteAllTestSuitesExceptDefault()
+endFunction
+
+string property FAKE_TEST_SUITE_NAME = "[Fake Test Suite for Testing]" autoReadonly
+bool _fakeTestSuiteCreated
+
+function SwitchTo_Fake_TestSuite()
+    if ! _fakeTestSuiteCreated
+        SkyUnit2.CreateTestSuite(FAKE_TEST_SUITE_NAME)
+    endIf
+    SkyUnit2.SwitchToTestSuite(FAKE_TEST_SUITE_NAME)
+endFunction
+
+function SwitchTo_Default_TestSuite()
+    SkyUnit2.UseDefaultTestSuite()
 endFunction
 
 SkyUnitTests_ExampleTest1 property ExampleTest1

@@ -1,5 +1,5 @@
-scriptName SkyUnitTests_TrackingScripts extends SkyUnit2_BaseTest
-{Tests for registering and tracking SkyUnit2Test scripts}
+scriptName SkyUnitTests_TrackingScripts extends SkyUnitTests_BaseTest
+{Tests for registering and tracking SkyUnitTest scripts}
 
 import ArrayAssertions
 
@@ -48,7 +48,7 @@ function GetScriptFromTestSuite_Test()
     SkyUnit2.CreateTestSuite("Suite_One")
     SkyUnit2.CreateTestSuite("Suite_Two")
 
-    SkyUnit2Test test = SkyUnit2.GetTestSuiteScript("Suite_One", "SkyUnitTests_ExampleTest1")
+    SkyUnitTest test = SkyUnit2.GetTestSuiteScript("Suite_One", "SkyUnitTests_ExampleTest1")
     ExpectForm(test).To(BeNone())
 
     SkyUnit2.AddScriptToTestSuite("Suite_One", ExampleTest1)

@@ -15,13 +15,13 @@ endFunction
 event OnInit()
     RegisterForMenu("Console")
     Utility.WaitMenuMode(0.5)
-    int SkyUnit2TestCount = SkyUnit2.GetTestSuiteScriptCount(SkyUnit2.DefaultTestSuite())
-    if SkyUnit2TestCount
+    int SkyUnitTestCount = SkyUnit2.GetTestSuiteScriptCount(SkyUnit2.DefaultTestSuite())
+    if SkyUnitTestCount
         ; Automatically equip the power to run tests
         Spell runTestsSpell = Game.GetFormFromFile(0x802, "SkyUnitUI.esp") as Spell
         Actor player = Game.GetPlayer()
         player.EquipSpell(runTestsSpell, 0)
-        Debug.Notification(SkyUnit2TestCount + " tests found")
+        Debug.Notification(SkyUnitTestCount + " tests found")
         Debug.Notification("SkyUnit UI Ready")
     endIf
 endEvent
@@ -150,7 +150,7 @@ string function TestScriptSummary(string name, int scriptResult, bool showMessag
     while testIndex < testNames.Length
         string testName = testNames[testIndex]
         int testResult = SkyUnit2.ScriptTestResult_GetTestResult(scriptResult, testName)
-        string testStatus = SkyUnit2.ScriptTestResult_GetScriptStatus(scriptResult)
+        string testStatus = SkyUnit2.TestResult_GetTestStatus(testResult)
         if testStatus == SkyUnit2.TestStatus_PASS()
             if (testName != SkyUnit2.SpecialTestNameFor_BeforeAll() && testName != SkyUnit2.SpecialTestNameFor_AfterAll())
                 totalPassed += 1
@@ -161,9 +161,11 @@ string function TestScriptSummary(string name, int scriptResult, bool showMessag
             output += "[FAILED] " + testName + "\n"
             PrintToConsole("[FAILED] " + testName)
         elseIf testStatus == SkyUnit2.TestStatus_PENDING()
-            totalPending += 1
-            output += "[PENDING] " + testName + "\n"
-            PrintToConsole("[PENDING] " + testName)
+            if (testName != SkyUnit2.SpecialTestNameFor_BeforeAll() && testName != SkyUnit2.SpecialTestNameFor_AfterAll())
+                totalPending += 1
+                output += "[PENDING] " + testName + "\n"
+                PrintToConsole("[PENDING] " + testName)
+            endIf
         elseIf testStatus == SkyUnit2.TestStatus_SKIPPED()
             PrintToConsole("[SKIPPED] " + testName)
             totalSkipped += 1

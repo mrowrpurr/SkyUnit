@@ -1,5 +1,5 @@
-scriptName SkyUnitTests_RunningTests extends SkyUnit2_BaseTest
-{Tests for running **SkyUnit** tests (functions) in `SkyUnit2Test` scripts}
+scriptName SkyUnitTests_RunningTests extends SkyUnitTests_BaseTest
+{Tests for running **SkyUnit** tests (functions) in `SkyUnitTest` scripts}
 
 ; TODO TEST TO MAKE SURE THAT FILTER *NEVER* SKIPS BEFOREALL / AFTERALL :)
 

@@ -1,7 +1,7 @@
 scriptName SkyUnit2
 {Global interface for integrating with **SkyUnit**
 
-For writing tests, please see `SkyUnit2Test`}
+For writing tests, please see `SkyUnitTest`}
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Check version of SkyUnit
@@ -31,6 +31,10 @@ function DeleteTestSuite(string suiteName) global
     SkyUnit2PrivateAPI.GetPrivateAPI().DeleteTestSuite(suiteName)
 endFunction
 
+; string function GetCurrentTestSuite() global
+;     SkyUnit2PrivateAPI.GetPrivateAPI().GetCurrentTestSuiteName()
+; endFunction
+
 int function GetTestSuiteCount() global
     return JMap.count(SkyUnit2PrivateAPI.GetPrivateAPI().TestSuitesMap)
 endFunction
@@ -39,7 +43,7 @@ string[] function GetTestSuiteNames() global
     return JMap.allKeysPArray(SkyUnit2PrivateAPI.GetPrivateAPI().TestSuitesMap)
 endFunction
 
-function AddScriptToTestSuite(string suiteName, SkyUnit2Test script) global
+function AddScriptToTestSuite(string suiteName, SkyUnitTest script) global
     SkyUnit2PrivateAPI api = SkyUnit2PrivateAPI.GetPrivateAPI()
     int suite = api.GetTestSuite(suiteName)
     api.AddScriptToTestSuite(script, suite)
@@ -49,7 +53,7 @@ endFunction
 ;; Run Tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-int function RunTestScript(string suiteName, SkyUnit2Test script, string filter = "") global
+int function RunTestScript(string suiteName, SkyUnitTest script, string filter = "") global
     SkyUnit2PrivateAPI api = SkyUnit2PrivateAPI.GetPrivateAPI()
     api.Debug("Run Test Script " + script + " for " + suiteName)
     int suite = api.GetTestSuite(suiteName)
@@ -59,7 +63,7 @@ endFunction
 int function RunTestScriptByName(string suiteName, string script) global
     SkyUnit2PrivateAPI api = SkyUnit2PrivateAPI.GetPrivateAPI()
     int suite = api.GetTestSuite(suiteName)
-    SkyUnit2Test test = GetTestSuiteScript(suiteName, script)
+    SkyUnitTest test = GetTestSuiteScript(suiteName, script)
     return api.RunTestScript(suite, test)
 endFunction
 
@@ -87,7 +91,7 @@ int function GetTestSuiteScriptCount(string suiteName = "") global
     return JMap.count(suiteScriptsMap)
 endFunction
 
-SkyUnit2Test function GetTestSuiteScript(string suiteName, string script) global
+SkyUnitTest function GetTestSuiteScript(string suiteName, string script) global
     SkyUnit2PrivateAPI api = SkyUnit2PrivateAPI.GetPrivateAPI()
     int suite = api.GetTestSuite(suiteName)
     int suiteScriptsMap = SkyUnit2PrivateAPI.GetPrivateAPI().GetTestSuiteScriptsMap(suite)
@@ -96,7 +100,7 @@ SkyUnit2Test function GetTestSuiteScript(string suiteName, string script) global
     return api.GetScriptFromSlot(index)
 endFunction
 
-int function GetScriptTestResultCount(string suiteName, SkyUnit2Test script) global
+int function GetScriptTestResultCount(string suiteName, SkyUnitTest script) global
     SkyUnit2PrivateAPI api = SkyUnit2PrivateAPI.GetPrivateAPI()
     int suite = api.GetTestSuite(suiteName)
     int runsMapForThisScript = api.GetTestSuiteScriptRunsMap(suite, script)
@@ -108,14 +112,14 @@ int function GetScriptTestResultCount(string suiteName, SkyUnit2Test script) glo
     endIf
 endFunction
 
-string[] function GetScriptTestResultKeys(string suiteName, SkyUnit2Test script) global
+string[] function GetScriptTestResultKeys(string suiteName, SkyUnitTest script) global
     SkyUnit2PrivateAPI api = SkyUnit2PrivateAPI.GetPrivateAPI()
     int suite = api.GetTestSuite(suiteName)
     int runsMapForThisScript = api.GetTestSuiteScriptRunsMap(suite, script)
     return JMap.allKeysPArray(runsMapForThisScript)
 endFunction
 
-int function GetLatestScriptTestResult(string suiteName, SkyUnit2Test script) global
+int function GetLatestScriptTestResult(string suiteName, SkyUnitTest script) global
     SkyUnit2PrivateAPI api = SkyUnit2PrivateAPI.GetPrivateAPI()
     int suite = api.GetTestSuite(suiteName)
     int runsMapForThisScript = api.GetTestSuiteScriptRunsMap(suite, script)
@@ -213,7 +217,7 @@ endFunction
 ;; Functions for Expectations
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-SkyUnit2Test function CurrentTest() global
+SkyUnitTest function CurrentTest() global
     return SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningTest
 endFunction
 
@@ -227,16 +231,18 @@ function BeginExpectation(string expectationName) global
     api.BeginExpectation(expectationName)
 endFunction
 
-function PassExpectation(string assertionName) global
+bool function PassExpectation(string assertionName) global
     SkyUnit2PrivateAPI api = SkyUnit2PrivateAPI.GetPrivateAPI()
     api.Debug("Pass Expectation " + assertionName)
     api.PassExpectation(assertionName)
+    return true
 endFunction
 
-function FailExpectation(string assertionName, string failureMessage) global
+bool function FailExpectation(string assertionName, string failureMessage) global
     SkyUnit2PrivateAPI api = SkyUnit2PrivateAPI.GetPrivateAPI()
     api.Debug("Fail Expectation " + assertionName)
     api.FailExpectation(assertionName, failureMessage)
+    return false
 endFunction
 
 ;; Data ~ "Main" Expectation data (and Text representation)
@@ -250,7 +256,11 @@ function SetExpectationData_MainObject_String(string value) global
 endFunction
 
 function SetExpectationData_MainObject_Bool(bool value) global
-    JMap.setInt(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationMainDataMap, "value", value as int)
+    if value
+        JMap.setInt(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationMainDataMap, "value", 1)
+    else
+        JMap.setInt(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationMainDataMap, "value", 0)
+    endIf
     JMap.setStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationMainDataMap, "type", "Bool")
     JMap.setStr(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationMainDataMap, "text", value)
 endFunction
@@ -294,7 +304,7 @@ string function GetExpectationData_MainObject_String() global
 endFunction
 
 bool function GetExpectationData_MainObject_Bool() global
-    return JMap.getInt(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationMainDataMap, "value")
+    return JMap.getInt(SkyUnit2PrivateAPI.GetPrivateAPI().CurrentlyRunningExpectationMainDataMap, "value") == 1
 endFunction
 
 int function GetExpectationData_MainObject_Int() global

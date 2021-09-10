@@ -1,67 +1,66 @@
 scriptName ActorAssertions hidden
 {SkyUnit test assertions for Actors}
 
-SkyUnit2Test function ExpectActor(Actor theActor) global
+SkyUnitTest function ExpectActor(Actor theActor) global
     SkyUnit2.BeginExpectation("ExpectActor")
-    SkyUnit.SetExpectationData_Form("Actor", theActor)
+    SkyUnit.SetExpectationData_Form("Actor", theActor) ; <---- REMOVE THIS SkyUnit Function Next!
     return SkyUnit2.CurrentTest()
 endFunction
 
-function BeAlive() global
+bool function BeAlive() global
     Actor theActor = SkyUnit.GetExpectationData_Form("Actor") as Actor
     bool not = SkyUnit.Not()
     if theActor
         if not && ! theActor.IsDead()
-            SkyUnit.FailExpectation("Expected actor " + theActor.GetBaseObject().GetName() + " not to be alive")
+            return SkyUnit2.FailExpectation("BeAlive", "Expected actor " + theActor.GetBaseObject().GetName() + " not to be alive")
         elseIf ! not && theActor.IsDead()
-            SkyUnit.FailExpectation("Expected actor " + theActor.GetBaseObject().GetName() + " to be alive")
+            return SkyUnit2.FailExpectation("BeAlive", "Expected actor " + theActor.GetBaseObject().GetName() + " to be alive")
         endIf
     else
-        SkyUnit.GetInstance().Log("BeAlive() called without ExpectActor()")
+        return SkyUnit2.FailExpectation("BeAlive", "BeAlive() called without Actor. Use ExpectActor() or ExpectForm().")
     endIf
 endFunction
 
-function BeDead() global
+bool function BeDead() global
     Actor theActor = SkyUnit.GetExpectationData_Form("Actor") as Actor
     bool not = SkyUnit.Not()
     if theActor
         if not && theActor.IsDead()
-            SkyUnit.FailExpectation("Expected actor " + theActor.GetBaseObject().GetName() + " not to be dead")
+            return SkyUnit2.FailExpectation("BeDead", "Expected actor " + theActor.GetBaseObject().GetName() + " not to be dead")
         elseIf ! not && ! theActor.IsDead()
-            SkyUnit.FailExpectation("Expected actor " + theActor.GetBaseObject().GetName() + " to be dead")
+            return SkyUnit2.FailExpectation("BeDead", "Expected actor " + theActor.GetBaseObject().GetName() + " to be dead")
         endIf
     else
-        SkyUnit.GetInstance().Log("BeDead() called without ExpectActor()")
+        return SkyUnit2.FailExpectation("BeDead", "BeDead() called without Actor. Use ExpectActor() or ExpectForm().")
     endIf
 endFunction
 
-function HaveSpell(Spell theSpell) global
+bool function HaveSpell(Spell theSpell) global
     Actor theActor = SkyUnit.GetExpectationData_Form("Actor") as Actor
     bool not = SkyUnit.Not()
     if theActor
         if not && theActor.HasSpell(theSpell)
-            SkyUnit.FailExpectation("Expected actor " + theActor.GetBaseObject().GetName() + " not to have spell " + theSpell.GetName())
+            return SkyUnit2.FailExpectation("HaveSpell", "Expected actor " + theActor.GetBaseObject().GetName() + " not to have spell " + theSpell.GetName())
         elseIf ! not && ! theActor.HasSpell(theSpell)
-            SkyUnit.FailExpectation("Expected actor " + theActor.GetBaseObject().GetName() + " to have spell " + theSpell.GetName())
+            return SkyUnit2.FailExpectation("HaveSpell", "Expected actor " + theActor.GetBaseObject().GetName() + " to have spell " + theSpell.GetName())
         endIf
     else
-        SkyUnit.GetInstance().Log("HaveSpell() called without ExpectActor()")
+        return SkyUnit2.FailExpectation("HaveSpell", "HaveSpell() called without Actor. Use ExpectActor() or ExpectForm().")
     endIf
 endFunction
 
-function HaveItem(Form item) global
+bool function HaveItem(Form item) global
     Actor theActor = SkyUnit.GetExpectationData_Form("Actor") as Actor
     bool not = SkyUnit.Not()
     if theActor
         if not && theActor.GetItemCount(item) > 0
-            SkyUnit.FailExpectation("Expected actor " + theActor.GetBaseObject().GetName() + " not to have item " + item.GetName())
+            return SkyUnit2.FailExpectation("HaveItem", "Expected actor " + theActor.GetBaseObject().GetName() + " not to have item " + item.GetName())
         elseIf ! not && theActor.GetItemCount(item) == 0
-            SkyUnit.FailExpectation("Expected actor " + theActor.GetBaseObject().GetName() + " to have item " + item.GetName())
+            return SkyUnit2.FailExpectation("HaveItem", "Expected actor " + theActor.GetBaseObject().GetName() + " to have item " + item.GetName())
         endIf
     else
-        SkyUnit.GetInstance().Log("HaveSpell() called without ExpectActor()")
+        return SkyUnit2.FailExpectation("HaveItem", "HaveItem() called without Actor. Use ExpectActor() or ExpectForm().")
     endIf
 endFunction
 
-; HaveItemEquipped
 ; HavePerk

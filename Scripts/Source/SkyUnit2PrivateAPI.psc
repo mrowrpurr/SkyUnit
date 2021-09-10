@@ -80,6 +80,11 @@ string property DEFAULT_TEST_SUITE_NAME = "[SkyUnit Default Test Suite]" autoRea
 ; This should be the root data source used for ALL full properties in this script
 ; so that EVERYTHING is scoped to a Test Suite (allowing us to switch between them, especially to test SkyUnit with SkyUnit)
 int property CurrentTestSuiteID auto
+string property CurrentTestSuiteName auto
+
+string function GetCurrentTestSuiteName()
+    return CurrentTestSuiteName
+endFunction
 
 function SwitchToTestSuiteByID(int suite)
     ; Store the lock ID for the current suite so we can switch back to the same lock ID when we're done...
@@ -97,6 +102,8 @@ function SwitchToTestSuiteByID(int suite)
 endFunction
 
 function SwitchToTestSuiteByName(string suite)
+    Log("Switching to test suite: " + suite)
+    CurrentTestSuiteName = suite
     SwitchToTestSuiteByID(GetTestSuite(suite))
 endFunction
 
@@ -136,6 +143,7 @@ int function CreateTestSuite(string name, bool switchTo = false)
         JMap.setObj(suite, "state", JMap.object())
     endIf
     if switchTo
+        CurrentTestSuiteName = name
         SwitchToTestSuiteByID(suite)
     endIf
     return suite
@@ -185,18 +193,18 @@ int function GetTestSuiteScriptsMap(int suite)
     return JMap.getObj(suite, "testScripts")
 endFunction
 
-int function GetTestSuiteTestScriptMap(int suite, SkyUnit2Test script)
+int function GetTestSuiteTestScriptMap(int suite, SkyUnitTest script)
     JMap.getObj(GetTestSuiteScriptsMap(suite), GetScriptDisplayName(script))
 endFunction
 
 ; This does NOT check to see if the test script already exists on this Test Suite (in the test suite's .testScripts map)
-int function CreateTestSuiteTestScriptMap(int suite, SkyUnit2Test script, int scriptLookupArraySlotNumber)
+int function CreateTestSuiteTestScriptMap(int suite, SkyUnitTest script, int scriptLookupArraySlotNumber)
     int scriptMap = JMap.object()
     JMap.setObj(GetTestSuiteScriptsMap(suite), GetScriptDisplayName(script), scriptMap)
     JMap.setStr(scriptMap, "name", GetScriptDisplayName(script))
     JMap.setObj(scriptMap, "testRuns", JMap.object())
     JMap.setInt(scriptMap, "arrayLookupSlotNumber", scriptLookupArraySlotNumber)
-    return scriptMap   
+    return scriptMap
 endFunction
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -252,26 +260,26 @@ function ResetGlobalDataStorage()
     ; Setup the map which tracks all SkyUnit information.
     ; This is currently simply used for:
     ; 1. Tracking Test Suites
-    ; 2. Tracking SkyUnit2Test Scripts (used by Test Suites)
+    ; 2. Tracking SkyUnitTest Scripts (used by Test Suites)
     GlobalDataMap = JMap.object()
     JValue.retain(GlobalDataMap)
 
     ; Map of Test Suite objects keyed on name
     JMap.setObj(GlobalDataMap, "testSuites", JMap.object())
 
-    ; Map of SkyUnit2Test scripts keyed on "display name" (e.g. FooTest rather than [FooText <Something>(123)])
+    ; Map of SkyUnitTest scripts keyed on "display name" (e.g. FooTest rather than [FooText <Something>(123)])
     ; The value of each is an integer which maps to the # "slot" the script is stored in in the arrays
     JMap.setObj(GlobalDataMap, "testScripts", JMap.object())
 
-    ; Setup the arrays which store references to all SkyUnit2Test scripts
-    SkyUnit2TestScriptArraySetup()
+    ; Setup the arrays which store references to all SkyUnitTest scripts
+    SkyUnitTestScriptArraySetup()
 
     ; Add availableScriptIndexes which tracks all of the available "slot #'s" in
-    ; the arrays of SkyUnit2Test which are available for usage.
+    ; the arrays of SkyUnitTest which are available for usage.
     ; We are currently limited to 1,280 scripts (but this can be very easily expanded if necessary)
     int availableScriptIndexes = JArray.object()
     JMap.setObj(GlobalDataMap, "availableScriptIndexes", availableScriptIndexes)
-    JArray.addFromArray(availableScriptIndexes, _SkyUnit2TestScript_AvailableSlots_TemplateArray) ; Adds the 1,280 elements (very quickly)
+    JArray.addFromArray(availableScriptIndexes, _SkyUnitTestScript_AvailableSlots_TemplateArray) ; Adds the 1,280 elements (very quickly)
 
     ; We also store test locks for different suites to support running suites from other suites
     TestSuiteLockMap = JMap.object()
@@ -286,7 +294,7 @@ function ResetGlobalDataStorage()
 endFunction
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; SkyUnit2Test script instance tracking
+;; SkyUnitTest script instance tracking
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 int property TestScriptLookupMap
@@ -295,21 +303,21 @@ int property TestScriptLookupMap
     endFunction
 endProperty
 
-int _SkyUnit2TestScript_AvailableSlots_TemplateArray
+int _SkyUnitTestScript_AvailableSlots_TemplateArray
 
 ; For support of multiple test suites or large test suites,
 ; we support 1,280 scripts being loaded at one time
 ; but this number can very easily be increased if necessary
-SkyUnit2Test[] _SkyUnit2TestScripts0
-SkyUnit2Test[] _SkyUnit2TestScripts1
-SkyUnit2Test[] _SkyUnit2TestScripts2
-SkyUnit2Test[] _SkyUnit2TestScripts3
-SkyUnit2Test[] _SkyUnit2TestScripts4
-SkyUnit2Test[] _SkyUnit2TestScripts5
-SkyUnit2Test[] _SkyUnit2TestScripts6
-SkyUnit2Test[] _SkyUnit2TestScripts7
-SkyUnit2Test[] _SkyUnit2TestScripts8
-SkyUnit2Test[] _SkyUnit2TestScripts9
+SkyUnitTest[] _SkyUnitTestScripts0
+SkyUnitTest[] _SkyUnitTestScripts1
+SkyUnitTest[] _SkyUnitTestScripts2
+SkyUnitTest[] _SkyUnitTestScripts3
+SkyUnitTest[] _SkyUnitTestScripts4
+SkyUnitTest[] _SkyUnitTestScripts5
+SkyUnitTest[] _SkyUnitTestScripts6
+SkyUnitTest[] _SkyUnitTestScripts7
+SkyUnitTest[] _SkyUnitTestScripts8
+SkyUnitTest[] _SkyUnitTestScripts9
 
 int property AvailableScriptIndexesArray
     int function get()
@@ -325,7 +333,7 @@ float _currentlyAddingScriptLock
 ; Registration and unregistration require a lock because they alter the array
 ; which stores available slots (global.availableScriptIndexes) which requires a lock
 ; (especially when the game loads and a number of tests are all trying to register themselves at the same time)
-function AddScriptToTestSuite(SkyUnit2Test script, int testSuite, float lock = 0.0)
+function AddScriptToTestSuite(SkyUnitTest script, int testSuite, float lock = 0.0)
     ; First check to see if it's already in a slot
     int existingIndex = JMap.getInt(TestScriptLookupMap, GetScriptDisplayName(script))
     if existingIndex
@@ -379,90 +387,96 @@ function AddScriptToTestSuite(SkyUnit2Test script, int testSuite, float lock = 0
     endIf
 endFunction
 
-function SkyUnit2TestScriptArraySetup()
+; Simply removes the key. Really only used for testing. Do NOT make available via SkyUnit2 unless it has test coverage.
+; Really this needs to handle much more (script registration)
+function RemoveScriptFromTestSuite(SkyUnitTest script, int testSuite)
+    JMap.removeKey(GetTestSuiteScriptsMap(testSuite), GetScriptDisplayName(script))
+endFunction
+
+function SkyUnitTestScriptArraySetup()
     ; Create template array to use for script slot tracking
-    if _SkyUnit2TestScript_AvailableSlots_TemplateArray == 0
-        _SkyUnit2TestScript_AvailableSlots_TemplateArray = JArray.object()
-        JValue.retain(_SkyUnit2TestScript_AvailableSlots_TemplateArray)
+    if _SkyUnitTestScript_AvailableSlots_TemplateArray == 0
+        _SkyUnitTestScript_AvailableSlots_TemplateArray = JArray.object()
+        JValue.retain(_SkyUnitTestScript_AvailableSlots_TemplateArray)
         int i = 0
         while i < 1280
-            JArray.addInt(_SkyUnit2TestScript_AvailableSlots_TemplateArray, i)
+            JArray.addInt(_SkyUnitTestScript_AvailableSlots_TemplateArray, i)
             i += 1
         endWhile
     endIf
 
     ; Initialize the arrays
-    _SkyUnit2TestScripts0 = new SkyUnit2Test[128]
-    _SkyUnit2TestScripts1 = new SkyUnit2Test[128]
-    _SkyUnit2TestScripts2 = new SkyUnit2Test[128]
-    _SkyUnit2TestScripts3 = new SkyUnit2Test[128]
-    _SkyUnit2TestScripts4 = new SkyUnit2Test[128]
-    _SkyUnit2TestScripts5 = new SkyUnit2Test[128]
-    _SkyUnit2TestScripts6 = new SkyUnit2Test[128]
-    _SkyUnit2TestScripts7 = new SkyUnit2Test[128]
-    _SkyUnit2TestScripts8 = new SkyUnit2Test[128]
-    _SkyUnit2TestScripts9 = new SkyUnit2Test[128]
+    _SkyUnitTestScripts0 = new SkyUnitTest[128]
+    _SkyUnitTestScripts1 = new SkyUnitTest[128]
+    _SkyUnitTestScripts2 = new SkyUnitTest[128]
+    _SkyUnitTestScripts3 = new SkyUnitTest[128]
+    _SkyUnitTestScripts4 = new SkyUnitTest[128]
+    _SkyUnitTestScripts5 = new SkyUnitTest[128]
+    _SkyUnitTestScripts6 = new SkyUnitTest[128]
+    _SkyUnitTestScripts7 = new SkyUnitTest[128]
+    _SkyUnitTestScripts8 = new SkyUnitTest[128]
+    _SkyUnitTestScripts9 = new SkyUnitTest[128]
 endFunction
 
-function AddScriptToSlot(SkyUnit2Test script, int slotNumber)
+function AddScriptToSlot(SkyUnitTest script, int slotNumber)
     if slotNumber == 0
         return
     endIf
     int arrayNumber = slotNumber / 128
     int arrayIndex = slotNumber % 128
     if arrayNumber == 0
-        _SkyUnit2TestScripts0[arrayIndex] = script
+        _SkyUnitTestScripts0[arrayIndex] = script
     elseIf arrayNumber == 1
-        _SkyUnit2TestScripts1[arrayIndex] = script
+        _SkyUnitTestScripts1[arrayIndex] = script
     elseIf arrayNumber == 2
-        _SkyUnit2TestScripts2[arrayIndex] = script
+        _SkyUnitTestScripts2[arrayIndex] = script
     elseIf arrayNumber == 3
-        _SkyUnit2TestScripts3[arrayIndex] = script
+        _SkyUnitTestScripts3[arrayIndex] = script
     elseIf arrayNumber == 4
-        _SkyUnit2TestScripts4[arrayIndex] = script
+        _SkyUnitTestScripts4[arrayIndex] = script
     elseIf arrayNumber == 5
-        _SkyUnit2TestScripts5[arrayIndex] = script
+        _SkyUnitTestScripts5[arrayIndex] = script
     elseIf arrayNumber == 6
-        _SkyUnit2TestScripts6[arrayIndex] = script
+        _SkyUnitTestScripts6[arrayIndex] = script
     elseIf arrayNumber == 7
-        _SkyUnit2TestScripts7[arrayIndex] = script
+        _SkyUnitTestScripts7[arrayIndex] = script
     elseIf arrayNumber == 8
-        _SkyUnit2TestScripts8[arrayIndex] = script
+        _SkyUnitTestScripts8[arrayIndex] = script
     elseIf arrayNumber == 9
-        _SkyUnit2TestScripts9[arrayIndex] = script
+        _SkyUnitTestScripts9[arrayIndex] = script
     endIf
 endFunction
 
-SkyUnit2Test function GetScriptFromSlot(int slotNumber)
+SkyUnitTest function GetScriptFromSlot(int slotNumber)
     if slotNumber == 0
         return None
     endIf
     int arrayNumber = slotNumber / 128
     int arrayIndex = slotNumber % 128
     if arrayNumber == 0
-        return _SkyUnit2TestScripts0[arrayIndex]
+        return _SkyUnitTestScripts0[arrayIndex]
     elseIf arrayNumber == 1
-        return _SkyUnit2TestScripts1[arrayIndex]
+        return _SkyUnitTestScripts1[arrayIndex]
     elseIf arrayNumber == 2
-        return _SkyUnit2TestScripts2[arrayIndex]
+        return _SkyUnitTestScripts2[arrayIndex]
     elseIf arrayNumber == 3
-        return _SkyUnit2TestScripts3[arrayIndex]
+        return _SkyUnitTestScripts3[arrayIndex]
     elseIf arrayNumber == 4
-        return _SkyUnit2TestScripts4[arrayIndex]
+        return _SkyUnitTestScripts4[arrayIndex]
     elseIf arrayNumber == 5
-        return _SkyUnit2TestScripts5[arrayIndex]
+        return _SkyUnitTestScripts5[arrayIndex]
     elseIf arrayNumber == 6
-        return _SkyUnit2TestScripts6[arrayIndex]
+        return _SkyUnitTestScripts6[arrayIndex]
     elseIf arrayNumber == 7
-        return _SkyUnit2TestScripts7[arrayIndex]
+        return _SkyUnitTestScripts7[arrayIndex]
     elseIf arrayNumber == 8
-        return _SkyUnit2TestScripts8[arrayIndex]
+        return _SkyUnitTestScripts8[arrayIndex]
     elseIf arrayNumber == 9
-        return _SkyUnit2TestScripts9[arrayIndex]
+        return _SkyUnitTestScripts9[arrayIndex]
     endIf
 endFunction
 
-int function GetScriptSlotNumber(SkyUnit2Test script)
+int function GetScriptSlotNumber(SkyUnitTest script)
     return JMap.getInt(TestScriptLookupMap, GetScriptDisplayName(script))
 endFunction
 
@@ -475,13 +489,13 @@ endFunction
 ;; Running Tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-int function GetTestSuiteScriptRunsMap(int suite, SkyUnit2Test script)
+int function GetTestSuiteScriptRunsMap(int suite, SkyUnitTest script)
     return JMap.getObj(GetTestSuiteScriptsMap(suite), "testRuns")
 endFunction
 
 float _currentlyRunningTestLock
 
-int function RunTestScript(int suite, SkyUnit2Test script, string filter = "", float lock = 0.0)
+int function RunTestScript(int suite, SkyUnitTest script, string filter = "", float lock = 0.0)
     Debug("Run Test Script " + script + " for " + suite + " lock:" + lock)
     if lock == 0.0
         lock = Utility.RandomFloat(1.0, 1000.0)
@@ -507,12 +521,12 @@ int function RunTestScript(int suite, SkyUnit2Test script, string filter = "", f
     endIf
 endFunction
 
-SkyUnit2Test property _currentlyRunningTestScript
-    SkyUnit2Test function get()
+SkyUnitTest property _currentlyRunningTestScript
+    SkyUnitTest function get()
         int slotNumber = JMap.getInt(CurrentState, "currentlyRunningTestScriptSlotNumber")
         return GetScriptFromSlot(slotNumber)
     endFunction
-    function set(SkyUnit2Test script)
+    function set(SkyUnitTest script)
         int slotNumber = GetScriptSlotNumber(script)
         JMap.setInt(CurrentState, "currentlyRunningTestScriptSlotNumber", slotNumber)
     endFunction
@@ -521,8 +535,8 @@ endProperty
 ; TODO REMOVE AND REPLACE WITH PROPERTY ABOVE
 ;
 ; JUST NEED TO DO THE *Map and *TestsMap first :)
-SkyUnit2Test property CurrentlyRunningTest
-    SkyUnit2Test function get()
+SkyUnitTest property CurrentlyRunningTest
+    SkyUnitTest function get()
         return _currentlyRunningTestScript
     endFunction
 endProperty
@@ -554,8 +568,11 @@ string property CurrentTestRunFilter
     endFunction
 endProperty
 
-int function RunTestScriptLocked(int suite, SkyUnit2Test script, string filter = "")
+int function BeginTestRun(int suite, SkyUnitTest script, string filter = "")
     Debug("Running " + script + " from " + suite + " (filter: \"" + filter + "\")")
+
+    _currentlyRunningTestScript = script
+    
     int runsMap = GetTestSuiteScriptRunsMap(suite, script)
     _currentlyRunningTestScriptMap = runsMap
     CurrentTestRunFilter = filter
@@ -570,10 +587,15 @@ int function RunTestScriptLocked(int suite, SkyUnit2Test script, string filter =
     JMap.setObj(testRun, "tests", _currentlyRunningTestScriptTestsMap)
     JMap.setStr(testRun, "status", SkyUnit2.TestStatus_PASS()) ; Default to pass, any failure will update this to FAIL
 
+    return testRun
+endFunction
+
+int function RunTestScriptLocked(int suite, SkyUnitTest script, string filter = "")
+    int testRun = BeginTestRun(suite, script, filter)
+
     ; Run the test! (And track duration)
     float startTime = Utility.GetCurrentRealTime()
     JMap.setFlt(testRun, "startTime", startTime)
-    _currentlyRunningTestScript = script
 
     ; BeforeAll() - Treated just like any other test!
     BeginTest(SkyUnit2.SpecialTestNameFor_BeforeAll())
@@ -628,21 +650,24 @@ int property CurrentlyRunningTestScriptIndividualTestExpectationsArray
     endFunction
 endProperty
 
-; This is for SkyUnit2Test.Test(<test name>)
+; This is for SkyUnitTest.Test(<test name>)
 ; The current script is 
 function BeginTest(string testName)
-    Debug("Begin Test " + testName)
+    Debug("Begin Test " + testName + " in suite " + CurrentTestSuiteName)
 
     ; Check if the previous test is "Still Open", i.e. it's PENDING with no Fn()
     if _currentlyRunningTestScriptIndividualTestMap
+        Debug("Previous test not closed, calling EndTest() now")
         EndTest()
     endIf
 
     ; _currentlyRunningTestScriptTestsMap
     ; ^---- this maps Test Name ==> Test Object (for the currently running test script)
+    Debug("Setting up and saving a new Map for this test")
     int testMap = JMap.object()
     JMap.setObj(_currentlyRunningTestScriptTestsMap, testName, testMap)
     JMap.setStr(testMap, "name", testName)
+    Debug("Defaulting test to PENDING")
     JMap.setStr(testMap, "status", SkyUnit2.TestStatus_PENDING()) ; Default to PENDING (no Fn() hooked up)
 
     ; Setup expectations array :)
@@ -665,22 +690,24 @@ endFunction
 function EndTest(bool fnCalled = false)
     Debug("End Test")
 
-    ; If it was ended by calling Fn() then mark the function as PASSED if it was previously PENDING
-    ; i.e. if there were no assertions. We could keep no assertions at PENDING but... if you do Fn() we'll make it NOT PENDING
-    if fnCalled
-        if JMap.getStr(_currentlyRunningTestScriptIndividualTestMap, "status") == SkyUnit2.TestStatus_PENDING()
-            JMap.setStr(_currentlyRunningTestScriptIndividualTestMap, "status", SkyUnit2.TestStatus_PASS())
-        endIf
-    endIf
-
     _currentlyRunningTestScript.AfterEach()
     float endTime = Utility.GetCurrentRealTime()
     JMap.setFlt(_currentlyRunningTestScriptIndividualTestMap, "endTime", endTime)
     JMap.setFlt(_currentlyRunningTestScriptIndividualTestMap, "durationTime", endTime - _currentlyRunningTestScriptIndividualTestStartTime)
 
-    ; If nothing failed in the BeforeEach / Test / AfterEach then status will still be PENDING. Update it to PASSED.
-    if JMap.getStr(_currentlyRunningTestScriptIndividualTestMap, "status") == SkyUnit2.TestStatus_PENDING()
-        JMap.setStr(_currentlyRunningTestScriptIndividualTestMap, "status", SkyUnit2.TestStatus_PASS())
+    ; If it was ended by calling Fn() then mark the function as PASSED if it was previously PENDING
+    ; i.e. if there were no assertions. We could keep no assertions at PENDING but... if you do Fn() we'll make it NOT PENDING
+    if fnCalled
+        Debug("This was called via Fn()")
+        if JMap.getStr(_currentlyRunningTestScriptIndividualTestMap, "status") == SkyUnit2.TestStatus_PENDING()
+            Debug("Updating test from PENDING to PASSING")
+            JMap.setStr(_currentlyRunningTestScriptIndividualTestMap, "status", SkyUnit2.TestStatus_PASS())
+        endIf
+        ; If nothing failed in the BeforeEach / Test / AfterEach then status will still be PENDING. Update it to PASSED.
+        ; But only if Fn() was provided.
+        if JMap.getStr(_currentlyRunningTestScriptIndividualTestMap, "status") == SkyUnit2.TestStatus_PENDING()
+            JMap.setStr(_currentlyRunningTestScriptIndividualTestMap, "status", SkyUnit2.TestStatus_PASS())
+        endIf
     endIf
 
     ; Test is done :) Reset

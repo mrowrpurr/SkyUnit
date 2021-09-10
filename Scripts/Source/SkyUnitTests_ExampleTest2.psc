@@ -1,5 +1,5 @@
-scriptName SkyUnitTests_ExampleTest2 extends SkyUnit2Test
-{Example SkyUnit2Test used by other tests.
+scriptName SkyUnitTests_ExampleTest2 extends SkyUnitTest
+{Example SkyUnitTest used by other tests.
 DO NOT modify the Tests() in this.}
 
 bool property OnePassingOneFailing auto
