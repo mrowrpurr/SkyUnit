@@ -242,11 +242,17 @@ bool function BeEmpty()
     bool isEmpty = ! actual
     if StringUtil.Find(type, "Array") > -1
         isEmpty = actual == "[]"
-    endIf
-    if not && isEmpty
-        return SkyUnit2.FailExpectation("BeEmpty", "Expected " + type + " not to be empty but it was empty")
-    elseIf ! not && ! isEmpty
-        return SkyUnit2.FailExpectation("BeEmpty", "Expected " + type + " to be empty but it was not empty: " + actual)
+        if not && isEmpty
+            return SkyUnit2.FailExpectation("BeEmpty", "Expected " + type + " " + actual + " not to be empty")
+        elseIf ! not && ! isEmpty
+            return SkyUnit2.FailExpectation("BeEmpty", "Expected " + type + " " + actual + " to be empty")
+        endIf
+    else
+        if not && isEmpty
+            return SkyUnit2.FailExpectation("BeEmpty", "Expected " + type + " '" + actual + "' not to be empty")
+        elseIf ! not && ! isEmpty
+            return SkyUnit2.FailExpectation("BeEmpty", "Expected " + type + " '"  + actual + "' to be empty")
+        endIf
     endIf
     return SkyUnit2.PassExpectation("BeEmpty")
 endFunction
