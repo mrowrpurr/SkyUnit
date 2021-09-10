@@ -51,6 +51,8 @@ function PrintToConsole(string text)
 endFunction
 
 function ShowTestChooser()
+    SkyUnit2.UseDefaultTestSuite()
+    
     int totalTestCount = SkyUnit2.GetTestSuiteScriptCount()
     if ! totalTestCount
         Debug.MessageBox("No SkyUnit tests found")

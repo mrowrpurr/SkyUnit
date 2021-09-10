@@ -346,39 +346,52 @@ bool function BeFalse()
 endFunction
 
 bool function BeNone()
-    string type = SkyUnit2.GetAssertionData_MainObject_Type()
+    string type = SkyUnit2.GetExpectationData_MainObject_Type()
     bool not = SkyUnit2.Not()
     bool actualValue
+
     if type == "Bool"
         actualValue = SkyUnit2.GetExpectationData_MainObject_Bool()
     elseIf type == "String"
-        actualValue = SkyUnit2.GetExpectationData_MainObject_Bool()
+        actualValue = SkyUnit2.GetExpectationData_MainObject_String()
     elseIf type == "Int"
-        actualValue = SkyUnit2.GetExpectationData_MainObject_Bool()
+        actualValue = SkyUnit2.GetExpectationData_MainObject_Int()
     elseIf type == "Float"
-        actualValue = SkyUnit2.GetExpectationData_MainObject_Bool()
+        actualValue = SkyUnit2.GetExpectationData_MainObject_Float()
+
     elseIf type == "Form"
-        actualValue = SkyUnit2.GetExpectationData_MainObject_Bool()
+
+        ; TODO put these conditionals into each branch, like so:
+
+        ; actualValue = SkyUnit2.GetExpectationData_MainObject_Form()
+        Form actualFormValue = SkyUnit2.GetExpectationData_MainObject_Form()
+        if not && ! actualFormValue
+            return SkyUnit2.FailExpectation("BeNone", "Expected Form not to be None: " + actualFormValue)
+        elseIf ! not && actualFormValue
+            return SkyUnit2.FailExpectation("BeNone", "Expected Form to be None: " + actualFormValue)
+        endIf
+
     elseIf type == "StringArray"
-        actualValue = SkyUnit2.GetExpectationData_MainObject_Bool()
+        actualValue = SkyUnit2.GetExpectationData_MainObject_StringArray()
     elseIf type == "IntArray"
-        actualValue = SkyUnit2.GetExpectationData_MainObject_Bool()
+        actualValue = SkyUnit2.GetExpectationData_MainObject_IntArray()
     elseIf type == "FloatArray"
-        actualValue = SkyUnit2.GetExpectationData_MainObject_Bool()
+        actualValue = SkyUnit2.GetExpectationData_MainObject_FloatArray()
     elseIf type == "FormArray"
-        actualValue = SkyUnit2.GetExpectationData_MainObject_Bool()
+        actualValue = SkyUnit2.GetExpectationData_MainObject_FormArray()
     elseIf type == "BoolArray"
-        actualValue = SkyUnit2.GetExpectationData_MainObject_Bool()
+        actualValue = SkyUnit2.GetExpectationData_MainObject_BoolArray()
     elseIf StringUtil.Find(type, "Array") > -1
         actualValue = SkyUnit2.GetExpectationData_MainObject_Text() != "[]"
     else
         actualValue = SkyUnit2.GetExpectationData_MainObject_Text()
     endIf
     if not && ! actualValue
-        return SkyUnit2.FailExpectation("BeNone", "Expected value not to be false: " + actualValue)
+        return SkyUnit2.FailExpectation("BeNone", "Expected value not to be None: " + actualValue)
     elseIf ! not && actualValue
-        return SkyUnit2.FailExpectation("BeNone", "Expected value to be false: " + actualValue)
+        return SkyUnit2.FailExpectation("BeNone", "Expected value to be None: " + actualValue)
     endIf
+
     return SkyUnit2.PassExpectation("BeNone")
 endFunction
 
