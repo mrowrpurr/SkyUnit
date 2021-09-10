@@ -169,6 +169,20 @@ function EqualInt(int expected)
     SkyUnit2.PassExpectation("EqualInt")
 endFunction
 
+function EqualBool(bool expected)
+    SkyUnit2.SetAssertionData_MainObject_Bool(expected)
+    bool actual = SkyUnit2.GetExpectationData_MainObject_Bool()
+    bool not = SkyUnit2.Not()
+    if not && actual == expected
+        SkyUnit2.FailExpectation("EqualBool", "Expected " + actual + " not to equal " + expected)
+        return
+    elseIf ! not && actual != expected
+        SkyUnit2.FailExpectation("EqualBool", "Expected " + actual + " to equal " + expected)
+        return
+    endIf
+    SkyUnit2.PassExpectation("EqualBool")
+endFunction
+
 function EqualFloat(float expected)
     SkyUnit2.SetAssertionData_MainObject_Float(expected)
     float actual = SkyUnit2.GetExpectationData_MainObject_Text() as float

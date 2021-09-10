@@ -521,7 +521,7 @@ int function RunTestScript(int suite, SkyUnitTest script, string filter = "", fl
     endIf
 endFunction
 
-SkyUnitTest property _currentlyRunningTestScript
+SkyUnitTest property CurrentlyRunningTestScript
     SkyUnitTest function get()
         int slotNumber = JMap.getInt(CurrentState, "currentlyRunningTestScriptSlotNumber")
         return GetScriptFromSlot(slotNumber)
@@ -537,11 +537,11 @@ endProperty
 ; JUST NEED TO DO THE *Map and *TestsMap first :)
 SkyUnitTest property CurrentlyRunningTest
     SkyUnitTest function get()
-        return _currentlyRunningTestScript
+        return CurrentlyRunningTestScript
     endFunction
 endProperty
 
-int property _currentlyRunningTestScriptMap
+int property CurrentlyRunningTestScriptRunsMap
     int function get()
         return JMap.getInt(CurrentState, "currentlyRunningTestScriptMap")
     endFunction
@@ -550,7 +550,7 @@ int property _currentlyRunningTestScriptMap
     endFunction
 endProperty
 
-int property _currentlyRunningTestScriptTestsMap
+int property CurrentlyRunningTestScriptTestsMap
     int function get()
         return JMap.getInt(CurrentState, "currentlyRunningTestScriptTestsMap")
     endFunction
@@ -571,20 +571,21 @@ endProperty
 int function BeginTestRun(int suite, SkyUnitTest script, string filter = "")
     Debug("Running " + script + " from " + suite + " (filter: \"" + filter + "\")")
 
-    _currentlyRunningTestScript = script
+    CurrentlyRunningTestScript = script
     
     int runsMap = GetTestSuiteScriptRunsMap(suite, script)
-    _currentlyRunningTestScriptMap = runsMap
+    CurrentlyRunningTestScriptRunsMap = runsMap
     CurrentTestRunFilter = filter
 
     ; Create a new test suite result
     float testRunKey = Utility.GetCurrentRealTime()
     int testRun = JMap.object()
+    CurrentlyRunningTestScriptMap = testRun
     JMap.setObj(runsMap, testRunKey, testRun)
     JMap.setObj(runsMap, SkyUnit2.SpecialTestRunDuration_LatestTest(), testRun)
-    _currentlyRunningTestScriptTestsMap = JMap.object()
+    CurrentlyRunningTestScriptTestsMap = JMap.object()
     JMap.setStr(testRun, "name", GetScriptDisplayName(script)) ; Copy the pretty name of the script onto the result (cuz most folks just work with results)
-    JMap.setObj(testRun, "tests", _currentlyRunningTestScriptTestsMap)
+    JMap.setObj(testRun, "tests", CurrentlyRunningTestScriptTestsMap)
     JMap.setStr(testRun, "status", SkyUnit2.TestStatus_PASS()) ; Default to pass, any failure will update this to FAIL
 
     return testRun
@@ -605,7 +606,7 @@ int function RunTestScriptLocked(int suite, SkyUnitTest script, string filter = 
     ; Tests()
     script.Tests()
 
-    if _currentlyRunningTestScriptIndividualTestMap
+    if CurrentlyRunningTestScriptIndividualTestMap
         ; This happens if the last test is a PENDING test with no Fn() to clean things up :)
         EndTest()
     endIf
@@ -615,7 +616,7 @@ int function RunTestScriptLocked(int suite, SkyUnitTest script, string filter = 
     script.AfterAll()
     EndTest()
     
-    _currentlyRunningTestScript = None
+    CurrentlyRunningTestScript = None
     float endTime = Utility.GetCurrentRealTime()
     JMap.setFlt(testRun, "endTime", endTime)
     JMap.setFlt(testRun, "durationTime", endTime - startTime)
@@ -623,7 +624,16 @@ int function RunTestScriptLocked(int suite, SkyUnitTest script, string filter = 
     return testRun
 endFunction
 
-int property _currentlyRunningTestScriptIndividualTestMap
+int property CurrentlyRunningTestScriptMap
+    int function get()
+        return JMap.getInt(CurrentState, "currentlyRunningTestScriptMap")
+    endFunction
+    function set(int value)
+        JMap.setInt(CurrentState, "currentlyRunningTestScriptMap", value)
+    endFunction
+endProperty
+
+int property CurrentlyRunningTestScriptIndividualTestMap
     int function get()
         return JMap.getInt(CurrentState, "currentlyRunningTestScriptIndividualTestMap")
     endFunction
@@ -632,7 +642,7 @@ int property _currentlyRunningTestScriptIndividualTestMap
     endFunction
 endProperty
 
-float property _currentlyRunningTestScriptIndividualTestStartTime
+float property CurrentlyRunningTestScriptIndividualTestStartTime
     float function get()
         return JMap.getFlt(CurrentState, "currentlyRunningTestScriptIndividualTestStartTime")
     endFunction
@@ -656,16 +666,16 @@ function BeginTest(string testName)
     Debug("Begin Test " + testName + " in suite " + CurrentTestSuiteName)
 
     ; Check if the previous test is "Still Open", i.e. it's PENDING with no Fn()
-    if _currentlyRunningTestScriptIndividualTestMap
+    if CurrentlyRunningTestScriptIndividualTestMap
         Debug("Previous test not closed, calling EndTest() now")
         EndTest()
     endIf
 
-    ; _currentlyRunningTestScriptTestsMap
+    ; CurrentlyRunningTestScriptTestsMap
     ; ^---- this maps Test Name ==> Test Object (for the currently running test script)
     Debug("Setting up and saving a new Map for this test")
     int testMap = JMap.object()
-    JMap.setObj(_currentlyRunningTestScriptTestsMap, testName, testMap)
+    JMap.setObj(CurrentlyRunningTestScriptTestsMap, testName, testMap)
     JMap.setStr(testMap, "name", testName)
     Debug("Defaulting test to PENDING")
     JMap.setStr(testMap, "status", SkyUnit2.TestStatus_PENDING()) ; Default to PENDING (no Fn() hooked up)
@@ -675,65 +685,61 @@ function BeginTest(string testName)
     JMap.setObj(testMap, "expectations", expectations)
 
     ; Quick lookups for Fn() and Expectation Data (etc) !
-    _currentlyRunningTestScriptIndividualTestMap = testMap
+    CurrentlyRunningTestScriptIndividualTestMap = testMap
     CurrentlyRunningTestScriptIndividualTestExpectationsArray = expectations
 
-    _currentlyRunningTestScriptIndividualTestStartTime = Utility.GetCurrentRealTime()
-    JMap.setFlt(testMap, "startTime", _currentlyRunningTestScriptIndividualTestStartTime)
+    CurrentlyRunningTestScriptIndividualTestStartTime = Utility.GetCurrentRealTime()
+    JMap.setFlt(testMap, "startTime", CurrentlyRunningTestScriptIndividualTestStartTime)
     ; Now it'll run! If Fn() is provided.
 endFunction
 
 ; This is called by Fn()
 ; Or at the end of all of the tests if no Fn() was called
-; This should cleanup _currentlyRunningTestScriptIndividualTestMap
+; This should cleanup CurrentlyRunningTestScriptIndividualTestMap
 ; which is how we know whether or not Fn() was called
 function EndTest(bool fnCalled = false)
     Debug("End Test")
 
-    _currentlyRunningTestScript.AfterEach()
+    CurrentlyRunningTestScript.AfterEach()
     float endTime = Utility.GetCurrentRealTime()
-    JMap.setFlt(_currentlyRunningTestScriptIndividualTestMap, "endTime", endTime)
-    JMap.setFlt(_currentlyRunningTestScriptIndividualTestMap, "durationTime", endTime - _currentlyRunningTestScriptIndividualTestStartTime)
+    JMap.setFlt(CurrentlyRunningTestScriptIndividualTestMap, "endTime", endTime)
+    JMap.setFlt(CurrentlyRunningTestScriptIndividualTestMap, "durationTime", endTime - CurrentlyRunningTestScriptIndividualTestStartTime)
 
     ; If it was ended by calling Fn() then mark the function as PASSED if it was previously PENDING
     ; i.e. if there were no assertions. We could keep no assertions at PENDING but... if you do Fn() we'll make it NOT PENDING
     if fnCalled
         Debug("This was called via Fn()")
-        if JMap.getStr(_currentlyRunningTestScriptIndividualTestMap, "status") == SkyUnit2.TestStatus_PENDING()
-            Debug("Updating test from PENDING to PASSING")
-            JMap.setStr(_currentlyRunningTestScriptIndividualTestMap, "status", SkyUnit2.TestStatus_PASS())
-        endIf
         ; If nothing failed in the BeforeEach / Test / AfterEach then status will still be PENDING. Update it to PASSED.
         ; But only if Fn() was provided.
-        if JMap.getStr(_currentlyRunningTestScriptIndividualTestMap, "status") == SkyUnit2.TestStatus_PENDING()
-            JMap.setStr(_currentlyRunningTestScriptIndividualTestMap, "status", SkyUnit2.TestStatus_PASS())
+        if JMap.getStr(CurrentlyRunningTestScriptIndividualTestMap, "status") == SkyUnit2.TestStatus_PENDING()
+            JMap.setStr(CurrentlyRunningTestScriptIndividualTestMap, "status", SkyUnit2.TestStatus_PASS())
         endIf
     endIf
 
     ; Test is done :) Reset
-    _currentlyRunningTestScriptIndividualTestMap = 0
-    _currentlyRunningTestScriptIndividualTestStartTime = 0.0
+    CurrentlyRunningTestScriptIndividualTestMap = 0
+    CurrentlyRunningTestScriptIndividualTestStartTime = 0.0
 endFunction
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Expectations & Expectation Data
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-int property _currentlyRunningExpectation
+int property CurrentlyRunningExpectation
     int function get()
-        return JMap.getInt(CurrentState, "_currentlyRunningExpectation")
+        return JMap.getInt(CurrentState, "CurrentlyRunningExpectation")
     endFunction
     function set(int value)
-        JMap.setInt(CurrentState, "_currentlyRunningExpectation", value)
+        JMap.setInt(CurrentState, "CurrentlyRunningExpectation", value)
     endFunction
 endProperty
 
-int property _currentlyRunningExpectationDataMap
+int property CurrentlyRunningExpectationDataMap
     int function get()
-        return JMap.getInt(CurrentState, "_currentlyRunningExpectationDataMap")
+        return JMap.getInt(CurrentState, "CurrentlyRunningExpectationDataMap")
     endFunction
     function set(int value)
-        JMap.setInt(CurrentState, "_currentlyRunningExpectationDataMap", value)
+        JMap.setInt(CurrentState, "CurrentlyRunningExpectationDataMap", value)
     endFunction
 endProperty
 
@@ -765,49 +771,58 @@ int property CurrentlyRunningExpectationAssertionDataMap
 endProperty
 
 function SetNotExpectation()
-    if JMap.getInt(_currentlyRunningExpectation, "not")
-        JMap.setInt(_currentlyRunningExpectation, "not", 0)
+    if JMap.getInt(CurrentlyRunningExpectation, "not")
+        JMap.setInt(CurrentlyRunningExpectation, "not", 0)
     else
-        JMap.setInt(_currentlyRunningExpectation, "not", 1)
+        JMap.setInt(CurrentlyRunningExpectation, "not", 1)
     endIf
 endFunction
 
 bool function GetNotExpectation()
-    return JMap.getInt(_currentlyRunningExpectation, "not")
+    return JMap.getInt(CurrentlyRunningExpectation, "not")
 endFunction
 
 function SetCustomFailureMessage(string failureMessage)
-    JMap.setStr(_currentlyRunningExpectation, "customFailureMessage", failureMessage)
+    JMap.setStr(CurrentlyRunningExpectation, "customFailureMessage", failureMessage)
 endFunction
 
 function BeginExpectation(string expectationName)
-    _currentlyRunningExpectation = JMap.object()
-    JArray.addObj(CurrentlyRunningTestScriptIndividualTestExpectationsArray, _currentlyRunningExpectation)
-    JMap.setStr(_currentlyRunningExpectation, "expectationName", expectationName)
-    _currentlyRunningExpectationDataMap = JMap.object()
+    CurrentlyRunningExpectation = JMap.object()
+    JArray.addObj(CurrentlyRunningTestScriptIndividualTestExpectationsArray, CurrentlyRunningExpectation)
+    JMap.setStr(CurrentlyRunningExpectation, "expectationName", expectationName)
+    CurrentlyRunningExpectationDataMap = JMap.object()
     ; Setup data maps for storing expectation and assertion data
-    JMap.setObj(_currentlyRunningExpectation, "data", _currentlyRunningExpectationDataMap)
+    JMap.setObj(CurrentlyRunningExpectation, "data", CurrentlyRunningExpectationDataMap)
     CurrentlyRunningExpectationMainDataMap = JMap.object()
-    JMap.setObj(_currentlyRunningExpectationDataMap, "main", CurrentlyRunningExpectationMainDataMap)
+    JMap.setObj(CurrentlyRunningExpectationDataMap, "main", CurrentlyRunningExpectationMainDataMap)
     CurrentlyRunningExpectationCustomDataMap = JMap.object()
-    JMap.setObj(_currentlyRunningExpectationDataMap, "custom", CurrentlyRunningExpectationCustomDataMap)
+    JMap.setObj(CurrentlyRunningExpectationDataMap, "custom", CurrentlyRunningExpectationCustomDataMap)
     CurrentlyRunningExpectationAssertionDataMap = JMap.object()
-    JMap.setObj(_currentlyRunningExpectationDataMap, "assertion", CurrentlyRunningExpectationAssertionDataMap)
+    JMap.setObj(CurrentlyRunningExpectationDataMap, "assertion", CurrentlyRunningExpectationAssertionDataMap)
 endFunction
 
 function PassExpectation(string assertionName)
-    JMap.setStr(_currentlyRunningExpectation, "assertionName", assertionName)
-    JMap.setStr(_currentlyRunningTestScriptIndividualTestMap, "status", SkyUnit2.TestStatus_PASS())
-    JMap.setInt(_currentlyRunningExpectation, "failed", 0)
+    JMap.setStr(CurrentlyRunningExpectation, "assertionName", assertionName)
+    JMap.setInt(CurrentlyRunningExpectation, "failed", 0)
 endFunction
 
 function FailExpectation(string assertionName, string failureMessage)
-    JMap.setStr(_currentlyRunningExpectation, "assertionName", assertionName)
-    JMap.setStr(_currentlyRunningTestScriptIndividualTestMap, "status", SkyUnit2.TestStatus_FAIL())
-    JMap.setInt(_currentlyRunningExpectation, "failed", 1)
-    JMap.setStr(_currentlyRunningExpectation, "failureMessage", failureMessage)
+    JMap.setStr(CurrentlyRunningExpectation, "assertionName", assertionName)
+    JMap.setStr(CurrentlyRunningTestScriptIndividualTestMap, "status", SkyUnit2.TestStatus_FAIL())
+    JMap.setInt(CurrentlyRunningExpectation, "failed", 1)
+    JMap.setStr(CurrentlyRunningExpectation, "failureMessage", failureMessage)
 
     ; Mark the whole test as failing because there was at least 1 failed expectation
-    JMap.setInt(_currentlyRunningTestScriptMap, "failed", 1)
-    JMap.setStr(_currentlyRunningTestScriptMap, "status", SkyUnit2.TestStatus_FAIL())
+    JMap.setInt(CurrentlyRunningTestScriptIndividualTestMap, "failed", 1)
+    JMap.setStr(CurrentlyRunningTestScriptIndividualTestMap, "status", SkyUnit2.TestStatus_FAIL())
+
+    ; Also, fail the whole script!
+    JMap.setInt(CurrentlyRunningTestScriptMap, "failed", 1)
+    JMap.setStr(CurrentlyRunningTestScriptMap, "status", SkyUnit2.TestStatus_FAIL())
 endFunction
+
+bool property IsCurrentlyRunningExpectationFailed
+    bool function get()
+        return JMap.getInt(CurrentlyRunningExpectation, "failed") == 1
+    endFunction
+endProperty

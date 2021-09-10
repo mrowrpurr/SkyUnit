@@ -68,3 +68,19 @@ function SaveFakeTestResults(string filename = "", bool verbose = true)
         Debug.Notification("Wrote file " + filename)
     endIf
 endFunction
+
+function AssertExceptionFailed()
+    SkyUnit2PrivateAPI api = SkyUnit2PrivateAPI.GetPrivateAPI()
+    SwitchTo_Fake_TestSuite()
+    bool failed = api.IsCurrentlyRunningExpectationFailed
+    SwitchTo_Default_TestSuite()
+    ExpectBool(failed).To(EqualBool(true), "Expected currently running exception to be failed")
+endFunction
+
+function AssertExceptionPassed()
+    SkyUnit2PrivateAPI api = SkyUnit2PrivateAPI.GetPrivateAPI()
+    SwitchTo_Fake_TestSuite()
+    bool failed = api.IsCurrentlyRunningExpectationFailed
+    SwitchTo_Default_TestSuite()
+    ExpectBool(failed).To(EqualBool(false), "Expected currently running exception not to be failed")
+endFunction

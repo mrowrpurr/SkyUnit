@@ -6,16 +6,19 @@ SkyUnitTests_ExampleTest2 _exampleTest2
 SkyUnitTests_ExampleTest3 _exampleTest3
 
 function BeforeEach()
-  SkyUnit2PrivateAPI api = SkyUnit2PrivateAPI.GetPrivateAPI()
-  api.DeleteAllTestSuitesExceptDefault()
+    SkyUnit2PrivateAPI api = SkyUnit2PrivateAPI.GetPrivateAPI()
+    api.DeleteAllTestSuitesExceptDefault()
+    FAKE_TEST_SUITE_NAME = "[Fake Test Suite for Testing] - " + Utility.RandomInt(1, 1000) + "_" + Utility.RandomInt(1, 1000)
+    SkyUnit2.CreateTestSuite(FAKE_TEST_SUITE_NAME)
+    SwitchTo_Default_TestSuite()
 endFunction
 
 function AfterAll()
-  SkyUnit2PrivateAPI api = SkyUnit2PrivateAPI.GetPrivateAPI()
-  api.DeleteAllTestSuitesExceptDefault()
+    SkyUnit2PrivateAPI api = SkyUnit2PrivateAPI.GetPrivateAPI()
+    api.DeleteAllTestSuitesExceptDefault()
 endFunction
 
-string property FAKE_TEST_SUITE_NAME = "[Fake Test Suite for Testing]" autoReadonly
+string property FAKE_TEST_SUITE_NAME auto
 bool _fakeTestSuiteCreated
 
 function SwitchTo_Fake_TestSuite()

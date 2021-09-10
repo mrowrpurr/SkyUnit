@@ -3,9 +3,11 @@ scriptName SkyUnitTests_BuiltInBasicAssertions extends SkyUnitTests_BaseAssertio
 
 function Tests()
     ; Test("ExpectBool").Fn(ExpectBool_Test())
-    ; Test("ExpectInt") ; .Fn(ExpectInt_Test())
+    Test("ExpectInt").Fn(ExpectInt_Test())
     ; Test("ExpectFloat") ; .Fn(ExpectFloat_Test())
+    
     Test("ExpectString").Fn(ExpectString_Test())
+    
     ; Test("ExpectForm") ; .Fn(ExpectForm_Test())
     ; Test("EqualBool") ; .Fn(EqualBool_Test())
     ; Test("EqualInt") ; .Fn(EqualInt_Test())
@@ -46,6 +48,30 @@ endFunction
 ; endFunction
 
 function ExpectInt_Test()
+    Debug.Trace("[SkyUnit] - RUNNING EQUAL INT TEST!")
+
+    StartNewFakeTest("ExpectInt")
+    string type = SkyUnit2.GetExpectationData_MainObject_Type()
+    string text = SkyUnit2.GetExpectationData_MainObject_Text()
+    int value = SkyUnit2.GetExpectationData_MainObject_Int()
+
+    SwitchTo_Default_TestSuite()
+    ExpectString(type).To(BeEmpty())
+    ExpectString(text).To(BeEmpty())
+    ExpectInt(value).To(EqualInt(0))
+
+    SwitchTo_Fake_TestSuite()
+    ExpectInt(42)
+    type = SkyUnit2.GetExpectationData_MainObject_Type()
+    text = SkyUnit2.GetExpectationData_MainObject_Text()
+    value = SkyUnit2.GetExpectationData_MainObject_Int()
+
+    SwitchTo_Default_TestSuite()
+    ExpectString(type).To(EqualString("Int"))
+    ExpectString(text).To(EqualString("4233"))
+    ExpectInt(value).To(EqualInt(42))
+
+    SaveFakeTestResults()
 endFunction
 
 function ExpectFloat_Test()
@@ -56,8 +82,8 @@ function ExpectString_Test()
     string type = SkyUnit2.GetExpectationData_MainObject_Type()
     string text = SkyUnit2.GetExpectationData_MainObject_Text()
     string value = SkyUnit2.GetExpectationData_MainObject_String()
-    SwitchTo_Default_TestSuite()
 
+    SwitchTo_Default_TestSuite()
     ExpectString(type).To(BeEmpty())
     ExpectString(text).To(BeEmpty())
     ExpectString(value).To(BeEmpty())
@@ -67,8 +93,8 @@ function ExpectString_Test()
     type = SkyUnit2.GetExpectationData_MainObject_Type()
     text = SkyUnit2.GetExpectationData_MainObject_Text()
     value = SkyUnit2.GetExpectationData_MainObject_String()
-    SwitchTo_Default_TestSuite()
 
+    SwitchTo_Default_TestSuite()
     ExpectString(type).To(EqualString("String"))
     ExpectString(text).To(EqualString("Hello, String!"))
     ExpectString(value).To("Hello, String!")
