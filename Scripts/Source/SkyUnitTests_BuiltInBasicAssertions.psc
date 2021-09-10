@@ -11,10 +11,10 @@ function Tests()
     
     ; Simple Equal Assertions
     ; Test("EqualBool") ; .Fn(EqualBool_Test())
-    ; Test("EqualInt") ; .Fn(EqualInt_Test())
-    ; Test("EqualFloat") ; .Fn(EqualFloat_Test())
+    Test("EqualInt").Fn(EqualInt_Test())
+    Test("EqualFloat").Fn(EqualFloat_Test())
     Test("EqualString").Fn(EqualString_Test())
-    ; Test("EqualForm") ; .Fn(EqualForm_Test())
+    Test("EqualForm").Fn(EqualForm_Test())
 
     ; Cross-Type Equality Assertions
     ; Test("EqualInt when provided a Float")
@@ -165,9 +165,91 @@ function EqualBool_Test()
 endFunction
 
 function EqualInt_Test()
+    bool expectationPassed
+    string failureMessage
+
+    ; EQUALS - PASS
+    StartNewFakeTest("EqualInt Pass")
+    ExpectInt(42).To(EqualInt(42))
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeTrue())
+    ExpectString(failureMessage).To(BeEmpty())
+    EndFakeTest()
+
+    ; EQUALS - FAIL
+    StartNewFakeTest("EqualInt Fail")
+    ExpectInt(42).To(EqualInt(123456))
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeFalse())
+    ExpectString(failureMessage).To(EqualString("Expected 42 to equal 123456"))
+
+    ; Not() EQUALS - PASS
+    StartNewFakeTest("Not EqualInt Pass")
+    ExpectInt(42).Not().To(EqualInt(123456))
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeTrue())
+    ExpectString(failureMessage).To(BeEmpty())
+    EndFakeTest()
+
+    ; Not() EQUALS - FAIL
+    StartNewFakeTest("Not EqualInt Pass")
+    ExpectInt(42).Not().To(EqualInt(42))
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeFalse())
+    ExpectString(failureMessage).To(EqualString("Expected 42 not to equal 42"))
 endFunction
 
 function EqualFloat_Test()
+    bool expectationPassed
+    string failureMessage
+
+    ; EQUALS - PASS
+    StartNewFakeTest("EqualFloat Pass")
+    ExpectFloat(4.2).To(EqualFloat(4.2))
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeTrue())
+    ExpectString(failureMessage).To(BeEmpty())
+    EndFakeTest()
+
+    ; EQUALS - FAIL
+    StartNewFakeTest("EqualFloat Fail")
+    ExpectFloat(4.2).To(EqualFloat(123.456))
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeFalse())
+    ExpectString(failureMessage).To(ContainText("Expected 4.2"))
+    ExpectString(failureMessage).To(ContainText("to equal 123.456"))
+
+    ; Not() EQUALS - PASS
+    StartNewFakeTest("Not EqualFloat Pass")
+    ExpectFloat(4.2).Not().To(EqualFloat(123.456))
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeTrue())
+    ExpectString(failureMessage).To(BeEmpty())
+    EndFakeTest()
+
+    ; Not() EQUALS - FAIL
+    StartNewFakeTest("Not EqualFloat Pass")
+    ExpectFloat(4.2).Not().To(EqualFloat(4.2))
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeFalse())
+    ExpectString(failureMessage).To(ContainText("Expected 4.2"))
+    ExpectString(failureMessage).To(ContainText("not to equal 4.2"))
 endFunction
 
 function EqualString_Test()
@@ -194,10 +276,69 @@ function EqualString_Test()
     ExpectString(failureMessage).To(EqualString("Expected 'Hello, world!' to equal 'This string is not Hello, world!'"))
 
     ; Not() EQUALS - PASS
+    StartNewFakeTest("Not EqualString Pass")
+    ExpectString("Hello, world!").Not().To(EqualString("This string is not Hello, world!"))
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeTrue())
+    ExpectString(failureMessage).To(BeEmpty())
+    EndFakeTest()
 
     ; Not() EQUALS - FAIL
-
+    StartNewFakeTest("Not EqualString Pass")
+    ExpectString("Hello, world!").Not().To(EqualString("Hello, world!"))
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeFalse())
+    ExpectString(failureMessage).To(EqualString("Expected 'Hello, world!' not to equal 'Hello, world!'"))
 endFunction
 
 function EqualForm_Test()
+    Form gold = Game.GetForm(0xf)
+    Form lockpick = Game.GetForm(0xa)
+
+    bool expectationPassed
+    string failureMessage
+
+    ; EQUALS - PASS
+    StartNewFakeTest("EqualForm Pass")
+    ExpectForm(gold).To(EqualForm(gold))
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeTrue())
+    ExpectString(failureMessage).To(BeEmpty())
+    EndFakeTest()
+
+    ; EQUALS - FAIL
+    StartNewFakeTest("EqualForm Fail")
+    ExpectForm(gold).To(EqualForm(lockpick))
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeFalse())
+    ExpectString(failureMessage).To(ContainText("Expected Gold"))
+    ExpectString(failureMessage).To(ContainText("to equal Lockpick"))
+
+    ; Not() EQUALS - PASS
+    StartNewFakeTest("Not EqualForm Pass")
+    ExpectForm(gold).Not().To(EqualForm(lockpick))
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeTrue())
+    ExpectString(failureMessage).To(BeEmpty())
+    EndFakeTest()
+
+    ; Not() EQUALS - FAIL
+    StartNewFakeTest("Not EqualForm Pass")
+    ExpectForm(gold).Not().To(EqualForm(gold))
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeFalse())
+    ExpectString(failureMessage).To(ContainText("Expected Gold"))
+    ExpectString(failureMessage).To(ContainText("not to equal Gold"))
 endFunction

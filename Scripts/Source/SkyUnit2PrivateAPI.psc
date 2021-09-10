@@ -102,7 +102,6 @@ function SwitchToTestSuiteByID(int suite)
 endFunction
 
 function SwitchToTestSuiteByName(string suite)
-    Log("Switching to test suite: " + suite)
     CurrentTestSuiteName = suite
     SwitchToTestSuiteByID(GetTestSuite(suite))
 endFunction

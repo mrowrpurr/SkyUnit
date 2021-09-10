@@ -24,6 +24,7 @@ bool _fakeTestSuiteCreated
 function SwitchTo_Fake_TestSuite()
     if ! _fakeTestSuiteCreated
         SkyUnit2.CreateTestSuite(FAKE_TEST_SUITE_NAME)
+        _fakeTestSuiteCreated = true
     endIf
     SkyUnit2.SwitchToTestSuite(FAKE_TEST_SUITE_NAME)
 endFunction

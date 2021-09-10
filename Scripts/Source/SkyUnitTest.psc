@@ -198,12 +198,24 @@ endFunction
 function EqualForm(Form expected)
     SkyUnit2.SetAssertionData_MainObject_Form(expected)
     Form actual = SkyUnit2.GetExpectationData_MainObject_Form()
+    string expectedName
+    if expected
+        expectedName = expected.GetName() + " " + expected
+    else
+        expectedName = "None"
+    endIF
+    string actualName
+    if actual
+        actualName = actual.GetName() + " " + actual
+    else
+        actualName = "None"
+    endIF
     bool not = SkyUnit2.Not()
     if not && actual == expected
-        SkyUnit2.FailExpectation("EqualForm", "Expected " + actual + " not to equal " + expected)
+        SkyUnit2.FailExpectation("EqualForm", "Expected " + actualName + " not to equal " + expectedName)
         return
     elseIf ! not && actual != expected
-        SkyUnit2.FailExpectation("EqualForm", "Expected " + actual + " to equal " + expected)
+        SkyUnit2.FailExpectation("EqualForm", "Expected " + actualName + " to equal " + expectedName)
         return
     endIf
     SkyUnit2.PassExpectation("EqualForm")
