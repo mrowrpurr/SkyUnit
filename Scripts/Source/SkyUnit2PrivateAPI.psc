@@ -826,3 +826,9 @@ bool property IsCurrentlyRunningExpectationFailed
         return JMap.getInt(CurrentlyRunningExpectation, "failed") == 1
     endFunction
 endProperty
+
+string property CurrentlyRunningExpectationFailureMessage
+    string function get()
+        return JMap.getStr(CurrentlyRunningExpectation, "failureMessage")
+    endFunction
+endProperty

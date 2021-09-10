@@ -138,7 +138,7 @@ endFunction
 
 ; UPDATE THESE TO RETURN BOOLS!
 
-function EqualString(string expected)
+bool function EqualString(string expected)
     SkyUnit2.SetAssertionData_MainObject_String(expected)
     string actual = SkyUnit2.GetExpectationData_MainObject_Text()
     if SkyUnit2.GetExpectationData_MainObject_Type() == "String"
@@ -146,13 +146,11 @@ function EqualString(string expected)
     endIf
     bool not = SkyUnit2.Not()
     if not && actual == expected
-        SkyUnit2.FailExpectation("EqualString", "Expected '" + actual + "' not to equal '" + expected + "'")
-        return
+        return SkyUnit2.FailExpectation("EqualString", "Expected '" + actual + "' not to equal '" + expected + "'")
     elseIf ! not && actual != expected
-        SkyUnit2.FailExpectation("EqualString", "Expected '" + actual + "' to equal '" + expected + "'")
-        return
+        return SkyUnit2.FailExpectation("EqualString", "Expected '" + actual + "' to equal '" + expected + "'")
     endIf
-    SkyUnit2.PassExpectation("EqualString")
+    return SkyUnit2.PassExpectation("EqualString")
 endFunction
 
 function EqualInt(int expected)
@@ -225,7 +223,7 @@ function ContainText(string expect)
     SkyUnit2.PassExpectation("ContainText")
 endFunction
 
-function BeEmpty()
+bool function BeEmpty()
     string actual = SkyUnit2.GetExpectationData_MainObject_Text()
     bool not = SkyUnit2.Not()
     string type = SkyUnit2.GetExpectationData_MainObject_Type()
@@ -234,13 +232,11 @@ function BeEmpty()
         isEmpty = actual == "[]"
     endIf
     if not && isEmpty
-        SkyUnit2.FailExpectation("BeEmpty", "Expected " + type + " not to be empty but it was empty")
-        return
+        return SkyUnit2.FailExpectation("BeEmpty", "Expected " + type + " not to be empty but it was empty")
     elseIf ! not && ! isEmpty
-        SkyUnit2.FailExpectation("BeEmpty", "Expected " + type + " to be empty but it was not empty: " + actual)
-        return
+        return SkyUnit2.FailExpectation("BeEmpty", "Expected " + type + " to be empty but it was not empty: " + actual)
     endIf
-    SkyUnit2.PassExpectation("BeEmpty")
+    return SkyUnit2.PassExpectation("BeEmpty")
 endFunction
 
 function HaveLength(int expectedLength)
@@ -309,7 +305,7 @@ bool function BeTrue()
 endFunction
 
 bool function BeFalse()
-    string type = SkyUnit2.GetAssertionData_MainObject_Type()
+    string type = SkyUnit2.GetExpectationData_MainObject_Type()
     bool not = SkyUnit2.Not()
     bool actualValue
     if type == "Bool"

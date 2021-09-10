@@ -3,7 +3,7 @@ scriptName SkyUnitTests_BuiltInBasicAssertions extends SkyUnitTests_BaseAssertio
 
 function Tests()
     ; Expectations
-    ; Test("ExpectBool").Fn(ExpectBool_Test())
+    Test("ExpectBool").Fn(ExpectBool_Test())
     Test("ExpectInt").Fn(ExpectInt_Test())
     Test("ExpectFloat").Fn(ExpectFloat_Test())
     Test("ExpectString").Fn(ExpectString_Test())
@@ -13,7 +13,7 @@ function Tests()
     ; Test("EqualBool") ; .Fn(EqualBool_Test())
     ; Test("EqualInt") ; .Fn(EqualInt_Test())
     ; Test("EqualFloat") ; .Fn(EqualFloat_Test())
-    ; Test("EqualString") ; .Fn(EqualString_Test())
+    Test("EqualString").Fn(EqualString_Test())
     ; Test("EqualForm") ; .Fn(EqualForm_Test())
 
     ; Cross-Type Equality Assertions
@@ -39,30 +39,28 @@ endFunction
 ;; Expectations
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-; function ExpectBool_Test()
-;     StartNewFakeTest("ExpectBool")
-;     string type = SkyUnit2.GetExpectationData_MainObject_Type()
-;     string text = SkyUnit2.GetExpectationData_MainObject_Text()
-;     bool value = SkyUnit2.GetExpectationData_MainObject_Bool()
-;     SwitchTo_Default_TestSuite()
+function ExpectBool_Test()
+    StartNewFakeTest("ExpectBool")
+    string type = SkyUnit2.GetExpectationData_MainObject_Type()
+    string text = SkyUnit2.GetExpectationData_MainObject_Text()
+    bool value = SkyUnit2.GetExpectationData_MainObject_Bool()
 
-;     ExpectString(type).To(BeEmpty())
-;     ExpectString(text).To(BeEmpty())
-;     ExpectBool(value).To(BeFalse()) ; default value for bools
+    SwitchTo_Default_TestSuite()
+    ExpectString(type).To(BeEmpty())
+    ExpectString(text).To(BeEmpty())
+    ExpectBool(value).To(EqualBool(false)) ; default
 
-;     SwitchTo_Fake_TestSuite()
-;     ExpectBool(true)
-;     type = SkyUnit2.GetExpectationData_MainObject_Type()
-;     text = SkyUnit2.GetExpectationData_MainObject_Text()
-;     value = SkyUnit2.GetExpectationData_MainObject_Bool()
-;     SwitchTo_Default_TestSuite()
+    SwitchTo_Fake_TestSuite()
+    ExpectBool(true)
+    type = SkyUnit2.GetExpectationData_MainObject_Type()
+    text = SkyUnit2.GetExpectationData_MainObject_Text()
+    value = SkyUnit2.GetExpectationData_MainObject_Bool()
 
-;     ExpectString(type).To(EqualString("Bool"))
-;     ExpectString(text).To(EqualString("true"))
-;     ExpectBool(value).To(BeTrue()) ; not the default!
-
-;     SaveFakeTestResults()
-; endFunction
+    SwitchTo_Default_TestSuite()
+    ExpectString(type).To(EqualString("Bool"))
+    ExpectString(text).To(EqualString("true"))
+    ExpectBool(value).To(EqualBool(true))
+endFunction
 
 function ExpectInt_Test()
     StartNewFakeTest("ExpectInt")
@@ -173,6 +171,32 @@ function EqualFloat_Test()
 endFunction
 
 function EqualString_Test()
+    bool expectationPassed
+    string failureMessage
+
+    ; EQUALS - PASS
+    StartNewFakeTest("EqualString Pass")
+    ExpectString("Hello, world!").To(EqualString("Hello, world!"))
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeTrue())
+    ExpectString(failureMessage).To(BeEmpty())
+    EndFakeTest()
+
+    ; EQUALS - FAIL
+    StartNewFakeTest("EqualString Fail")
+    ExpectString("Hello, world!").To(EqualString("This string is not Hello, world!"))
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeFalse())
+    ExpectString(failureMessage).To(EqualString("Expected 'Hello, world!' to equal 'This string is not Hello, world!'"))
+
+    ; Not() EQUALS - PASS
+
+    ; Not() EQUALS - FAIL
+
 endFunction
 
 function EqualForm_Test()
