@@ -286,38 +286,45 @@ function HaveLength(int expectedLength)
 endFunction
 
 bool function BeTrue()
-    string type = SkyUnit2.GetAssertionData_MainObject_Type()
+    string type = SkyUnit2.GetExpectationData_MainObject_Type()
+    string text = SkyUnit2.GetExpectationData_MainObject_Text()
     bool not = SkyUnit2.Not()
     bool actualValue
     if type == "Bool"
         actualValue = SkyUnit2.GetExpectationData_MainObject_Bool()
     elseIf type == "String"
-        actualValue = SkyUnit2.GetExpectationData_MainObject_Bool()
+        actualValue = SkyUnit2.GetExpectationData_MainObject_String()
+        text = "'" + text + "'"
     elseIf type == "Int"
-        actualValue = SkyUnit2.GetExpectationData_MainObject_Bool()
+        actualValue = SkyUnit2.GetExpectationData_MainObject_Int()
     elseIf type == "Float"
-        actualValue = SkyUnit2.GetExpectationData_MainObject_Bool()
+        actualValue = SkyUnit2.GetExpectationData_MainObject_Float()
     elseIf type == "Form"
-        actualValue = SkyUnit2.GetExpectationData_MainObject_Bool()
+        actualValue = SkyUnit2.GetExpectationData_MainObject_Form()
+        if actualValue
+            text = SkyUnit2.GetExpectationData_MainObject_Form().GetName() + " " + SkyUnit2.GetExpectationData_MainObject_Form()
+        else
+            text = "None"
+        endIf
     elseIf type == "StringArray"
-        actualValue = SkyUnit2.GetExpectationData_MainObject_Bool()
+        actualValue = SkyUnit2.GetExpectationData_MainObject_StringArray()
     elseIf type == "IntArray"
-        actualValue = SkyUnit2.GetExpectationData_MainObject_Bool()
+        actualValue = SkyUnit2.GetExpectationData_MainObject_IntArray()
     elseIf type == "FloatArray"
-        actualValue = SkyUnit2.GetExpectationData_MainObject_Bool()
+        actualValue = SkyUnit2.GetExpectationData_MainObject_FloatArray()
     elseIf type == "FormArray"
-        actualValue = SkyUnit2.GetExpectationData_MainObject_Bool()
+        actualValue = SkyUnit2.GetExpectationData_MainObject_FormArray()
     elseIf type == "BoolArray"
-        actualValue = SkyUnit2.GetExpectationData_MainObject_Bool()
+        actualValue = SkyUnit2.GetExpectationData_MainObject_BoolArray()
     elseIf StringUtil.Find(type, "Array") > -1
         actualValue = SkyUnit2.GetExpectationData_MainObject_Text() != "[]"
     else
         actualValue = SkyUnit2.GetExpectationData_MainObject_Text()
     endIf
     if not && actualValue
-        return SkyUnit2.FailExpectation("BeTrue", "Expected value not to be true: " + actualValue)
+        return SkyUnit2.FailExpectation("BeTrue", "Expected " + type + " " + text + " not to be true")
     elseIf ! not && ! actualValue
-        return SkyUnit2.FailExpectation("BeTrue", "Expected value to be true: " + actualValue)
+        return SkyUnit2.FailExpectation("BeTrue", "Expected " + type + " " + text + " to be true")
     endIf
     return SkyUnit2.PassExpectation("BeTrue")
 endFunction

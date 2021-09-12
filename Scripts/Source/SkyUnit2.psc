@@ -11,6 +11,21 @@ float function GetVersion() global
     return 1.0
 endFunction
 
+; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; ;; Serialize / Deserialize for Cache
+; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+; function SaveCache(string filename) global
+;     SkyUnit2PrivateAPI api = SkyUnit2PrivateAPI.GetPrivateAPI()
+;     if api.GlobalDataMap
+;         JValue.writeToFile(api.GlobalDataMap, filename)
+;     endIf
+; endFunction
+
+; function LoadFromCache(string filename) global
+;     SkyUnit2PrivateAPI.GetPrivateAPI().GlobalDataMap = JValue.readFromFile(filename)
+; endFunction
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Functions for Managing Tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

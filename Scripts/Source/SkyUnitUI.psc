@@ -50,13 +50,18 @@ function PrintToConsole(string text)
     endIf
 endFunction
 
+string property SKYUNIT_UI_SUITE_CACHE_FILE = "Data\\SkyUnit\\SkyUnitUI\\DefaultTestSuiteCache.json" autoReadonly
+bool _hasSavedCache = false ; reset on player load game?
+
 function ShowTestChooser()
     SkyUnit2.UseDefaultTestSuite()
-    
+
     int totalTestCount = SkyUnit2.GetTestSuiteScriptCount()
     if ! totalTestCount
-        Debug.MessageBox("No SkyUnit tests found")
-        return
+        if ! totalTestCount
+            Debug.MessageBox("No SkyUnit tests found")
+            return
+        endIf
     endIf
 
     uilistmenu listMenu = uiextensions.GetMenu("UIListMenu") as uilistmenu
@@ -96,6 +101,7 @@ function RunAllTestScripts(string[] testscriptNames)
         string name = testscriptNames[testScriptIndex]
         Debug("Running " + name)
         int result = SkyUnit2.RunTestScriptByName(SkyUnit2.DefaultTestSuite(), name)
+        JValue.retain(result)
         JValue.writeToFile(result, "TestResult_" + name + ".json")
         string resultText = TestScriptSummary(name, result, showMessageBox = false)
         if resultText == SkyUnit2.TestStatus_PASS()
@@ -110,6 +116,7 @@ function RunAllTestScripts(string[] testscriptNames)
             totalSkipped +=1
         endIf
         testScriptIndex += 1
+        JValue.release(result)
     endWhile
     Debug.Notification("Wrote files: TestResult_*.json")
     string summary = ""
@@ -131,9 +138,11 @@ endFunction
 function RunTestScriptByName(string name)
     Debug("Running " + name)
     int result = SkyUnit2.RunTestScriptByName(SkyUnit2.DefaultTestSuite(), name)
+    JValue.retain(result)
     JValue.writeToFile(result, "TestResult_" + name + ".json")
     Debug.Notification("Wrote file: TestResult_" + name + ".json")
     TestScriptSummary(name, result)
+    JValue.release(result)
 endFunction
 
 string SummaryPart_OneLineTotals

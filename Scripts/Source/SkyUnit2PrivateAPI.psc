@@ -510,6 +510,11 @@ int function RunTestScript(int suite, SkyUnitTest script, string filter = "", fl
         if _currentlyRunningTestLock == lock
             ; Yay, we can run our test! It's JUST US now, all alone. Ready to run our test script :)
             int testResult = RunTestScriptLocked(suite, script, filter)
+
+            ; HACK HACK HACK REMOVE ME
+            JValue.retain(testResult)
+            ; HACK HACK HACK REMOVE ME
+
             _currentlyRunningTestLock = 0.0
             return testResult
         else
