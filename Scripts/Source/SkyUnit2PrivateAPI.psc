@@ -584,6 +584,11 @@ int function BeginTestRun(int suite, SkyUnitTest script, string filter = "")
     ; Create a new test suite result
     float testRunKey = Utility.GetCurrentRealTime()
     int testRun = JMap.object()
+
+    ; HACK FOR NOW
+    JValue.retain(testRun)
+    ; HACK FOR NOW
+
     CurrentlyRunningTestScriptMap = testRun
     JMap.setObj(runsMap, testRunKey, testRun)
     JMap.setObj(runsMap, SkyUnit2.SpecialTestRunDuration_LatestTest(), testRun)

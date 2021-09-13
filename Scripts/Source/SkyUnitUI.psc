@@ -14,7 +14,7 @@ endFunction
 
 event OnInit()
     RegisterForMenu("Console")
-    Utility.WaitMenuMode(0.5)
+    Utility.WaitMenuMode(1.5)
     int SkyUnitTestCount = SkyUnit2.GetTestSuiteScriptCount(SkyUnit2.DefaultTestSuite())
     if SkyUnitTestCount
         ; Automatically equip the power to run tests

@@ -422,13 +422,6 @@ function BeEmpty_Test()
     ExpectString(failureMessage).To(EqualString("Expected StringArray [] not to be empty"))
 endFunction
 
-; CHANGED Hello this is underneath the Just ttesting
-string property JustTesting auto
-
-function Foo()
-    {Does this work for foo?}
-endFunction
-
 function BeTrue_Test()
     Form thisIsNone
     Form thisIsNotNone = Game.GetPlayer()
@@ -549,7 +542,7 @@ function BeTrue_Test()
     failureMessage = GetAssertionFailureMessage()
     SwitchTo_Default_TestSuite()
     ExpectBool(expectationPassed).To(BeFalse())
-    ExpectString(failureMessage).To(EqualString("Expected Bool False not to be true"))
+    ExpectString(failureMessage).To(EqualString("Expected Bool true not to be true"))
     ; String
     SwitchTo_Fake_TestSuite()
     ExpectString("Hello").Not().To(BeTrue())
@@ -565,11 +558,10 @@ function BeTrue_Test()
     failureMessage = GetAssertionFailureMessage()
     SwitchTo_Default_TestSuite()
     ExpectBool(expectationPassed).To(BeFalse())
-    ExpectString(failureMessage).To(ContainText("Expected Form 0000..."))
-    ExpectString(failureMessage).To(ContainText("not to be true"))
+    ExpectString(failureMessage).To(EqualString("Expected Form  [Actor < (00000014)>] not to be true"))
     ; StringArray
     SwitchTo_Fake_TestSuite()
-    ExpectStringArray(notEmptyStringArray).To(BeTrue())
+    ExpectStringArray(notEmptyStringArray).Not().To(BeTrue())
     expectationPassed = GetAssertExceptionPassed()
     failureMessage = GetAssertionFailureMessage()
     SwitchTo_Default_TestSuite()
