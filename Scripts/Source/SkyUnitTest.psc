@@ -257,12 +257,15 @@ bool function BeEmpty()
     return SkyUnit2.PassExpectation("BeEmpty")
 endFunction
 
-function HaveLength(int expectedLength)
+bool function HaveLength(int expectedLength)
     string type = SkyUnit2.GetExpectationData_MainObject_Type()
+    string text = SkyUnit2.GetExpectationData_MainObject_Text()
     bool not = SkyUnit2.Not()
     int actualLength
     if type == "String"
-        actualLength = StringUtil.GetLength(SkyUnit2.GetExpectationData_MainObject_String())
+        text = SkyUnit2.GetExpectationData_MainObject_String()
+        actualLength = StringUtil.GetLength(text)
+        text = "'" + text + "'"
     elseIf type == "StringArray"
         actualLength = SkyUnit2.GetExpectationData_MainObject_StringArray().Length
     elseIf type == "IntArray"
@@ -274,15 +277,14 @@ function HaveLength(int expectedLength)
     elseIf type == "BoolArray"
         actualLength = SkyUnit2.GetExpectationData_MainObject_BoolArray().Length
     else
-        ; Log("HaveLength() called with unsupported type " + type + " " + SkyUnit2.GetExpectationData_MainObject_Text())
+        return SkyUnit2.FailExpectation("HaveLength", "HaveLength() called with unsupported type " + type + " " + text)
     endIf
     if not && expectedLength == actualLength
-        SkyUnit2.FailExpectation("HaveLength", "Expected value not to have length " + expectedLength + ": " + SkyUnit2.GetExpectationData_MainObject_Text())
-        return
+        return SkyUnit2.FailExpectation("HaveLength", "Expected " + type + " " + text + " not to have length " + expectedLength)
     elseIf ! not && expectedLength != actualLength
-        SkyUnit2.FailExpectation("HaveLength", "Expected value to have length " + expectedLength + ": " + SkyUnit2.GetExpectationData_MainObject_Text())
-        return
+        return SkyUnit2.FailExpectation("HaveLength", "Expected " + type + " " + text + " to have length " + expectedLength)
     endIf
+    return SkyUnit2.PassExpectation("HaveLength")
 endFunction
 
 bool function BeTrue()

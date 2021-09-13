@@ -34,7 +34,7 @@ function Tests()
     Test("BeTrue").Fn(BeTrue_Test())
     Test("BeFalse").Fn(BeFalse_Test())
     Test("BeNone").Fn(BeNone_Test())
-    ; Test("HaveLength")
+    Test("HaveLength").Fn(HaveLength_Test())
 endFunction
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -863,6 +863,123 @@ function BeNone_Test()
     ExpectString(failureMessage).To(EqualString("Expected StringArray [] not to be None"))
 endFunction
 
-; Test("HaveLength")
 function HaveLength_Test()
+    string[] stringArrayOneItem = new string[1]
+    stringArrayOneItem[0] = "Hello, I am not empty"
+
+    int[] intArrayThreeItems = new int[3]
+    intArrayThreeItems[0] = 1
+    intArrayThreeItems[1] = 2
+    intArrayThreeItems[2] = 3
+
+    bool expectationPassed
+    string failureMessage
+
+    ; ; HAVE LENGTH - PASS
+    StartNewFakeTest("HaveLength Pass")
+    ; String (Empty)
+    SwitchTo_Fake_TestSuite()
+    ExpectString("").To(HaveLength(0))
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeTrue())
+    ExpectString(failureMessage).To(BeEmpty())
+    ; String (Not Empty)
+    SwitchTo_Fake_TestSuite()
+    ExpectString("abcdef").To(HaveLength(6))
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeTrue())
+    ExpectString(failureMessage).To(BeEmpty())
+    ; StringArray
+    SwitchTo_Fake_TestSuite()
+    ExpectStringArray(stringArrayOneItem).To(HaveLength(1))
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeTrue())
+    ; IntArray
+    SwitchTo_Fake_TestSuite()
+    ExpectIntArray(intArrayThreeItems).To(HaveLength(3))
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeTrue())
+    ExpectString(failureMessage).To(BeEmpty())
+    ExpectString(failureMessage).To(BeEmpty())
+
+    ; ; HAVE LENGTH - FAIL
+    StartNewFakeTest("HaveLength Fail")
+    ; String (Empty)
+    SwitchTo_Fake_TestSuite()
+    ExpectString("").To(HaveLength(42))
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeFalse())
+    ExpectString(failureMessage).To(EqualString("Expected String '' to have length 42"))
+    ; String (Not Empty)
+    SwitchTo_Fake_TestSuite()
+    ExpectString("abcdef").To(HaveLength(42))
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeFalse())
+    ExpectString(failureMessage).To(EqualString("Expected String 'abcdef' to have length 42"))
+    ; StringArray
+    SwitchTo_Fake_TestSuite()
+    ExpectStringArray(stringArrayOneItem).To(HaveLength(42))
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeFalse())
+    ExpectString(failureMessage).To(EqualString("Expected StringArray [\"Hello, I am not empty\"] to have length 42"))
+    ; IntArray
+    SwitchTo_Fake_TestSuite()
+    ExpectIntArray(intArrayThreeItems).To(HaveLength(42))
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeFalse())
+    ExpectString(failureMessage).To(EqualString("Expected IntArray [1, 2, 3] to have length 42"))
+
+    ; ; Not() HAVE LENGTH - PASS
+    ; StartNewFakeTest("Not HaveLength Pass")
+    ; ; String
+    ; SwitchTo_Fake_TestSuite()
+    ; ExpectString("Not empty").Not().To(BeNone())
+    ; expectationPassed = GetAssertExceptionPassed()
+    ; failureMessage = GetAssertionFailureMessage()
+    ; SwitchTo_Default_TestSuite()
+    ; ExpectBool(expectationPassed).To(BeTrue())
+    ; ExpectString(failureMessage).To(BeEmpty())
+    ; ; StringArray
+    ; SwitchTo_Fake_TestSuite()
+    ; ExpectStringArray(notEmptyStringArray).Not().To(BeNone())
+    ; expectationPassed = GetAssertExceptionPassed()
+    ; failureMessage = GetAssertionFailureMessage()
+    ; SwitchTo_Default_TestSuite()
+    ; ExpectBool(expectationPassed).To(BeTrue())
+    ; ExpectString(failureMessage).To(BeEmpty())
+
+    ; ; Not() HAVE LENGTH - FAIL
+    ; StartNewFakeTest("Not HaveLength Fail")
+    ; ; String
+    ; SwitchTo_Fake_TestSuite()
+    ; ExpectString("").Not().To(BeNone())
+    ; expectationPassed = GetAssertExceptionPassed()
+    ; failureMessage = GetAssertionFailureMessage()
+    ; SwitchTo_Default_TestSuite()
+    ; ExpectBool(expectationPassed).To(BeFalse())
+    ; ExpectString(failureMessage).To(EqualString("Expected String '' not to be None"))
+    ; ; StringArray
+    ; SwitchTo_Fake_TestSuite()
+    ; ExpectStringArray(emptyStringArray).Not().To(BeNone())
+    ; expectationPassed = GetAssertExceptionPassed()
+    ; failureMessage = GetAssertionFailureMessage()
+    ; SwitchTo_Default_TestSuite()
+    ; ExpectBool(expectationPassed).To(BeFalse())
+    ; ExpectString(failureMessage).To(EqualString("Expected StringArray [] not to be None"))
 endFunction
