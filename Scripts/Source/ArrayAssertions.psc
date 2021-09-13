@@ -125,6 +125,10 @@ endFunction
 
 bool function ContainForm(Form expected) global
     Form[] actual = SkyUnit.GetExpectationData_MainObject_FormArray()
+    string expectedName = "None"
+    if expected
+        expectedName = expected.GetName()
+    endIf
     bool found = false
     if actual
         int index = 0
@@ -137,9 +141,9 @@ bool function ContainForm(Form expected) global
     endIf
     bool not = SkyUnit.Not()
     if not && found
-        return SkyUnit.FailExpectation("ContainForm", "Expected FormArray " + actual + " not to contain " + expected)
+        return SkyUnit.FailExpectation("ContainForm", "Expected FormArray " + actual + " not to contain " + expectedName + " " + expected)
     elseIf ! not && ! found
-        return SkyUnit.FailExpectation("ContainForm", "Expected FormArray " + actual + " to contain " + expected)
+        return SkyUnit.FailExpectation("ContainForm", "Expected FormArray " + actual + " to contain " + expectedName + " " + expected)
     endIf
     return SkyUnit.PassExpectation("ContainForm")
 endFunction

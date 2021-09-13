@@ -10,11 +10,11 @@ function Tests()
     Test("ExpectFormArray").Fn(ExpectFormArray_Test())
 
     ; Contain Assertions
-    ; Test("ContainBool")
+    Test("ContainBool").Fn(ContainBool_Test())
     Test("ContainInt").Fn(ContainInt_Test())
-    ; Test("ContainFloat")
-    ; Test("ContainString")
-    ; Test("ContainForm")
+    Test("ContainFloat").Fn(ContainFloat_Test())
+    Test("ContainString").Fn(ContainString_Test())
+    Test("ContainForm").Fn(ContainForm_Test())
 
     ; Equal Assertions
     Test("EqualStringArray").Fn(EqualStringArray_Test())
@@ -175,6 +175,50 @@ endFunction
 ;; Contain Assertions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+function ContainBool_Test()
+    bool expectationPassed
+    string failureMessage
+
+    bool[] boolArray = new bool[1]
+    boolArray[0] = false
+
+    ; PASS
+    StartNewFakeTest("EqualIntArray - Pass")
+    ExpectBoolArray(boolArray).To(ContainBool(false))
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeTrue())
+    ExpectString(failureMessage).To(BeEmpty())
+    
+    ; FAIL
+    StartNewFakeTest("EqualIntArray - Fail")
+    ExpectBoolArray(boolArray).To(ContainBool(true))
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeFalse())
+    ExpectString(failureMessage).To(EqualString("Expected BoolArray [false] to contain true"))
+
+    ; NOT PASS
+    StartNewFakeTest("EqualIntArray - Pass")
+    ExpectBoolArray(boolArray).Not().To(ContainBool(true))
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeTrue())
+    ExpectString(failureMessage).To(BeEmpty())
+
+    ; NOT FAIL
+    StartNewFakeTest("EqualIntArray - Fail")
+    ExpectBoolArray(boolArray).Not().To(ContainBool(false))
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeFalse())
+    ExpectString(failureMessage).To(EqualString("Expected BoolArray [false] not to contain false"))
+endFunction
+
 function ContainInt_Test()
     bool expectationPassed
     string failureMessage
@@ -218,6 +262,147 @@ function ContainInt_Test()
     SwitchTo_Default_TestSuite()
     ExpectBool(expectationPassed).To(BeFalse())
     ExpectString(failureMessage).To(EqualString("Expected IntArray [123, 42] not to contain 42"))
+endFunction
+
+function ContainFloat_Test()
+    bool expectationPassed
+    string failureMessage
+
+    float[] floatArray = new float[2]
+    floatArray[0] = 1.23
+    floatArray[1] = 4.2
+
+    ; ; PASS
+    StartNewFakeTest("EqualFloatArray - Pass")
+    ExpectFloatArray(floatArray).To(ContainFloat(4.2))
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeTrue())
+    ExpectString(failureMessage).To(BeEmpty())
+    
+    ; FAIL
+    StartNewFakeTest("EqualFloatArray - Fail")
+    ExpectFloatArray(floatArray).To(ContainFloat(123.456))
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeFalse())
+    ExpectString(failureMessage).To(ContainText("Expected FloatArray [1.23"))
+    ExpectString(failureMessage).To(ContainText("to contain 123.456"))
+
+    ; NOT PASS
+    StartNewFakeTest("EqualFloatArray - Pass")
+    ExpectFloatArray(floatArray).Not().To(ContainFloat(123.456))
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeTrue())
+    ExpectString(failureMessage).To(BeEmpty())
+
+    ; NOT FAIL
+    StartNewFakeTest("EqualFloatArray - Fail")
+    ExpectFloatArray(floatArray).Not().To(ContainFloat(4.2))
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeFalse())
+    ExpectString(failureMessage).To(ContainText("Expected FloatArray [1.23"))
+    ExpectString(failureMessage).To(ContainText("not to contain 4.2"))
+endFunction
+
+function ContainString_Test()
+    bool expectationPassed
+    string failureMessage
+
+    string[] stringArray = new string[2]
+    stringArray[0] = "hello"
+    stringArray[1] = "wassup"
+
+    ; ; PASS
+    StartNewFakeTest("EqualStringArray - Pass")
+    ExpectStringArray(stringArray).To(ContainString("wassup"))
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeTrue())
+    ExpectString(failureMessage).To(BeEmpty())
+    
+    ; FAIL
+    StartNewFakeTest("EqualStringArray - Fail")
+    ExpectStringArray(stringArray).To(ContainString("this is not what you're looking for"))
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeFalse())
+    ExpectString(failureMessage).To(EqualString("Expected StringArray [\"hello\", \"wassup\"] to contain 'this is not what you're looking for'"))
+
+    ; NOT PASS
+    StartNewFakeTest("EqualStringArray - Pass")
+    ExpectStringArray(stringArray).Not().To(ContainString("this is not what you're looking for"))
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeTrue())
+    ExpectString(failureMessage).To(BeEmpty())
+
+    ; NOT FAIL
+    StartNewFakeTest("EqualStringArray - Fail")
+    ExpectStringArray(stringArray).Not().To(ContainString("wassup"))
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeFalse())
+    ExpectString(failureMessage).To(EqualString("Expected StringArray [\"hello\", \"wassup\"] not to contain 'wassup'"))
+endFunction
+
+function ContainForm_Test()
+    bool expectationPassed
+    string failureMessage
+
+    Form gold = Game.GetForm(0xf)
+    Form lockpick = Game.GetForm(0xa)
+    Form ironDagger = Game.GetForm(0x1397e)
+
+    Form[] theFormArray = new Form[2]
+    theFormArray[0] = gold
+    theFormArray[1] = lockpick
+
+    ; ; PASS
+    StartNewFakeTest("EqualFormArray - Pass")
+    ExpectFormArray(theFormArray).To(ContainForm(gold))
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeTrue())
+    ExpectString(failureMessage).To(BeEmpty())
+    
+    ; FAIL
+    StartNewFakeTest("EqualFormArray - Fail")
+    ExpectFormArray(theFormArray).To(ContainForm(ironDagger))
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeFalse())
+    ExpectString(failureMessage).To(EqualString("Expected FormArray [[MiscObject < (0000000F)>], [MiscObject < (0000000A)>]] to contain Iron Dagger [Weapon < (0001397E)>]"))
+
+    ; NOT PASS
+    StartNewFakeTest("EqualFormArray - Pass")
+    ExpectFormArray(theFormArray).Not().To(ContainForm(ironDagger))
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeTrue())
+    ExpectString(failureMessage).To(BeEmpty())
+
+    ; NOT FAIL
+    StartNewFakeTest("EqualFormArray - Fail")
+    ExpectFormArray(theFormArray).Not().To(ContainForm(gold))
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeFalse())
+    ExpectString(failureMessage).To(EqualString("Expected FormArray [[MiscObject < (0000000F)>], [MiscObject < (0000000A)>]] not to contain gold [MiscObject < (0000000F)>]"))
 endFunction
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
