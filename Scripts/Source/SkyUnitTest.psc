@@ -262,7 +262,7 @@ function HaveLength(int expectedLength)
     bool not = SkyUnit2.Not()
     int actualLength
     if type == "String"
-        actualLength = StringUtil.GetLength(SkyUnit2.GetAssertionData_MainObject_String())
+        actualLength = StringUtil.GetLength(SkyUnit2.GetExpectationData_MainObject_String())
     elseIf type == "StringArray"
         actualLength = SkyUnit2.GetExpectationData_MainObject_StringArray().Length
     elseIf type == "IntArray"
@@ -274,13 +274,13 @@ function HaveLength(int expectedLength)
     elseIf type == "BoolArray"
         actualLength = SkyUnit2.GetExpectationData_MainObject_BoolArray().Length
     else
-        ; Log("HaveLength() called with unsupported type " + type + " " + SkyUnit2.GetAssertionData_MainObject_Text())
+        ; Log("HaveLength() called with unsupported type " + type + " " + SkyUnit2.GetExpectationData_MainObject_Text())
     endIf
     if not && expectedLength == actualLength
-        SkyUnit2.FailExpectation("HaveLength", "Expected value not to have length " + expectedLength + ": " + SkyUnit2.GetAssertionData_MainObject_Text())
+        SkyUnit2.FailExpectation("HaveLength", "Expected value not to have length " + expectedLength + ": " + SkyUnit2.GetExpectationData_MainObject_Text())
         return
     elseIf ! not && expectedLength != actualLength
-        SkyUnit2.FailExpectation("HaveLength", "Expected value to have length " + expectedLength + ": " + SkyUnit2.GetAssertionData_MainObject_Text())
+        SkyUnit2.FailExpectation("HaveLength", "Expected value to have length " + expectedLength + ": " + SkyUnit2.GetExpectationData_MainObject_Text())
         return
     endIf
 endFunction
@@ -331,37 +331,44 @@ endFunction
 
 bool function BeFalse()
     string type = SkyUnit2.GetExpectationData_MainObject_Type()
+    string text = SkyUnit2.GetExpectationData_MainObject_Text()
     bool not = SkyUnit2.Not()
     bool actualValue
     if type == "Bool"
         actualValue = SkyUnit2.GetExpectationData_MainObject_Bool()
     elseIf type == "String"
-        actualValue = SkyUnit2.GetExpectationData_MainObject_Bool()
+        actualValue = SkyUnit2.GetExpectationData_MainObject_String()
+        text = "'" + text + "'"
     elseIf type == "Int"
-        actualValue = SkyUnit2.GetExpectationData_MainObject_Bool()
+        actualValue = SkyUnit2.GetExpectationData_MainObject_Int()
     elseIf type == "Float"
-        actualValue = SkyUnit2.GetExpectationData_MainObject_Bool()
+        actualValue = SkyUnit2.GetExpectationData_MainObject_Float()
     elseIf type == "Form"
-        actualValue = SkyUnit2.GetExpectationData_MainObject_Bool()
+        actualValue = SkyUnit2.GetExpectationData_MainObject_Form()
+        if actualValue
+            text = SkyUnit2.GetExpectationData_MainObject_Form().GetName() + " " + SkyUnit2.GetExpectationData_MainObject_Form()
+        else
+            text = "None"
+        endIf
     elseIf type == "StringArray"
-        actualValue = SkyUnit2.GetExpectationData_MainObject_Bool()
+        actualValue = SkyUnit2.GetExpectationData_MainObject_StringArray()
     elseIf type == "IntArray"
-        actualValue = SkyUnit2.GetExpectationData_MainObject_Bool()
+        actualValue = SkyUnit2.GetExpectationData_MainObject_IntArray()
     elseIf type == "FloatArray"
-        actualValue = SkyUnit2.GetExpectationData_MainObject_Bool()
+        actualValue = SkyUnit2.GetExpectationData_MainObject_FloatArray()
     elseIf type == "FormArray"
-        actualValue = SkyUnit2.GetExpectationData_MainObject_Bool()
+        actualValue = SkyUnit2.GetExpectationData_MainObject_FormArray()
     elseIf type == "BoolArray"
-        actualValue = SkyUnit2.GetExpectationData_MainObject_Bool()
+        actualValue = SkyUnit2.GetExpectationData_MainObject_BoolArray()
     elseIf StringUtil.Find(type, "Array") > -1
         actualValue = SkyUnit2.GetExpectationData_MainObject_Text() != "[]"
     else
         actualValue = SkyUnit2.GetExpectationData_MainObject_Text()
     endIf
     if not && ! actualValue
-        return SkyUnit2.FailExpectation("BeFalse", "Expected value not to be false: " + actualValue)
+        return SkyUnit2.FailExpectation("BeFalse", "Expected " + type + " " + text + " not to be false")
     elseIf ! not && actualValue
-        return SkyUnit2.FailExpectation("BeFalse", "Expected value to be false: " + actualValue)
+        return SkyUnit2.FailExpectation("BeFalse", "Expected " + type + " " + text + " to be false")
     endIf
     return SkyUnit2.PassExpectation("BeFalse")
 endFunction
