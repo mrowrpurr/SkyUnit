@@ -158,10 +158,10 @@ endFunction
 ;; Equal Array Assertions - String
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-function EqualStringArray1(string a) global
+bool function EqualStringArray1(string a) global
     string[] expected = new string[1]
     expected[0] = a
-    string[] actual = SkyUnit.GetExpectationData_Object_StringArray()
+    string[] actual = SkyUnit2.GetExpectationData_MainObject_StringArray()
     bool equal = true
     if actual && actual.Length == expected.Length && equal
         int index = 0
@@ -174,22 +174,20 @@ function EqualStringArray1(string a) global
     else
         equal = false ; can't be equal, not the same length
     endIf
-    bool not = SkyUnit.Not()
+    bool not = SkyUnit2.Not()
     if not && equal
-        SkyUnit2.FailExpectation("EqualStringArray1", "Expected array " + actual + " not to equal " + expected)
-        return
+        return SkyUnit2.FailExpectation("EqualStringArray1", "Expected StringArray " + actual + " not to equal StringArray " + expected)
     elseIf ! not && ! equal
-        SkyUnit2.FailExpectation("EqualStringArray1", "Expected array " + actual + " to equal " + expected)
-        return
+        return SkyUnit2.FailExpectation("EqualStringArray1", "Expected StringArray " + actual + " to equal StringArray " + expected)
     endIf
-    SkyUnit2.PassExpectation("EqualStringArray1")
+    return SkyUnit2.PassExpectation("EqualStringArray1")
 endFunction
 
-function EqualStringArray2(string a, string b) global
+bool function EqualStringArray2(string a, string b) global
     string[] expected = new string[2]
     expected[0] = a
     expected[1] = b
-    string[] actual = SkyUnit.GetExpectationData_Object_StringArray()
+    string[] actual = SkyUnit2.GetExpectationData_MainObject_StringArray()
     bool equal = true
     if actual && actual.Length == expected.Length && equal
         int index = 0
@@ -202,23 +200,21 @@ function EqualStringArray2(string a, string b) global
     else
         equal = false ; can't be equal, not the same length
     endIf
-    bool not = SkyUnit.Not()
+    bool not = SkyUnit2.Not()
     if not && equal
-        SkyUnit2.FailExpectation("EqualStringArray2", "Expected array " + actual + " not to equal " + expected)
-        return
+        return SkyUnit2.FailExpectation("EqualStringArray2", "Expected StringArray " + actual + " not to equal StringArray " + expected)
     elseIf ! not && ! equal
-        SkyUnit2.FailExpectation("EqualStringArray2", "Expected array " + actual + " to equal " + expected)
-        return
+        return SkyUnit2.FailExpectation("EqualStringArray2", "Expected StringArray " + actual + " to equal StringArray " + expected)
     endIf
-    SkyUnit2.PassExpectation("EqualStringArray2")
+    return SkyUnit2.PassExpectation("EqualStringArray2")
 endFunction
 
-function EqualStringArray3(string a, string b, string c) global
+bool function EqualStringArray3(string a, string b, string c) global
     string[] expected = new string[3]
     expected[0] = a
     expected[1] = b
     expected[2] = c
-    string[] actual = SkyUnit.GetExpectationData_Object_StringArray()
+    string[] actual = SkyUnit2.GetExpectationData_MainObject_StringArray()
     bool equal = true
     if actual && actual.Length == expected.Length && equal
         int index = 0
@@ -231,13 +227,11 @@ function EqualStringArray3(string a, string b, string c) global
     else
         equal = false ; can't be equal, not the same length
     endIf
-    bool not = SkyUnit.Not()
+    bool not = SkyUnit2.Not()
     if not && equal
-        SkyUnit2.FailExpectation("EqualStringArray3", "Expected array " + actual + " not to equal " + expected)
-        return
+        return SkyUnit2.FailExpectation("EqualStringArray3", "Expected StringArray " + actual + " not to equal StringArray " + expected)
     elseIf ! not && ! equal
-        SkyUnit2.FailExpectation("EqualStringArray3", "Expected array " + actual + " to equal " + expected)
-        return
+        return SkyUnit2.FailExpectation("EqualStringArray3", "Expected StringArray " + actual + " to equal StringArray " + expected)
     endIf
-    SkyUnit2.PassExpectation("EqualStringArray3")
+    return SkyUnit2.PassExpectation("EqualStringArray3")
 endFunction

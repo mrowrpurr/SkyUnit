@@ -8,6 +8,16 @@ function Tests()
     Test("ExpectFloatArray").Fn(ExpectFloatArray_Test())
     Test("ExpectStringArray").Fn(ExpectStringArray_Test())
     Test("ExpectFormArray").Fn(ExpectFormArray_Test())
+
+    ; Contain Assertions
+    ; Test("ContainBool")
+    ; Test("ContainInt")
+    ; Test("ContainFloat")
+    ; Test("ContainString")
+    ; Test("ContainForm")
+
+    ; Equal Assertions
+    Test("EqualStringArray").Fn(EqualStringArray_Test())
 endFunction
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -164,3 +174,112 @@ endFunction
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Assertions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+function EqualStringArray_Test()
+    bool expectationPassed
+    string failureMessage
+
+    string[] stringArrayOne = new string[1]
+    stringArrayOne[0] = "abc"
+    
+    string[] stringArrayTwo = new string[2]
+    stringArrayTwo[0] = "abc"
+    stringArrayTwo[1] = "def"
+
+    string[] stringArrayThree = new string[3]
+    stringArrayThree[0] = "abc"
+    stringArrayThree[1] = "def"
+    stringArrayThree[2] = "xyz"
+
+    ; PASS
+    StartNewFakeTest("EqualStringArray - Pass")
+    ExpectStringArray(stringArrayOne).To(EqualStringArray1("abc"))
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeTrue())
+    ExpectString(failureMessage).To(BeEmpty())
+    SwitchTo_Fake_TestSuite()
+    ExpectStringArray(stringArrayTwo).To(EqualStringArray2("abc", "def"))
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeTrue())
+    ExpectString(failureMessage).To(BeEmpty())
+    SwitchTo_Fake_TestSuite()
+    ExpectStringArray(stringArrayThree).To(EqualStringArray3("abc", "def", "xyz"))
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeTrue())
+    ExpectString(failureMessage).To(BeEmpty())
+    
+    ; FAIL
+    StartNewFakeTest("EqualStringArray - Fail")
+    ExpectStringArray(stringArrayOne).To(EqualStringArray1("not abc"))
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeFalse())
+    ExpectString(failureMessage).To(EqualString("Expected StringArray [\"abc\"] to equal StringArray [\"not abc\"]"))
+    SwitchTo_Fake_TestSuite()
+    ExpectStringArray(stringArrayTwo).To(EqualStringArray2("not abc", "def"))
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeFalse())
+    ExpectString(failureMessage).To(EqualString("Expected StringArray [\"abc\", \"def\"] to equal StringArray [\"not abc\", \"def\"]"))
+    SwitchTo_Fake_TestSuite()
+    ExpectStringArray(stringArrayThree).To(EqualStringArray3("not abc", "def", "xyz"))
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeFalse())
+    ExpectString(failureMessage).To(EqualString("Expected StringArray [\"abc\", \"def\", \"xyz\"] to equal StringArray [\"not abc\", \"def\", \"xyz\"]"))
+
+    ; NOT PASS
+    StartNewFakeTest("EqualStringArray - Not - Pass")
+    ExpectStringArray(stringArrayOne).Not().To(EqualStringArray1("qwerty"))
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeTrue())
+    ExpectString(failureMessage).To(BeEmpty())
+    SwitchTo_Fake_TestSuite()
+    ExpectStringArray(stringArrayTwo).Not().To(EqualStringArray2("qwerty", "def"))
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeTrue())
+    ExpectString(failureMessage).To(BeEmpty())
+    SwitchTo_Fake_TestSuite()
+    ExpectStringArray(stringArrayThree).Not().To(EqualStringArray3("qwerty", "def", "xyz"))
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeTrue())
+    ExpectString(failureMessage).To(BeEmpty())
+
+    ; NOT FAIL
+    StartNewFakeTest("EqualStringArray - Not - Fail")
+    ExpectStringArray(stringArrayOne).Not().To(EqualStringArray1("abc"))
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeFalse())
+    ExpectString(failureMessage).To(EqualString("Expected StringArray [\"abc\"] not to equal StringArray [\"abc\"]"))
+    SwitchTo_Fake_TestSuite()
+    ExpectStringArray(stringArrayTwo).Not().To(EqualStringArray2("abc", "def"))
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeFalse())
+    ExpectString(failureMessage).To(EqualString("Expected StringArray [\"abc\", \"def\"] not to equal StringArray [\"abc\", \"def\"]"))
+    SwitchTo_Fake_TestSuite()
+    ExpectStringArray(stringArrayThree).Not().To(EqualStringArray3("abc", "def", "xyz"))
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeFalse())
+    ExpectString(failureMessage).To(EqualString("Expected StringArray [\"abc\", \"def\", \"xyz\"] not to equal StringArray [\"abc\", \"def\", \"xyz\"]"))
+endFunction
