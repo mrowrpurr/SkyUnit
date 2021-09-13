@@ -33,7 +33,7 @@ function Tests()
     Test("BeEmpty").Fn(BeEmpty_Test())
     Test("BeTrue").Fn(BeTrue_Test())
     Test("BeFalse").Fn(BeFalse_Test())
-    ; Test("BeNone")
+    Test("BeNone").Fn(BeNone_Test())
     ; Test("HaveLength")
 endFunction
 
@@ -569,7 +569,6 @@ function BeTrue_Test()
     ExpectString(failureMessage).To(EqualString("Expected StringArray [\"Hello, I am not empty\"] not to be true"))
 endFunction
 
-; Test("BeFalse")
 function BeFalse_Test()
     Form thisIsNone
     Form thisIsNotNone = Game.GetPlayer()
@@ -717,8 +716,151 @@ function BeFalse_Test()
     ExpectString(failureMessage).To(EqualString("Expected StringArray [] not to be false"))
 endFunction
 
-; Test("BeNone")
 function BeNone_Test()
+    Form thisIsNone
+    Form thisIsNotNone = Game.GetPlayer()
+    string[] emptyStringArray
+    string[] notEmptyStringArray = new string[1]
+    notEmptyStringArray[0] = "Hello, I am not empty"
+
+    bool expectationPassed
+    string failureMessage
+
+    ; ; BE NONE - PASS
+    StartNewFakeTest("BeNone Pass")
+    ; Bool
+    ExpectBool(false).To(BeNone())
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeTrue())
+    ExpectString(failureMessage).To(BeEmpty())
+    ; String
+    SwitchTo_Fake_TestSuite()
+    ExpectString("").To(BeNone())
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeTrue())
+    ExpectString(failureMessage).To(BeEmpty())
+    ; Form
+    SwitchTo_Fake_TestSuite()
+    ExpectForm(thisIsNone).To(BeNone())
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeTrue())
+    ExpectString(failureMessage).To(BeEmpty())
+    ; StringArray
+    SwitchTo_Fake_TestSuite()
+    ExpectStringArray(emptyStringArray).To(BeNone())
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeTrue())
+    ExpectString(failureMessage).To(BeEmpty())
+
+    ; ; BE NONE - FAIL
+    StartNewFakeTest("BeNone Fail")
+    ; Bool
+    ExpectBool(true).To(BeNone())
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeFalse())
+    ExpectString(failureMessage).To(EqualString("Expected Bool true to be None"))
+    ; String
+    SwitchTo_Fake_TestSuite()
+    ExpectString("Not empty").To(BeNone())
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeFalse())
+    ExpectString(failureMessage).To(EqualString("Expected String 'Not empty' to be None"))
+    ; Form
+    SwitchTo_Fake_TestSuite()
+    ExpectForm(thisIsNotNone).To(BeNone())
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeFalse())
+    ExpectString(failureMessage).To(EqualString("Expected Form  [Actor < (00000014)>] to be None"))
+    ; StringArray
+    SwitchTo_Fake_TestSuite()
+    ExpectStringArray(notEmptyStringArray).To(BeNone())
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeFalse())
+    ExpectString(failureMessage).To(EqualString("Expected StringArray [\"Hello, I am not empty\"] to be None"))
+
+    ; Not() BE NONE - PASS
+    StartNewFakeTest("Not BeNone Pass")
+    ; Bool
+    ExpectBool(true).Not().To(BeNone())
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeTrue())
+    ExpectString(failureMessage).To(BeEmpty())
+    ; String
+    SwitchTo_Fake_TestSuite()
+    ExpectString("Not empty").Not().To(BeNone())
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeTrue())
+    ExpectString(failureMessage).To(BeEmpty())
+    ; Form
+    SwitchTo_Fake_TestSuite()
+    ExpectForm(thisIsNotNone).Not().To(BeNone())
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeTrue())
+    ExpectString(failureMessage).To(BeEmpty())
+    ; StringArray
+    SwitchTo_Fake_TestSuite()
+    ExpectStringArray(notEmptyStringArray).Not().To(BeNone())
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeTrue())
+    ExpectString(failureMessage).To(BeEmpty())
+
+    ; Not() BE NONE - FAIL
+    StartNewFakeTest("Not BeNone Fail")
+    ; Bool
+    ExpectBool(false).Not().To(BeNone())
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeFalse())
+    ExpectString(failureMessage).To(EqualString("Expected Bool false not to be None"))
+    ; String
+    SwitchTo_Fake_TestSuite()
+    ExpectString("").Not().To(BeNone())
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeFalse())
+    ExpectString(failureMessage).To(EqualString("Expected String '' not to be None"))
+    ; Form
+    SwitchTo_Fake_TestSuite()
+    ExpectForm(thisIsNone).Not().To(BeNone())
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeFalse())
+    ExpectString(failureMessage).To(EqualString("Expected Form None not to be None"))
+    ; StringArray
+    SwitchTo_Fake_TestSuite()
+    ExpectStringArray(emptyStringArray).Not().To(BeNone())
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeFalse())
+    ExpectString(failureMessage).To(EqualString("Expected StringArray [] not to be None"))
 endFunction
 
 ; Test("HaveLength")
