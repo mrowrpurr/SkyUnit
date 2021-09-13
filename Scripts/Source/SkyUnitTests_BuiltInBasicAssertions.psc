@@ -29,7 +29,7 @@ function Tests()
     ; Test("EqualString when provided an Bool")
 
     ; Other Assertions
-    ; Test("ContainText")
+    ; Test("ContainText") ; <--- CONTAIN TEXT
     Test("BeEmpty").Fn(BeEmpty_Test())
     Test("BeTrue").Fn(BeTrue_Test())
     Test("BeFalse").Fn(BeFalse_Test())
