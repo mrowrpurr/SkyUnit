@@ -26,7 +26,7 @@ float property CurrentlyInstalledVersion auto
 
 ; Only Runs on First Mod Installation
 event OnInit()
-    CurrentlyInstalledVersion = SkyUnit2.GetVersion()
+    CurrentlyInstalledVersion = SkyUnit.GetVersion()
     EnsureSetupAndReadyForApiRequests()
 endEvent
 
@@ -591,11 +591,11 @@ int function BeginTestRun(int suite, SkyUnitTest script, string filter = "")
 
     CurrentlyRunningTestScriptMap = testRun
     JMap.setObj(runsMap, testRunKey, testRun)
-    JMap.setObj(runsMap, SkyUnit2.SpecialTestRunDuration_LatestTest(), testRun)
+    JMap.setObj(runsMap, SkyUnit.SpecialTestRunDuration_LatestTest(), testRun)
     CurrentlyRunningTestScriptTestsMap = JMap.object()
     JMap.setStr(testRun, "name", GetScriptDisplayName(script)) ; Copy the pretty name of the script onto the result (cuz most folks just work with results)
     JMap.setObj(testRun, "tests", CurrentlyRunningTestScriptTestsMap)
-    JMap.setStr(testRun, "status", SkyUnit2.TestStatus_PASS()) ; Default to pass, any failure will update this to FAIL
+    JMap.setStr(testRun, "status", SkyUnit.TestStatus_PASS()) ; Default to pass, any failure will update this to FAIL
 
     return testRun
 endFunction
@@ -608,7 +608,7 @@ int function RunTestScriptLocked(int suite, SkyUnitTest script, string filter = 
     JMap.setFlt(testRun, "startTime", startTime)
 
     ; BeforeAll() - Treated just like any other test!
-    BeginTest(SkyUnit2.SpecialTestNameFor_BeforeAll())
+    BeginTest(SkyUnit.SpecialTestNameFor_BeforeAll())
     script.BeforeAll()
     EndTest()
 
@@ -621,7 +621,7 @@ int function RunTestScriptLocked(int suite, SkyUnitTest script, string filter = 
     endIf
 
     ; AfterAll() - Treated just like any other test!
-    BeginTest(SkyUnit2.SpecialTestNameFor_AfterAll())
+    BeginTest(SkyUnit.SpecialTestNameFor_AfterAll())
     script.AfterAll()
     EndTest()
     
@@ -672,22 +672,17 @@ endProperty
 ; This is for SkyUnitTest.Test(<test name>)
 ; The current script is 
 function BeginTest(string testName)
-    Debug("Begin Test " + testName + " in suite " + CurrentTestSuiteName)
-
     ; Check if the previous test is "Still Open", i.e. it's PENDING with no Fn()
     if CurrentlyRunningTestScriptIndividualTestMap
-        Debug("Previous test not closed, calling EndTest() now")
         EndTest()
     endIf
 
     ; CurrentlyRunningTestScriptTestsMap
     ; ^---- this maps Test Name ==> Test Object (for the currently running test script)
-    Debug("Setting up and saving a new Map for this test")
     int testMap = JMap.object()
     JMap.setObj(CurrentlyRunningTestScriptTestsMap, testName, testMap)
     JMap.setStr(testMap, "name", testName)
-    Debug("Defaulting test to PENDING")
-    JMap.setStr(testMap, "status", SkyUnit2.TestStatus_PENDING()) ; Default to PENDING (no Fn() hooked up)
+    JMap.setStr(testMap, "status", SkyUnit.TestStatus_PENDING()) ; Default to PENDING (no Fn() hooked up)
 
     ; Setup expectations array :)
     int expectations = JArray.object()
@@ -707,8 +702,6 @@ endFunction
 ; This should cleanup CurrentlyRunningTestScriptIndividualTestMap
 ; which is how we know whether or not Fn() was called
 function EndTest(bool fnCalled = false)
-    Debug("End Test")
-
     CurrentlyRunningTestScript.AfterEach()
     float endTime = Utility.GetCurrentRealTime()
     JMap.setFlt(CurrentlyRunningTestScriptIndividualTestMap, "endTime", endTime)
@@ -717,11 +710,10 @@ function EndTest(bool fnCalled = false)
     ; If it was ended by calling Fn() then mark the function as PASSED if it was previously PENDING
     ; i.e. if there were no assertions. We could keep no assertions at PENDING but... if you do Fn() we'll make it NOT PENDING
     if fnCalled
-        Debug("This was called via Fn()")
         ; If nothing failed in the BeforeEach / Test / AfterEach then status will still be PENDING. Update it to PASSED.
         ; But only if Fn() was provided.
-        if JMap.getStr(CurrentlyRunningTestScriptIndividualTestMap, "status") == SkyUnit2.TestStatus_PENDING()
-            JMap.setStr(CurrentlyRunningTestScriptIndividualTestMap, "status", SkyUnit2.TestStatus_PASS())
+        if JMap.getStr(CurrentlyRunningTestScriptIndividualTestMap, "status") == SkyUnit.TestStatus_PENDING()
+            JMap.setStr(CurrentlyRunningTestScriptIndividualTestMap, "status", SkyUnit.TestStatus_PASS())
         endIf
     endIf
 
@@ -817,17 +809,17 @@ endFunction
 
 function FailExpectation(string assertionName, string failureMessage)
     JMap.setStr(CurrentlyRunningExpectation, "assertionName", assertionName)
-    JMap.setStr(CurrentlyRunningTestScriptIndividualTestMap, "status", SkyUnit2.TestStatus_FAIL())
+    JMap.setStr(CurrentlyRunningTestScriptIndividualTestMap, "status", SkyUnit.TestStatus_FAIL())
     JMap.setInt(CurrentlyRunningExpectation, "failed", 1)
     JMap.setStr(CurrentlyRunningExpectation, "failureMessage", failureMessage)
 
     ; Mark the whole test as failing because there was at least 1 failed expectation
     JMap.setInt(CurrentlyRunningTestScriptIndividualTestMap, "failed", 1)
-    JMap.setStr(CurrentlyRunningTestScriptIndividualTestMap, "status", SkyUnit2.TestStatus_FAIL())
+    JMap.setStr(CurrentlyRunningTestScriptIndividualTestMap, "status", SkyUnit.TestStatus_FAIL())
 
     ; Also, fail the whole script!
     JMap.setInt(CurrentlyRunningTestScriptMap, "failed", 1)
-    JMap.setStr(CurrentlyRunningTestScriptMap, "status", SkyUnit2.TestStatus_FAIL())
+    JMap.setStr(CurrentlyRunningTestScriptMap, "status", SkyUnit.TestStatus_FAIL())
 endFunction
 
 bool property IsCurrentlyRunningExpectationFailed

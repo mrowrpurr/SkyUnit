@@ -11,7 +11,7 @@ function Tests()
 
     ; Contain Assertions
     ; Test("ContainBool")
-    ; Test("ContainInt")
+    Test("ContainInt").Fn(ContainInt_Test())
     ; Test("ContainFloat")
     ; Test("ContainString")
     ; Test("ContainForm")
@@ -172,7 +172,56 @@ function ExpectFormArray_Test()
 endFunction
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Assertions
+;; Contain Assertions
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+function ContainInt_Test()
+    bool expectationPassed
+    string failureMessage
+
+    int[] intArray = new int[2]
+    intArray[0] = 123
+    intArray[1] = 42
+
+    ; ; PASS
+    StartNewFakeTest("EqualIntArray - Pass")
+    ExpectIntArray(intArray).To(ContainInt(42))
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeTrue())
+    ExpectString(failureMessage).To(BeEmpty())
+    
+    ; FAIL
+    StartNewFakeTest("EqualIntArray - Fail")
+    ExpectIntArray(intArray).To(ContainInt(123456))
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeFalse())
+    ExpectString(failureMessage).To(EqualString("Expected IntArray [123, 42] to contain 123456"))
+
+    ; NOT PASS
+    StartNewFakeTest("EqualIntArray - Pass")
+    ExpectIntArray(intArray).Not().To(ContainInt(123456))
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeTrue())
+    ExpectString(failureMessage).To(BeEmpty())
+
+    ; NOT FAIL
+    StartNewFakeTest("EqualIntArray - Fail")
+    ExpectIntArray(intArray).Not().To(ContainInt(42))
+    expectationPassed = GetAssertExceptionPassed()
+    failureMessage = GetAssertionFailureMessage()
+    SwitchTo_Default_TestSuite()
+    ExpectBool(expectationPassed).To(BeFalse())
+    ExpectString(failureMessage).To(EqualString("Expected IntArray [123, 42] not to contain 42"))
+endFunction
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Equality Assertions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 function EqualStringArray_Test()

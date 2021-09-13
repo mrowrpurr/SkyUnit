@@ -6,41 +6,41 @@ scriptName ArrayAssertions hidden
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 SkyUnitTest function ExpectStringArray(string[] value) global
-    SkyUnit2.BeginExpectation("ExpectStringArray")
-    SkyUnit2.SetExpectationData_MainObject_StringArray(value)
-    return SkyUnit2.CurrentTest()
+    SkyUnit.BeginExpectation("ExpectStringArray")
+    SkyUnit.SetExpectationData_MainObject_StringArray(value)
+    return SkyUnit.CurrentTest()
 endFunction
 
 SkyUnitTest function ExpectIntArray(int[] value) global
-    SkyUnit2.BeginExpectation("ExpectIntArray")
-    SkyUnit2.SetExpectationData_MainObject_IntArray(value)
-    return SkyUnit2.CurrentTest()
+    SkyUnit.BeginExpectation("ExpectIntArray")
+    SkyUnit.SetExpectationData_MainObject_IntArray(value)
+    return SkyUnit.CurrentTest()
 endFunction
 
 SkyUnitTest function ExpectBoolArray(bool[] value) global
-    SkyUnit2.BeginExpectation("ExpectBoolArray")
-    SkyUnit2.SetExpectationData_MainObject_BoolArray(value)
-    return SkyUnit2.CurrentTest()
+    SkyUnit.BeginExpectation("ExpectBoolArray")
+    SkyUnit.SetExpectationData_MainObject_BoolArray(value)
+    return SkyUnit.CurrentTest()
 endFunction
 
 SkyUnitTest function ExpectFloatArray(float[] value) global
-    SkyUnit2.BeginExpectation("ExpectFloatArray")
-    SkyUnit2.SetExpectationData_MainObject_FloatArray(value)
-    return SkyUnit2.CurrentTest()
+    SkyUnit.BeginExpectation("ExpectFloatArray")
+    SkyUnit.SetExpectationData_MainObject_FloatArray(value)
+    return SkyUnit.CurrentTest()
 endFunction
 
 SkyUnitTest function ExpectFormArray(Form[] value) global
-    SkyUnit2.BeginExpectation("ExpectFormArray")
-    SkyUnit2.SetExpectationData_MainObject_FormArray(value)
-    return SkyUnit2.CurrentTest()
+    SkyUnit.BeginExpectation("ExpectFormArray")
+    SkyUnit.SetExpectationData_MainObject_FormArray(value)
+    return SkyUnit.CurrentTest()
 endFunction
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Assertions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-function ContainBool(bool expected) global
-    bool[] actual = SkyUnit.GetExpectationData_Object_BoolArray()
+bool function ContainBool(bool expected) global
+    bool[] actual = SkyUnit.GetExpectationData_MainObject_BoolArray()
     bool found = false
     if actual
         int index = 0
@@ -53,17 +53,15 @@ function ContainBool(bool expected) global
     endIf
     bool not = SkyUnit.Not()
     if not && found
-        SkyUnit2.FailExpectation("ContainBool", "Expected " + actual + " not to contain '" + expected + "'")
-        return
+        return SkyUnit.FailExpectation("ContainBool", "Expected BoolArray " + actual + " not to contain " + expected)
     elseIf ! not && ! found
-        SkyUnit2.FailExpectation("ContainBool", "Expected " + actual + " to contain '" + expected + "'")
-        return
+        return SkyUnit.FailExpectation("ContainBool", "Expected BoolArray " + actual + " to contain " + expected)
     endIf
-    SkyUnit2.PassExpectation("ContainBool")
+    return SkyUnit.PassExpectation("ContainBool")
 endFunction
 
-function ContainString(string expected) global
-    string[] actual = SkyUnit.GetExpectationData_Object_StringArray()
+bool function ContainString(string expected) global
+    string[] actual = SkyUnit.GetExpectationData_MainObject_StringArray()
     bool found = false
     if actual
         int index = 0
@@ -76,17 +74,15 @@ function ContainString(string expected) global
     endIf
     bool not = SkyUnit.Not()
     if not && found
-        SkyUnit2.FailExpectation("ContainString", "Expected " + actual + " not to contain '" + expected + "'")
-        return
+        return SkyUnit.FailExpectation("ContainString", "Expected StringArray " + actual + " not to contain '" + expected + "'")
     elseIf ! not && ! found
-        SkyUnit2.FailExpectation("ContainString", "Expected " + actual + " to contain '" + expected + "'")
-        return
+        return SkyUnit.FailExpectation("ContainString", "Expected StringArray " + actual + " to contain '" + expected + "'")
     endIf
-    SkyUnit2.PassExpectation("ContainString")
+    return SkyUnit.PassExpectation("ContainString")
 endFunction
 
-function ContainInt(int expected) global
-    int[] actual = SkyUnit.GetExpectationData_Object_IntArray()
+bool function ContainInt(int expected) global
+    int[] actual = SkyUnit.GetExpectationData_MainObject_IntArray()
     bool found = false
     if actual
         int index = 0
@@ -99,17 +95,15 @@ function ContainInt(int expected) global
     endIf
     bool not = SkyUnit.Not()
     if not && found
-        SkyUnit2.FailExpectation("ContainInt", "Expected " + actual + " not to contain '" + expected + "'")
-        return
+        return SkyUnit.FailExpectation("ContainInt", "Expected IntArray " + actual + " not to contain " + expected)
     elseIf ! not && ! found
-        SkyUnit2.FailExpectation("ContainInt", "Expected " + actual + " to contain '" + expected + "'")
-        return
+        return SkyUnit.FailExpectation("ContainInt", "Expected IntArray " + actual + " to contain " + expected)
     endIf
-    SkyUnit2.PassExpectation("ContainInt")
+    return SkyUnit.PassExpectation("ContainInt")
 endFunction
 
-function ContainFloat(float expected) global
-    float[] actual = SkyUnit.GetExpectationData_Object_FloatArray()
+bool function ContainFloat(float expected) global
+    float[] actual = SkyUnit.GetExpectationData_MainObject_FloatArray()
     bool found = false
     if actual
         int index = 0
@@ -122,17 +116,15 @@ function ContainFloat(float expected) global
     endIf
     bool not = SkyUnit.Not()
     if not && found
-        SkyUnit2.FailExpectation("ContainFloat", "Expected " + actual + " not to contain '" + expected + "'")
-        return
+        return SkyUnit.FailExpectation("ContainFloat", "Expected FloatArray " + actual + " not to contain " + expected)
     elseIf ! not && ! found
-        SkyUnit2.FailExpectation("ContainFloat", "Expected " + actual + " to contain '" + expected + "'")
-        return
+        return SkyUnit.FailExpectation("ContainFloat", "Expected FloatArray " + actual + " to contain " + expected)
     endIf
-    SkyUnit2.PassExpectation("ContainFloat")
+    return SkyUnit.PassExpectation("ContainFloat")
 endFunction
 
-function ContainForm(Form expected) global
-    Form[] actual = SkyUnit.GetExpectationData_Object_FormArray()
+bool function ContainForm(Form expected) global
+    Form[] actual = SkyUnit.GetExpectationData_MainObject_FormArray()
     bool found = false
     if actual
         int index = 0
@@ -145,13 +137,11 @@ function ContainForm(Form expected) global
     endIf
     bool not = SkyUnit.Not()
     if not && found
-        SkyUnit2.FailExpectation("ContainForm", "Expected " + actual + " not to contain '" + expected + "'")
-        return
+        return SkyUnit.FailExpectation("ContainForm", "Expected FormArray " + actual + " not to contain " + expected)
     elseIf ! not && ! found
-        SkyUnit2.FailExpectation("ContainForm", "Expected " + actual + " to contain '" + expected + "'")
-        return
+        return SkyUnit.FailExpectation("ContainForm", "Expected FormArray " + actual + " to contain " + expected)
     endIf
-    SkyUnit2.PassExpectation("ContainForm")
+    return SkyUnit.PassExpectation("ContainForm")
 endFunction
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -161,7 +151,7 @@ endFunction
 bool function EqualStringArray1(string a) global
     string[] expected = new string[1]
     expected[0] = a
-    string[] actual = SkyUnit2.GetExpectationData_MainObject_StringArray()
+    string[] actual = SkyUnit.GetExpectationData_MainObject_StringArray()
     bool equal = true
     if actual && actual.Length == expected.Length && equal
         int index = 0
@@ -174,20 +164,20 @@ bool function EqualStringArray1(string a) global
     else
         equal = false ; can't be equal, not the same length
     endIf
-    bool not = SkyUnit2.Not()
+    bool not = SkyUnit.Not()
     if not && equal
-        return SkyUnit2.FailExpectation("EqualStringArray1", "Expected StringArray " + actual + " not to equal StringArray " + expected)
+        return SkyUnit.FailExpectation("EqualStringArray1", "Expected StringArray " + actual + " not to equal StringArray " + expected)
     elseIf ! not && ! equal
-        return SkyUnit2.FailExpectation("EqualStringArray1", "Expected StringArray " + actual + " to equal StringArray " + expected)
+        return SkyUnit.FailExpectation("EqualStringArray1", "Expected StringArray " + actual + " to equal StringArray " + expected)
     endIf
-    return SkyUnit2.PassExpectation("EqualStringArray1")
+    return SkyUnit.PassExpectation("EqualStringArray1")
 endFunction
 
 bool function EqualStringArray2(string a, string b) global
     string[] expected = new string[2]
     expected[0] = a
     expected[1] = b
-    string[] actual = SkyUnit2.GetExpectationData_MainObject_StringArray()
+    string[] actual = SkyUnit.GetExpectationData_MainObject_StringArray()
     bool equal = true
     if actual && actual.Length == expected.Length && equal
         int index = 0
@@ -200,13 +190,13 @@ bool function EqualStringArray2(string a, string b) global
     else
         equal = false ; can't be equal, not the same length
     endIf
-    bool not = SkyUnit2.Not()
+    bool not = SkyUnit.Not()
     if not && equal
-        return SkyUnit2.FailExpectation("EqualStringArray2", "Expected StringArray " + actual + " not to equal StringArray " + expected)
+        return SkyUnit.FailExpectation("EqualStringArray2", "Expected StringArray " + actual + " not to equal StringArray " + expected)
     elseIf ! not && ! equal
-        return SkyUnit2.FailExpectation("EqualStringArray2", "Expected StringArray " + actual + " to equal StringArray " + expected)
+        return SkyUnit.FailExpectation("EqualStringArray2", "Expected StringArray " + actual + " to equal StringArray " + expected)
     endIf
-    return SkyUnit2.PassExpectation("EqualStringArray2")
+    return SkyUnit.PassExpectation("EqualStringArray2")
 endFunction
 
 bool function EqualStringArray3(string a, string b, string c) global
@@ -214,7 +204,7 @@ bool function EqualStringArray3(string a, string b, string c) global
     expected[0] = a
     expected[1] = b
     expected[2] = c
-    string[] actual = SkyUnit2.GetExpectationData_MainObject_StringArray()
+    string[] actual = SkyUnit.GetExpectationData_MainObject_StringArray()
     bool equal = true
     if actual && actual.Length == expected.Length && equal
         int index = 0
@@ -227,11 +217,11 @@ bool function EqualStringArray3(string a, string b, string c) global
     else
         equal = false ; can't be equal, not the same length
     endIf
-    bool not = SkyUnit2.Not()
+    bool not = SkyUnit.Not()
     if not && equal
-        return SkyUnit2.FailExpectation("EqualStringArray3", "Expected StringArray " + actual + " not to equal StringArray " + expected)
+        return SkyUnit.FailExpectation("EqualStringArray3", "Expected StringArray " + actual + " not to equal StringArray " + expected)
     elseIf ! not && ! equal
-        return SkyUnit2.FailExpectation("EqualStringArray3", "Expected StringArray " + actual + " to equal StringArray " + expected)
+        return SkyUnit.FailExpectation("EqualStringArray3", "Expected StringArray " + actual + " to equal StringArray " + expected)
     endIf
-    return SkyUnit2.PassExpectation("EqualStringArray3")
+    return SkyUnit.PassExpectation("EqualStringArray3")
 endFunction

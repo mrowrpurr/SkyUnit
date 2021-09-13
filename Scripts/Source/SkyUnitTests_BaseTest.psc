@@ -9,7 +9,7 @@ function BeforeEach()
     SkyUnit2PrivateAPI api = SkyUnit2PrivateAPI.GetPrivateAPI()
     api.DeleteAllTestSuitesExceptDefault()
     FAKE_TEST_SUITE_NAME = "[Fake Test Suite for Testing] - " + Utility.RandomInt(1, 1000) + "_" + Utility.RandomInt(1, 1000)
-    SkyUnit2.CreateTestSuite(FAKE_TEST_SUITE_NAME)
+    SkyUnit.CreateTestSuite(FAKE_TEST_SUITE_NAME)
     SwitchTo_Default_TestSuite()
 endFunction
 
@@ -23,14 +23,14 @@ bool _fakeTestSuiteCreated
 
 function SwitchTo_Fake_TestSuite()
     if ! _fakeTestSuiteCreated
-        SkyUnit2.CreateTestSuite(FAKE_TEST_SUITE_NAME)
+        SkyUnit.CreateTestSuite(FAKE_TEST_SUITE_NAME)
         _fakeTestSuiteCreated = true
     endIf
-    SkyUnit2.SwitchToTestSuite(FAKE_TEST_SUITE_NAME)
+    SkyUnit.SwitchToTestSuite(FAKE_TEST_SUITE_NAME)
 endFunction
 
 function SwitchTo_Default_TestSuite()
-    SkyUnit2.UseDefaultTestSuite()
+    SkyUnit.UseDefaultTestSuite()
 endFunction
 
 SkyUnitTests_ExampleTest1 property ExampleTest1

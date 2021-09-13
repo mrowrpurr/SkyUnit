@@ -2,8 +2,8 @@ scriptName JContainersAssertions hidden
 {SkyUnit assertions for working with JContainers data structures}
 
 SkyUnitTest function ExpectJObject(int jobjectID) global
-    SkyUnit2.SetExpectationData_MainObject_JObject(jobjectID)
-    return SkyUnit2.CurrentTest()
+    SkyUnit.SetExpectationData_MainObject_JObject(jobjectID)
+    return SkyUnit.CurrentTest()
 endFunction
 
 ; ; JMap

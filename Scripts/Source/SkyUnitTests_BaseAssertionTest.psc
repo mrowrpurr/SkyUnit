@@ -27,13 +27,13 @@ function ResetAssertionTests()
     SkyUnit2PrivateAPI api = SkyUnit2PrivateAPI.GetPrivateAPI()
     int suiteID = api.GetTestSuite(FAKE_TEST_SUITE_NAME)
     api.RemoveScriptFromTestSuite(ExampleTestForAssertions, suiteID) ; Remove the script (and its test data etc)
-    SkyUnit2.AddScriptToTestSuite(FAKE_TEST_SUITE_NAME, ExampleTestForAssertions) ; Re-add the script (new test data etc)
+    SkyUnit.AddScriptToTestSuite(FAKE_TEST_SUITE_NAME, ExampleTestForAssertions) ; Re-add the script (new test data etc)
 endFunction
 
 string property CurrentFakeTestName auto
 int property CurrentTestRunID auto
 
-int function StartNewFakeTest(string name = "")
+function StartNewFakeTest(string name = "")
     if name
         name = name + "_" 
     endIf

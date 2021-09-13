@@ -12,62 +12,62 @@ function Tests()
 endFunction
 
 function CanRegisterTestScripts_Test()
-    SkyUnit2.CreateTestSuite("MySuite")
+    SkyUnit.CreateTestSuite("MySuite")
 
-    SkyUnit2.AddScriptToTestSuite("MySuite", ExampleTest1)
+    SkyUnit.AddScriptToTestSuite("MySuite", ExampleTest1)
 
-    ExpectStringArray(SkyUnit2.GetTestSuitescriptNames("MySuite")).To(EqualStringArray1("SkyUnitTests_ExampleTest1"))
+    ExpectStringArray(SkyUnit.GetTestSuitescriptNames("MySuite")).To(EqualStringArray1("SkyUnitTests_ExampleTest1"))
 
-    SkyUnit2.AddScriptToTestSuite("MySuite", ExampleTest2)
+    SkyUnit.AddScriptToTestSuite("MySuite", ExampleTest2)
 
-    ExpectStringArray(SkyUnit2.GetTestSuitescriptNames("MySuite")).To(ContainString("SkyUnitTests_ExampleTest1"))
-    ExpectStringArray(SkyUnit2.GetTestSuitescriptNames("MySuite")).To(ContainString("SkyUnitTests_ExampleTest2"))
+    ExpectStringArray(SkyUnit.GetTestSuitescriptNames("MySuite")).To(ContainString("SkyUnitTests_ExampleTest1"))
+    ExpectStringArray(SkyUnit.GetTestSuitescriptNames("MySuite")).To(ContainString("SkyUnitTests_ExampleTest2"))
 endFunction
 
 function DifferenceTestSuitesWithDifferentScripts_Test()
-    SkyUnit2.CreateTestSuite("Suite_One")
-    SkyUnit2.CreateTestSuite("Suite_Two")
+    SkyUnit.CreateTestSuite("Suite_One")
+    SkyUnit.CreateTestSuite("Suite_Two")
 
-    ExpectStringArray(SkyUnit2.GetTestSuitescriptNames("Suite_One")).To(BeEmpty())
-    ExpectStringArray(SkyUnit2.GetTestSuitescriptNames("Suite_Two")).To(BeEmpty())
+    ExpectStringArray(SkyUnit.GetTestSuitescriptNames("Suite_One")).To(BeEmpty())
+    ExpectStringArray(SkyUnit.GetTestSuitescriptNames("Suite_Two")).To(BeEmpty())
 
-    SkyUnit2.AddScriptToTestSuite("Suite_One", ExampleTest1)
-    ExpectStringArray(SkyUnit2.GetTestSuitescriptNames("Suite_One")).To(EqualStringArray1("SkyUnitTests_ExampleTest1"))
-    ExpectStringArray(SkyUnit2.GetTestSuitescriptNames("Suite_Two")).To(BeEmpty())
+    SkyUnit.AddScriptToTestSuite("Suite_One", ExampleTest1)
+    ExpectStringArray(SkyUnit.GetTestSuitescriptNames("Suite_One")).To(EqualStringArray1("SkyUnitTests_ExampleTest1"))
+    ExpectStringArray(SkyUnit.GetTestSuitescriptNames("Suite_Two")).To(BeEmpty())
 
-    SkyUnit2.AddScriptToTestSuite("Suite_Two", ExampleTest2)
-    ExpectStringArray(SkyUnit2.GetTestSuitescriptNames("Suite_One")).To(EqualStringArray1("SkyUnitTests_ExampleTest1"))
-    ExpectStringArray(SkyUnit2.GetTestSuitescriptNames("Suite_Two")).To(EqualStringArray1("SkyUnitTests_ExampleTest2"))
+    SkyUnit.AddScriptToTestSuite("Suite_Two", ExampleTest2)
+    ExpectStringArray(SkyUnit.GetTestSuitescriptNames("Suite_One")).To(EqualStringArray1("SkyUnitTests_ExampleTest1"))
+    ExpectStringArray(SkyUnit.GetTestSuitescriptNames("Suite_Two")).To(EqualStringArray1("SkyUnitTests_ExampleTest2"))
 
-    SkyUnit2.AddScriptToTestSuite("Suite_Two", ExampleTest3)
-    ExpectStringArray(SkyUnit2.GetTestSuitescriptNames("Suite_One")).To(EqualStringArray1("SkyUnitTests_ExampleTest1"))
-    ExpectStringArray(SkyUnit2.GetTestSuitescriptNames("Suite_Two")).To(EqualStringArray2("SkyUnitTests_ExampleTest2", "SkyUnitTests_ExampleTest3"))
+    SkyUnit.AddScriptToTestSuite("Suite_Two", ExampleTest3)
+    ExpectStringArray(SkyUnit.GetTestSuitescriptNames("Suite_One")).To(EqualStringArray1("SkyUnitTests_ExampleTest1"))
+    ExpectStringArray(SkyUnit.GetTestSuitescriptNames("Suite_Two")).To(EqualStringArray2("SkyUnitTests_ExampleTest2", "SkyUnitTests_ExampleTest3"))
 endFunction
 
 function GetScriptFromTestSuite_Test()
-    SkyUnit2.CreateTestSuite("Suite_One")
-    SkyUnit2.CreateTestSuite("Suite_Two")
+    SkyUnit.CreateTestSuite("Suite_One")
+    SkyUnit.CreateTestSuite("Suite_Two")
 
-    SkyUnitTest test = SkyUnit2.GetTestSuiteScript("Suite_One", "SkyUnitTests_ExampleTest1")
+    SkyUnitTest test = SkyUnit.GetTestSuiteScript("Suite_One", "SkyUnitTests_ExampleTest1")
     ExpectForm(test).To(BeNone())
 
-    SkyUnit2.AddScriptToTestSuite("Suite_One", ExampleTest1)
+    SkyUnit.AddScriptToTestSuite("Suite_One", ExampleTest1)
 
-    test = SkyUnit2.GetTestSuiteScript("Suite_One", "SkyUnitTests_ExampleTest1")
+    test = SkyUnit.GetTestSuiteScript("Suite_One", "SkyUnitTests_ExampleTest1")
     ExpectForm(test).To(EqualForm(ExampleTest1))
 
     ; But another suite doesn't see the same one
-    test = SkyUnit2.GetTestSuiteScript("Suite_Two", "SkyUnitTests_ExampleTest1")
+    test = SkyUnit.GetTestSuiteScript("Suite_Two", "SkyUnitTests_ExampleTest1")
     ExpectForm(test).To(BeNone())
 endFunction
 
 function GetNamesOfAllTestSuiteScripts_Test()
-    SkyUnit2.CreateTestSuite("Suite_One")
-    ExpectStringArray(SkyUnit2.GetTestSuitescriptNames("Suite_One")).To(BeEmpty())
+    SkyUnit.CreateTestSuite("Suite_One")
+    ExpectStringArray(SkyUnit.GetTestSuitescriptNames("Suite_One")).To(BeEmpty())
 
-    SkyUnit2.AddScriptToTestSuite("Suite_One", ExampleTest1)
-    ExpectStringArray(SkyUnit2.GetTestSuitescriptNames("Suite_One")).To(EqualStringArray1("SkyUnitTests_ExampleTest1"))
+    SkyUnit.AddScriptToTestSuite("Suite_One", ExampleTest1)
+    ExpectStringArray(SkyUnit.GetTestSuitescriptNames("Suite_One")).To(EqualStringArray1("SkyUnitTests_ExampleTest1"))
 
-    SkyUnit2.AddScriptToTestSuite("Suite_One", ExampleTest2)
-    ExpectStringArray(SkyUnit2.GetTestSuitescriptNames("Suite_One")).To(EqualStringArray2("SkyUnitTests_ExampleTest1", "SkyUnitTests_ExampleTest2"))
+    SkyUnit.AddScriptToTestSuite("Suite_One", ExampleTest2)
+    ExpectStringArray(SkyUnit.GetTestSuitescriptNames("Suite_One")).To(EqualStringArray2("SkyUnitTests_ExampleTest1", "SkyUnitTests_ExampleTest2"))
 endFunction

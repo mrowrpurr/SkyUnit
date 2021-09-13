@@ -10,5 +10,5 @@ function Tests()
 endFunction
 
 function GetCurrentVersion_Test()
-    ExpectFloat(SkyUnit2.GetVersion()).To(EqualFloat(1.0))
+    ExpectFloat(SkyUnit.GetVersion()).To(EqualFloat(1.0))
 endFunction
