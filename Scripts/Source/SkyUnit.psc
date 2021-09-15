@@ -75,11 +75,11 @@ int function RunTestScript(string suiteName, SkyUnitTest script, string filter =
     return api.RunTestScript(suite, script, filter)
 endFunction
 
-int function RunTestScriptByName(string suiteName, string script) global
+int function RunTestScriptByName(string suiteName, string script, string filter = "") global
     SkyUnit2PrivateAPI api = SkyUnit2PrivateAPI.GetPrivateAPI()
     int suite = api.GetTestSuite(suiteName)
     SkyUnitTest test = GetTestSuiteScript(suiteName, script)
-    return api.RunTestScript(suite, test)
+    return api.RunTestScript(suite, test, filter)
 endFunction
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

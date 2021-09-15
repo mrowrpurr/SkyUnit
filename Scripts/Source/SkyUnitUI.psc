@@ -66,6 +66,7 @@ function ShowTestChooser()
 
     uilistmenu listMenu = uiextensions.GetMenu("UIListMenu") as uilistmenu
     listMenu.AddEntryItem("Run all tests")
+    listMenu.AddEntryItem("Filter tests by name")
 
     string[] testscriptNames = SkyUnit.GetTestSuitescriptNames()
 
@@ -82,14 +83,21 @@ function ShowTestChooser()
     if selectedIndex > -1
         if selectedIndex == 0
             RunAllTestScripts(testscriptNames)
+        elseIf selectedIndex == 1
+            uitextentrymenu textEntry = UIextensions.GetMenu("UITextEntryMenu") as uitextentrymenu
+            textEntry.OpenMenu()
+            string filter = textEntry.GetResultString()
+            if filter
+                RunAllTestScripts(testscriptNames, filter)
+            endIf
         else
-            string testName = testscriptNames[selectedIndex - 1]
+            string testName = testscriptNames[selectedIndex - 2]
             RunTestScriptByName(testName)
         endIf
     endIf
 endFunction
 
-function RunAllTestScripts(string[] testscriptNames)
+function RunAllTestScripts(string[] testscriptNames, string filter = "")
     Debug("Running All Tests")
     string output = ""
     int totalPassed
@@ -100,7 +108,7 @@ function RunAllTestScripts(string[] testscriptNames)
     while testScriptIndex < testscriptNames.Length
         string name = testscriptNames[testScriptIndex]
         Debug("Running " + name)
-        int result = SkyUnit.RunTestScriptByName(SkyUnit.DefaultTestSuite(), name)
+        int result = SkyUnit.RunTestScriptByName(SkyUnit.DefaultTestSuite(), name, filter)
         JValue.retain(result)
         JValue.writeToFile(result, "TestResult_" + name + ".json")
         string resultText = TestScriptSummary(name, result, showMessageBox = false)
@@ -156,7 +164,7 @@ string function TestScriptSummary(string name, int scriptResult, bool showMessag
     int totalPending
     int totalFailed
     int totalSkipped
-    PrintToConsole("[" + SkyUnit.ScriptTestResult_GetscriptNames(scriptResult) + "]")
+    PrintToConsole("[" + SkyUnit.ScriptTestResult_GetScriptNames(scriptResult) + "]")
     int testIndex = 0
     while testIndex < testNames.Length
         string testName = testNames[testIndex]
@@ -181,7 +189,7 @@ string function TestScriptSummary(string name, int scriptResult, bool showMessag
             PrintToConsole("[SKIPPED] " + testName)
             totalSkipped += 1
         else
-            PrintToConsole("[" + testStatus + "] " + testName)
+            PrintToConsole("[ Test Status: " + testStatus + "] " + testName)
         endIf
         int expectationCount = SkyUnit.TestResult_GetExpectationCount(testResult)
         int expectationIndex = 0

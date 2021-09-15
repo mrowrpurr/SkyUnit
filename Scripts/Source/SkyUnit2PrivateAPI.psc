@@ -603,6 +603,8 @@ endFunction
 int function RunTestScriptLocked(int suite, SkyUnitTest script, string filter = "")
     int testRun = BeginTestRun(suite, script, filter)
 
+    CurrentTestRunFilter = filter
+
     ; Run the test! (And track duration)
     float startTime = Utility.GetCurrentRealTime()
     JMap.setFlt(testRun, "startTime", startTime)
