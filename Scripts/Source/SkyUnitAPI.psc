@@ -50,6 +50,7 @@ endEvent
 
 function InitializeUI()
     string[] testSuiteNames = TestSuites()
+    Info("Test Suites: " + testSuiteNames)
     if testSuiteNames.Length > 0
         int leftHand = 0
         GetActorReference().EquipSpell(SkyUnitTestRunnerSpell, leftHand)
@@ -70,8 +71,8 @@ function InitializeDataStorage()
     int skyUnitMap = JMap.object()
     JDB.solveObjSetter(".skyUnit", skyUnitMap, createMissingKeys = true)
 
-    int testSuitesByName = JMap.object()
-    JDB.solveObjSetter(".skyUnit.testSuitesByName", testSuitesByName, createMissingKeys = true)
+    int skyUnitContextsMap = JMap.object()
+    JDB.solveObjSetter(".skyUnit.contexts", skyUnitContextsMap, createMissingKeys = true)
 
     ; Setup "slot number" array
     int testScriptAvailableSlotNumbersArray = JArray.object()
@@ -95,12 +96,33 @@ function InitializeDataStorage()
     TestSuiteScripts8 = new SkyUnitTest[128]
     TestSuiteScripts9 = new SkyUnitTest[128]
 
-    JDB.solveObjSetter(".skyUnit.currentTestResult", 0, createMissingKeys = true)
-    JDB.solveObjSetter(".skyUnit.currentTestSuiteResult", 0, createMissingKeys = true)
-    JDB.solveObjSetter(".skyUnit.currentlyRunningTestSuite", 0, createMissingKeys = true)
-    JDB.solveObjSetter(".skyUnit.currentExpectation", 0, createMissingKeys = true)
-    JDB.solveFltSetter(".skyUnit.lock", 0.0, createMissingKeys = true)
+    CreateContext("default")
+    SwitchToContext("default")
+
+    Info("Ready")
     JDB.solveIntSetter(".skyUnit.ready", 1, createMissingKeys = true)
+    WriteSkyUnitDebugJsonFile()
+endFunction
+
+function CreateContext(string name) global
+    int context = JMap.object()
+    JDB.solveObjSetter(".skyUnit.contexts." + name, context, createMissingKeys = true)
+    JMap.setObj(context, "testSuitesByName", JMap.object())
+    JMap.setObj(context, "currentTestResult", JMap.object())
+    JMap.setObj(context, "currentTestSuiteResult", JMap.object())
+    JMap.setObj(context, "currentlyRunningTestSuite", JMap.object())
+    JMap.setObj(context, "currentExpectation", JMap.object())
+    JMap.setFlt(context, "lock", 0.0)
+endFunction
+
+function DeleteContext(string name) global
+    int contexts = SkyUnitData_GetTopLevelContextsMap()
+    JMap.removeKey(contexts, name)
+endFunction
+
+function SwitchToContext(string name) global
+    int context = JDB.solveObj(".skyUnit.contexts." + name)
+    JDB.solveObjSetter(".skyUnit.currentContext", context, createMissingKeys = true)
 endFunction
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -124,8 +146,10 @@ endFunction
 ; Blocks until SkyUnit is ready for test registration and data querying
 function WaitForDataToBeInitialized() global
     while ! JDB.solveInt(".skyUnit.ready") == 1
+        Info("Waiting...")
         Utility.WaitMenuMode(0.1)
     endWhile
+    Info("Done waiting!")
 endFunction
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -166,12 +190,18 @@ endFunction
 ;; JDB Data Access Helpers
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+; TODO update all getters to start with Get*()
+
 int function SkyUnitData_TopLevelMap() global
     return JDB.solveObj(".skyUnit")
 endFunction
 
+int function SkyUnitData_GetTopLevelContextsMap() global
+    return JDB.solveObj(".skyUnit.contexts")
+endFunction
+
 int function SkyUnitData_TestSuitesByNameMap() global
-    return JDB.solveObj(".skyUnit.testSuitesByName")
+    return JDB.solveObj(".skyUnit.currentContext.testSuitesByName")
 endFunction
 
 int function SkyUnitData_TestSuiteByName(string testSuiteName) global
@@ -191,11 +221,11 @@ int function SkyUnitData_AvailableTestSuiteScriptSlotNumbersArray() global
 endFunction
 
 int function SkyUnitData_GetCurrentTestResult() global
-    return JDB.solveObj(".skyUnit.currentTestResult")
+    return JDB.solveObj(".skyUnit.currentContext.currentTestResult")
 endFunction
 
 function SkyUnitData_SetCurrentTestResult(int testResult) global
-    JDB.solveObjSetter(".skyUnit.currentTestResult", testResult)
+    JDB.solveObjSetter(".skyUnit.currentContext.currentTestResult", testResult)
 endFunction
 
 int function SkyUnitData_CurrentExpectationsArray() global
@@ -203,27 +233,27 @@ int function SkyUnitData_CurrentExpectationsArray() global
 endFunction
 
 function SkyUnitData_SetCurrentExpectation(int expectation) global
-    JDB.solveObjSetter(".skyUnit.currentExpectation", expectation)
+    JDB.solveObjSetter(".skyUnit.currentContext.currentExpectation", expectation)
 endFunction
 
 int function SkyUnitData_GetCurrentExpectation() global
-    return JDB.solveObj(".skyUnit.currentExpectation")
+    return JDB.solveObj(".skyUnit.currentContext.currentExpectation")
 endFunction
 
 int function SkyUnitData_GetCurrentlyRunningTestSuite() global
-    return JDB.solveObj(".skyUnit.currentlyRunningTestSuite")
+    return JDB.solveObj(".skyUnit.currentContext.currentlyRunningTestSuite")
 endFunction
 
 function SkyUnitData_SetCurrentlyRunningTestSuite(int testSuiteMap) global
-    JDB.solveObjSetter(".skyUnit.currentlyRunningTestSuite", testSuiteMap)
+    JDB.solveObjSetter(".skyUnit.currentContext.currentlyRunningTestSuite", testSuiteMap)
 endFunction
 
 int function SkyUnitData_GetLatestSuiteResult() global
-    return JDB.solveObj(".skyUnit.currentTestSuiteResult")
+    return JDB.solveObj(".skyUnit.currentContext.currentTestSuiteResult")
 endFunction
 
 function SkyUnitData_SetLatestSuiteResult(int latestTestResult) global
-    JDB.solveObjSetter(".skyUnit.currentTestSuiteResult", latestTestResult)
+    JDB.solveObjSetter(".skyUnit.currentContext.currentTestSuiteResult", latestTestResult)
 endFunction
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -242,16 +272,20 @@ function Error(string text) global
     Debug.Trace("[SkyUnit] [ERROR] " + text, aiSeverity = 2)
 endFunction
 
+function WriteSkyUnitDebugJsonFile() global
+    JValue.writeToFile(JDB.solveObj(".skyUnit"), "SkyUnitTests.json")
+endFunction
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Locking (prevent parallel async scripts)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 float function GetCurrentLock() global
-    return JDB.solveFlt(".skyUnit.lock")
+    return JDB.solveFlt(".skyUnit.currentContext.lock")
 endFunction
 
 function SetCurrentLock(float lock) global
-    JDB.solveFltSetter(".skyUnit.lock", lock)
+    JDB.solveFltSetter(".skyUnit.currentContext.lock", lock)
 endFunction
 
 function GetLock(float lock = 0.0) global
@@ -287,6 +321,7 @@ endFunction
 function RegisterTestSuite(SkyUnitTest suiteScript) global
     WaitForDataToBeInitialized()
     GetLock()
+    Info("Register Test Suite: " + suiteScript)
 
     int testSuitesByName = SkyUnitData_TestSuitesByNameMap()
 
@@ -302,6 +337,8 @@ function RegisterTestSuite(SkyUnitTest suiteScript) global
     SetTestScriptForSlotNumber(scriptSlotNumber, suiteScript)
 
     ReleaseLock()
+    
+    WriteSkyUnitDebugJsonFile()
 endFunction
 
 int function ClaimAvailableTestSuiteScriptArraySlotNumber() global

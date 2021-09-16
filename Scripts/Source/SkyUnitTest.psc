@@ -74,12 +74,21 @@ function Fn(bool testFunction)
     SkyUnitAPI.Fn_EndTestRun()
 endFunction
 
-; Fails the current test with the provided message (will be included in the test results)
+; Fails the current test with the provided message.
+; The failure message will be shown in the test results.
 function Fail(string failureMessage)
     SkyUnitAPI.BeginExpectation()
     SkyUnitAPI.FailExpectation(failureMessage)
 endFunction
 
-SkyUnitTest function MapsTo()
-    return self
+function BeforeAll()
+endFunction
+
+function AfterAll()
+endFunction
+
+function BeforeEach()
+endFunction
+
+function AfterEach()
 endFunction
