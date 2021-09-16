@@ -74,11 +74,16 @@ function Fn(bool testFunction)
     SkyUnitAPI.Fn_EndTestRun()
 endFunction
 
-; Fails the current test with the provided message.
-; The failure message will be shown in the test results.
-function Fail(string failureMessage)
-    SkyUnitAPI.BeginExpectation()
-    SkyUnitAPI.FailExpectation(failureMessage)
+; Marks this as a "not" assertion, e.g. `ExpectString("").Not.To(EqualString(""))`
+SkyUnitTest property Not
+    SkyUnitTest function get()
+        SkyUnitAPI.SetExpectationAsNotExpectation()
+        return self
+    endFunction
+endProperty
+
+; Provide an assertion, e.g. `ExpectString("").To(EqualString(""))`
+function To(bool assertionFunction)
 endFunction
 
 function BeforeAll()
@@ -92,3 +97,32 @@ endFunction
 
 function AfterEach()
 endFunction
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Simple Assert() and Fail()
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+; Simplest assertion.
+; If the provided expression does not evaluate to true, this will fail.
+function Assert(bool actual, string failureMessage = "")
+    if ! actual
+        Fail(failureMessage)
+    endIf
+endFunction
+
+; Fails the current test with the provided message.
+; The failure message will be shown in the test results.
+function Fail(string failureMessage)
+    SkyUnitAPI.BeginExpectation()
+    SkyUnitAPI.FailExpectation(failureMessage)
+endFunction
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Expectation Functions
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Assertion Functions - Equal
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

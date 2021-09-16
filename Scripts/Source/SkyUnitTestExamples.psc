@@ -7,6 +7,8 @@ Quest: 0x808
 Plugin: SkyUnitTests.esp}
 
 function StartExamplesQuest() global
+    GetSkyUnitExamplesQuest().Reset()
+    StopExamplesQuest()
     GetSkyUnitExamplesQuest().Start()
 endFunction
 
@@ -18,10 +20,10 @@ Quest function GetSkyUnitExamplesQuest() global
     return Game.GetFormFromFile(0x808, "SkyUnitTests.esp") as Quest
 endFunction
 
-SkyUnit_ExampleTest1 function ExampleTest1() global
+SkyUnit_ExampleTest1 function GetExampleTest1() global
     return GetSkyUnitExamplesQuest() as SkyUnit_ExampleTest1
 endFunction
 
-SkyUnit_ExampleTest2 function ExampleTest2() global
+SkyUnit_ExampleTest2 function GetExampleTest2() global
     return GetSkyUnitExamplesQuest() as SkyUnit_ExampleTest2
 endFunction

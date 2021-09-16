@@ -101,7 +101,6 @@ function InitializeDataStorage()
 
     Info("Ready")
     JDB.solveIntSetter(".skyUnit.ready", 1, createMissingKeys = true)
-    WriteSkyUnitDebugJsonFile()
 endFunction
 
 function CreateContext(string name) global
@@ -123,6 +122,10 @@ endFunction
 function SwitchToContext(string name) global
     int context = JDB.solveObj(".skyUnit.contexts." + name)
     JDB.solveObjSetter(".skyUnit.currentContext", context, createMissingKeys = true)
+endFunction
+
+bool function ContextExists(string name) global
+    return JDB.solveObj(".skyUnit.contexts." + name) != 0
 endFunction
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -337,8 +340,6 @@ function RegisterTestSuite(SkyUnitTest suiteScript) global
     SetTestScriptForSlotNumber(scriptSlotNumber, suiteScript)
 
     ReleaseLock()
-    
-    WriteSkyUnitDebugJsonFile()
 endFunction
 
 int function ClaimAvailableTestSuiteScriptArraySlotNumber() global
@@ -487,6 +488,14 @@ function FailExpectation(string failureMessage) global
     JMap.setStr(SkyUnitData_GetCurrentExpectation(), "failureMessage", failureMessage)
     JMap.setStr(SkyUnitData_GetCurrentTestResult(), "status", "failing")
     JMap.setStr(SkyUnitData_GetLatestSuiteResult(), "status", "failing")
+endFunction
+
+function SetExpectationAsNotExpectation() global
+    JMap.setInt(SkyUnitData_GetCurrentExpectation(), "not", 1)
+endFunction
+
+bool function Not() global
+    return JMap.getInt(SkyUnitData_GetCurrentExpectation(), "not") == 1
 endFunction
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
