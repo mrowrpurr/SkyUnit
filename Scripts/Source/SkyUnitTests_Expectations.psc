@@ -33,13 +33,23 @@ function ExpectationDataBasics_Test()
     Assert(expectationCount == 0, "Expected new test not to have any expectations")
 
     SwitchToContext_Fake()
-    SkyUnitPrivateAPI.BeginExpectation()
+    SkyUnitExpectation.BeginExpectation("MyExpectation")
     expectationCount = JArray.count(SkyUnitPrivateAPI.SkyUnitData_CurrentExpectationsArray())
-    string[] expectationDataKeys = JMap.allKeysPArray(SkyUnitPrivateAPI.SkyUnitData_GetCurrentExpectationDataMap())
+    string actualValueType = SkyUnitExpectation.GetActualType()
 
     SwitchToContext_Real()
     Assert(expectationCount == 1, "Expected test to have 1 expectation")
-    Assert(expectationDataKeys.Length == 0, "Expected new expectation not to have any data yet")
+    Assert(actualValueType == "", "Expected new expectation not to have any data type yet for the 'actual' value")
 
+    SwitchToContext_Fake()
+    SkyUnitExpectation.SetActualInt(42)
+    actualValueType = SkyUnitExpectation.GetActualType()
+    string actualValueText = SkyUnitExpectation.GetActualText()
+    int actualValueInt = SkyUnitExpectation.GetActualInt()
 
+    SwitchToContext_Real()
+    Assert(expectationCount == 1, "Expected test to have 1 expectation")
+    Assert(actualValueType == "Int", "Expected actual value type to be Int")
+    Assert(actualValueText == "42", "Expected actual value text to be 42")
+    Assert(actualValueInt == 42, "Expected actual value to equal 42")
 endFunction

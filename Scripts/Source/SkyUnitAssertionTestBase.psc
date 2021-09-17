@@ -98,6 +98,6 @@ function SetupFakeExpectation(string testName = "")
         testName = "FakeTest_" + Utility.RandomInt(1, 10000) + "_" + Utility.RandomInt(1, 10000)
     endIf
     CreateTest(testName)
-    SkyUnitPrivateAPI.BeginExpectation()
+    SkyUnitExpectation.BeginExpectation("MyExpectation")
     SkyUnitPrivateAPI.SwitchToContext(currentContext)
 endFunction

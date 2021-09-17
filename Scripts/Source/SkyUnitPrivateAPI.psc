@@ -255,10 +255,6 @@ int function SkyUnitData_GetCurrentExpectation() global
     return JDB.solveObj(".skyUnit.currentContext.currentExpectation")
 endFunction
 
-int function SkyUnitData_GetCurrentExpectationDataMap() global
-    return JDB.solveObj(".skyUnit.currentContext.currentExpectation.data")
-endFunction
-
 int function SkyUnitData_GetCurrentlyRunningTestSuite() global
     return JDB.solveObj(".skyUnit.currentContext.currentlyRunningTestSuite")
 endFunction
@@ -293,6 +289,7 @@ endFunction
 
 function WriteSkyUnitDebugJsonFile() global
     JValue.writeToFile(JDB.solveObj(".skyUnit"), "SkyUnitTests.json")
+    Debug.Notification("Write SkyUnitTests.json")
 endFunction
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -551,7 +548,7 @@ function ShowTestSuiteChooserUI(string[] testSuiteNames) global
         elseIf selection == option_RunTestsMatchingFilter_index
             Debug.MessageBox("Not yet supported...")
         elseIf selection == option_ViewTestSuite_index
-            Debug.MessageBox("Not yet supported...")
+            ShowViewTestSuiteChooserUI(testSuiteNames)
         elseIf selection == option_ViewTestSuite_index
             ShowViewTestSuiteChooserUI(testSuiteNames)
         elseIf selection == option_ViewTestSuitesMatchingFilter_index
