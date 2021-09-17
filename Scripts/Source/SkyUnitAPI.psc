@@ -106,6 +106,7 @@ endFunction
 function CreateContext(string name) global
     int context = JMap.object()
     JDB.solveObjSetter(".skyUnit.contexts." + name, context, createMissingKeys = true)
+    JMap.setStr(context, "contextName", name)
     JMap.setObj(context, "testSuitesByName", JMap.object())
     JMap.setObj(context, "currentTestResult", JMap.object())
     JMap.setObj(context, "currentTestSuiteResult", JMap.object())
@@ -126,6 +127,10 @@ endFunction
 
 bool function ContextExists(string name) global
     return JDB.solveObj(".skyUnit.contexts." + name) != 0
+endFunction
+
+string function CurrentContext() global
+    return JDB.solveStr(".skyUnit.currentContext.contextName")
 endFunction
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -243,6 +248,10 @@ int function SkyUnitData_GetCurrentExpectation() global
     return JDB.solveObj(".skyUnit.currentContext.currentExpectation")
 endFunction
 
+int function SkyUnitData_GetCurrentExpectationDataMap() global
+    return JDB.solveObj(".skyUnit.currentContext.currentExpectation.data")
+endFunction
+
 int function SkyUnitData_GetCurrentlyRunningTestSuite() global
     return JDB.solveObj(".skyUnit.currentContext.currentlyRunningTestSuite")
 endFunction
@@ -321,23 +330,31 @@ endFunction
 ;; Test Suite Registration / Test Scripts
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-function RegisterTestSuite(SkyUnitTest suiteScript) global
+function RegisterTestSuite(SkyUnitTest suiteScript, string suiteName = "") global
     WaitForDataToBeInitialized()
     GetLock()
-    Info("Register Test Suite: " + suiteScript)
+
+    Info("Register Test Suite: " + suiteScript + " " + suiteName)
 
     int testSuitesByName = SkyUnitData_TestSuitesByNameMap()
 
+    if ! suiteName
+        suiteName = ScriptDisplayName(suiteScript)
+    endIf
+
     int testSuiteMap = JMap.object()
-    JMap.setObj(testSuitesByName, ScriptDisplayName(suiteScript), testSuiteMap)
+    JMap.setObj(testSuitesByName, suiteName, testSuiteMap)
 
     int testsMap = JMap.object()
     JMap.setObj(testSuiteMap, "tests", testsMap)
 
-    int scriptSlotNumber = ClaimAvailableTestSuiteScriptArraySlotNumber()
-    JMap.setInt(testSuiteMap, "scriptArraySlotNumber", scriptSlotNumber)
-
-    SetTestScriptForSlotNumber(scriptSlotNumber, suiteScript)
+    if suiteScript
+        int scriptSlotNumber = ClaimAvailableTestSuiteScriptArraySlotNumber()
+        JMap.setInt(testSuiteMap, "scriptArraySlotNumber", scriptSlotNumber)
+        SetTestScriptForSlotNumber(scriptSlotNumber, suiteScript)
+    else
+        Warn("RegisterTestSuite() called with None script [" + suiteName + "]")
+    endIf
 
     ReleaseLock()
 endFunction
@@ -430,7 +447,9 @@ int function RunTestSuite(string testSuiteName) global
     int testSuiteResult = JMap.object()
     SkyUnitData_SetCurrentlyRunningTestSuite(testSuiteResult)
     SkyUnitData_SetLatestSuiteResult(testSuiteResult)
+    JMap.setStr(testSuiteResult, "testSuite", testSuiteName)
     JMap.setStr(testSuiteResult, "status", "pending")
+    JMap.setObj(testSuiteResult, "tests", JMap.object())
     SkyUnitTest testScript = GetTestScriptBySuiteName(testSuiteName)
 
     ; TODO : BeforeAll()
@@ -451,10 +470,12 @@ int function RunSingleTest(string testSuiteName, string testName) global
 endFunction
 
 ; TODO - Before Each
-function Test_BeginTestRun(SkyUnitTest suiteScript, string testName) global
-    JMap.setObj(SkyUnitData_TestSuiteTestsMap(ScriptDisplayName(suiteScript)), testName, JMap.object())
+function Test_BeginTestRun(string testSuiteName, string testName) global
+    JMap.setObj(SkyUnitData_TestSuiteTestsMap(testSuiteName), testName, JMap.object())
     int testResult = JMap.object()
-    JMap.setObj(SkyUnitData_GetCurrentlyRunningTestSuite(), testName, testResult)
+    int currentlyRunningTestsMap = JMap.getObj(SkyUnitData_GetCurrentlyRunningTestSuite(), "tests")
+    JMap.setObj(currentlyRunningTestsMap, testName, testResult)
+    JMap.setStr(testResult, "testName", testName)
     JMap.setStr(testResult, "status", "pending")
     JMap.setObj(testResult, "expectations", JArray.object())
     SkyUnitData_SetCurrentTestResult(testResult)
@@ -482,6 +503,8 @@ function BeginExpectation() global
     int expectation = JMap.object()
     JArray.addObj(SkyUnitData_CurrentExpectationsArray(), expectation)
     SkyUnitData_SetCurrentExpectation(expectation)
+    int expectationData = JMap.object()
+    JMap.setObj(expectation, "data", expectationData)
 endFunction
 
 function FailExpectation(string failureMessage) global
@@ -530,7 +553,7 @@ function ShowTestSuiteChooserUI(string[] testSuiteNames) global
     listMenu.AddEntryItem(option_ViewTestSuite_text)
     listMenu.AddEntryItem(option_ViewTestSuitesMatchingFilter_text)
     listMenu.AddEntryItem(" ")
-    listMenu.AddEntryItem("--- [All Test Suites] ---")
+    listMenu.AddEntryItem("--- [Choose Test Suite to Run] ---")
 
     int suiteIndex = 0
     while suiteIndex < testSuiteNames.Length
@@ -542,10 +565,18 @@ function ShowTestSuiteChooserUI(string[] testSuiteNames) global
 
     int selection = listMenu.GetResultInt()
     if selection > -1
-        if selection == option_ViewTestSuite_index
-            ShowViewTestSuiteChooserUI(testSuiteNames)
-        else
+        if selection == option_RunAllTests_index
             Debug.MessageBox("Not yet supported...")
+        elseIf selection == option_RunTestsMatchingFilter_index
+            Debug.MessageBox("Not yet supported...")
+        elseIf selection == option_ViewTestSuite_index
+            Debug.MessageBox("Not yet supported...")
+        elseIf selection == option_ViewTestSuite_index
+            ShowViewTestSuiteChooserUI(testSuiteNames)
+        elseIf selection == option_ViewTestSuitesMatchingFilter_index
+            Debug.MessageBox("Not yet supported...")
+        elseIf selection >= textOptionCount
+            RunTestSuiteAndDisplayResult(testSuiteNames[selection - textOptionCount])
         endIf
     endIf
 endFunction
@@ -600,4 +631,29 @@ endFunction
 
 function ShowSingleTestResult(string testSuiteName, string testName, int testResult) global
     Debug.MessageBox("Test Result: " + JMap.getStr(testResult, "status"))
+endFunction
+
+function RunTestSuiteAndDisplayResult(string testSuiteName) global
+    int testSuiteResult = RunTestSuite(testSuiteName)
+    string text = ""
+
+    text += "[" + testSuiteName + "]\n"
+    text += JMap.getStr(testSuiteResult, "status") + "\n\n"
+
+    int tests = JMap.getObj(testSuiteResult, "tests")
+    string[] testNames = JMap.allKeysPArray(tests)
+
+    int i = 0
+    while i < testNames.Length
+        string name = testNames[i]
+        int test = JMap.getObj(tests, name)
+        string status = JMap.getStr(test, "status")
+        text += status + " - " + name + "\n"
+        if status == "failed"
+            ; get the failed expectations...
+        endIf
+        i += 1
+    endWhile
+    Debug.MessageBox(text)
+    WriteSkyUnitDebugJsonFile()
 endFunction

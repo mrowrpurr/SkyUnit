@@ -13,6 +13,7 @@ endEvent
 ; Override the `Tests()` function to define your test cases
 ;
 ; Example:
+;
 ; ```
 ;   scriptName MyTests extend SkyUnitTest
 ;
@@ -34,6 +35,7 @@ endFunction
 ; Defines a test in this test suite
 ;
 ; Example:
+;
 ; ```
 ;   scriptName MyTests extend SkyUnitTest
 ;
@@ -50,13 +52,14 @@ endFunction
 ;   endFunction
 ; ```
 SkyUnitTest function Test(string testName)
-    SkyUnitAPI.Test_BeginTestRun(self, testName)
+    SkyUnitAPI.Test_BeginTestRun(SkyUnitAPI.ScriptDisplayName(self), testName)
     return self
 endFunction
 
 ; Usage: call your test function inside of the `Fn()` parameter
 ;
 ; Example:
+;
 ; ```
 ;   scriptName MyTests extend SkyUnitTest
 ;

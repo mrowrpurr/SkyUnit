@@ -22,14 +22,14 @@ endFunction
 function StartingQuestRegistersTestScripts_Test()
     SkyUnitAPI.DeleteContext("fake")
     
-    SwitchToSuite_Fake()
+    SwitchToContext_Fake()
     string[] testSuites = SkyUnitAPI.TestSuites()
-    SwitchToSuite_Real()
+    SwitchToContext_Real()
     
     Assert(testSuites.Length == 0, "Expected fake context to have no loaded test suites " + testSuites)
 
     ; Switch to Fake so the initialized scripts will register themselves into the fake context
-    SwitchToSuite_Fake()
+    SwitchToContext_Fake()
 
     ; Start quest
     SkyUnitTestExamples.StartExamplesQuest()
@@ -39,14 +39,14 @@ function StartingQuestRegistersTestScripts_Test()
     Utility.WaitMenuMode(1.0)
     testSuites = SkyUnitAPI.TestSuites()
 
-    SwitchToSuite_Real()
+    SwitchToContext_Real()
     Assert(testSuites.Length == 2, "Expected 2 test suites to get loaded " + testSuites)
     Assert(testSuites.Find("SkyUnit_ExampleTest1") > -1, "Expected test suite SkyUnit_ExampleTest1 to be loaded " + testSuites)
     Assert(testSuites.Find("SkyUnit_ExampleTest2") > -1, "Expected test suite SkyUnit_ExampleTest2 to be loaded " + testSuites)
 endFunction
 
 function GetTestSuiteNames_Test()
-    ; SwitchToSuite_Fake()
+    ; SwitchToContext_Fake()
     ; Assert(SkyUnitAPI.TestSuites().Length == 0, "Expected fake context to have no loaded test suites")
 
     ; ; Start 
