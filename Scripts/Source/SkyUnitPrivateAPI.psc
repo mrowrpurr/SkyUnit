@@ -39,6 +39,10 @@ SkyUnitTest[] property TestSuiteScripts7 auto
 SkyUnitTest[] property TestSuiteScripts8 auto
 SkyUnitTest[] property TestSuiteScripts9 auto
 
+; Fields for assertions (these types cannot be stored in JContaienrs and are stored here instead)
+Alias property CurrentExpectationActualValue_Alias auto
+ActiveMagicEffect property CurrentExpectationActualValue_ActiveMagicEffect auto
+
 event OnInit()
     PerformModInstallation()
     Utility.WaitMenuMode(2.5)

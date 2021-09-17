@@ -136,46 +136,231 @@ endFunction
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 function ExpectString(string actual)
-    SkyUnitExpectation.SetPrimaryDataType("String")
-    SkyUnitExpectation.SetPrimaryDataText(actual)
-    SkyUnitExpectation.SetString("_data", actual)
+    SkyUnitExpectation.SetActualString(actual)
 endFunction
 
 function ExpectInt(int actual)
-    SkyUnitExpectation.SetPrimaryDataType("Int")
-    SkyUnitExpectation.SetPrimaryDataText(actual)
-    SkyUnitExpectation.SetInt("_data", actual)
-endFunction
-
-function ExpectFloat(float actual)
-    SkyUnitExpectation.SetPrimaryDataType("Float")
-    SkyUnitExpectation.SetPrimaryDataText(actual)
-    SkyUnitExpectation.SetFloat("_data", actual)
-endFunction
-
-function ExpectForm(Form actual)
-    SkyUnitExpectation.SetPrimaryDataType("Form")
-    SkyUnitExpectation.SetPrimaryDataText(actual)
-    SkyUnitExpectation.SetForm("_data", actual)
+    SkyUnitExpectation.SetActualInt(actual)
 endFunction
 
 function ExpectBool(bool actual)
-    SkyUnitExpectation.SetPrimaryDataType("Bool")
-    SkyUnitExpectation.SetPrimaryDataText(actual)
-    SkyUnitExpectation.SetBool("_data", actual)
+    SkyUnitExpectation.SetActualBool(actual)
+endFunction
+
+function ExpectFloat(float actual)
+    SkyUnitExpectation.SetActualFloat(actual)
+endFunction
+
+function ExpectForm(Form actual)
+    SkyUnitExpectation.SetActualForm(actual, "Form")
+endFunction
+
+function ExpectPlayer()
+    Form actual = Game.GetPlayer()
+    SkyUnitExpectation.SetActualForm(actual, "Actor")
+endFunction
+
+function ExpectActor(Actor actual)
+    SkyUnitExpectation.SetActualForm(actual, "Actor")
+endFunction
+
+function ExpectActorBase(ActorBase actual)
+    SkyUnitExpectation.SetActualForm(actual, "ActorBase")
+endFunction
+
+function ExpectSpell(Spell actual)
+    SkyUnitExpectation.SetActualForm(actual, "Spell")
+endFunction
+
+function ExpectShout(Shout actual)
+    SkyUnitExpectation.SetActualForm(actual, "Shout")
+endFunction
+
+function ExpectQuest(Quest actual)
+    SkyUnitExpectation.SetActualForm(actual, "Quest")
+endFunction
+
+function ExpectEnchantment(Enchantment actual)
+    SkyUnitExpectation.SetActualForm(actual, "Enchantment")
+endFunction
+
+function ExpectScroll(Scroll actual)
+    SkyUnitExpectation.SetActualForm(actual, "Scroll")
+endFunction
+
+function ExpectPerk(Perk actual)
+    SkyUnitExpectation.SetActualForm(actual, "Perk")
+endFunction
+
+function ExpectIngredient(Ingredient actual)
+    SkyUnitExpectation.SetActualForm(actual, "Ingredient")
+endFunction
+
+function ExpectFormList(FormList actual)
+    SkyUnitExpectation.SetActualForm(actual, "FormList")
+endFunction
+
+function ExpectArmor(Armor actual)
+    SkyUnitExpectation.SetActualForm(actual, "Armor")
+endFunction
+
+function ExpectWeapon(Weapon actual)
+    SkyUnitExpectation.SetActualForm(actual, "Weapon")
+endFunction
+
+function ExpectPotion(Potion actual)
+    SkyUnitExpectation.SetActualForm(actual, "Potion")
+endFunction
+
+function ExpectCell(Cell actual)
+    SkyUnitExpectation.SetActualForm(actual, "Cell")
+endFunction
+
+function ExpectLocation(Location actual)
+    SkyUnitExpectation.SetActualForm(actual, "Location")
+endFunction
+
+function ExpectLight(Light actual)
+    SkyUnitExpectation.SetActualForm(actual, "Light")
+endFunction
+
+function ExpectGlobalVariable(GlobalVariable actual)
+    SkyUnitExpectation.SetActualForm(actual, "GlobalVariable")
+endFunction
+
+function ExpectFaction(Faction actual)
+    SkyUnitExpectation.SetActualForm(actual, "Faction")
+endFunction
+
+function ExpectPackage(Package actual)
+    SkyUnitExpectation.SetActualForm(actual, "Package")
+endFunction
+
+function ExpectScene(Scene actual)
+    SkyUnitExpectation.SetActualForm(actual, "Scene")
+endFunction
+
+function ExpectObjectReference(ObjectReference actual)
+    SkyUnitExpectation.SetActualForm(actual, "ObjectReference")
+endFunction
+
+function ExpectMagicEffect(MagicEffect actual)
+    SkyUnitExpectation.SetActualForm(actual, "MagicEffect")
+endFunction
+
+function ExpectActivetMagicEffect(ActiveMagicEffect actual)
+    SkyUnitExpectation.SetActualActiveMagicEffect(actual)
+endFunction
+
+function ExpectAlias(Alias actual)
+    SkyUnitExpectation.SetActualAlias(actual)
 endFunction
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Assertion Functions - Equal
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-function EqualString(string expected)
+bool function EqualString(string expected)
+    SkyUnitExpectation.SetExpectedString(expected)
     string actual
-    if SkyUnitExpectation.GetPrimaryDataType() == "String"
-        actual = SkyUnitExpectation.GetString("_data")
+    if SkyUnitExpectation.GetActualType() == "String"
+        actual = SkyUnitExpectation.GetActualString()
     else
-        actual = SkyUnitExpectation.GetString("_text")
+        actual = SkyUnitExpectation.GetActualText()
     endIf
     bool not = SkyUnitExpectation.Not()
+    if not && actual == expected
+        return SkyUnitExpectation.Fail("EqualString", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " not to equal " + \
+            SkyUnitExpectation.ExpectedDescription())
+    elseIf ! not && actual != expected
+        return SkyUnitExpectation.Fail("EqualString", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " to equal " + \
+            SkyUnitExpectation.ExpectedDescription())
+    endIf
+    return SkyUnitExpectation.Pass("EqualString")
+endFunction
 
+bool function EqualInt(int expected)
+    SkyUnitExpectation.SetExpectedInt(expected)
+    int actual
+    if SkyUnitExpectation.GetActualType() == "Int"
+        actual = SkyUnitExpectation.GetActualInt()
+    else
+        actual = SkyUnitExpectation.GetActualText() as int
+    endIf
+    bool not = SkyUnitExpectation.Not()
+    if not && actual == expected
+        return SkyUnitExpectation.Fail("EqualInt", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " not to equal " + \
+            SkyUnitExpectation.ExpectedDescription())
+    elseIf ! not && actual != expected
+        return SkyUnitExpectation.Fail("EqualInt", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " to equal " + \
+            SkyUnitExpectation.ExpectedDescription())
+    endIf
+    return SkyUnitExpectation.Pass("EqualInt")
+endFunction
+
+bool function EqualBool(bool expected)
+    SkyUnitExpectation.SetExpectedBool(expected)
+    bool actual
+    if SkyUnitExpectation.GetActualType() == "Bool"
+        actual = SkyUnitExpectation.GetActualBool()
+    else
+        actual = SkyUnitExpectation.GetActualText() as bool
+    endIf
+    bool not = SkyUnitExpectation.Not()
+    if not && actual == expected
+        return SkyUnitExpectation.Fail("EqualBool", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " not to equal " + \
+            SkyUnitExpectation.ExpectedDescription())
+    elseIf ! not && actual != expected
+        return SkyUnitExpectation.Fail("EqualBool", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " to equal " + \
+            SkyUnitExpectation.ExpectedDescription())
+    endIf
+    return SkyUnitExpectation.Pass("EqualBool")
+endFunction
+
+bool function EqualFloat(float expected)
+    SkyUnitExpectation.SetExpectedFloat(expected)
+    float actual
+    if SkyUnitExpectation.GetActualType() == "Float"
+        actual = SkyUnitExpectation.GetActualFloat()
+    else
+        actual = SkyUnitExpectation.GetActualText() as float
+    endIf
+    bool not = SkyUnitExpectation.Not()
+    if not && actual == expected
+        return SkyUnitExpectation.Fail("EqualFloat", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " not to equal " + \
+            SkyUnitExpectation.ExpectedDescription())
+    elseIf ! not && actual != expected
+        return SkyUnitExpectation.Fail("EqualFloat", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " to equal " + \
+            SkyUnitExpectation.ExpectedDescription())
+    endIf
+    return SkyUnitExpectation.Pass("EqualFloat")
+endFunction
+
+bool function EqualForm(Form expected)
+    SkyUnitExpectation.SetExpectedForm(expected, "Form")
+    Form actual
+    if SkyUnitExpectation.GetActualType() == "Form"
+        actual = SkyUnitExpectation.GetActualForm()
+    else
+        return SkyUnitExpectation.Fail("EqualForm", "EqualForm() called but no Form-type was provided via an Expect*() function, e.g. ExpectForm() or ExpectActor() etc")
+    endIf
+    bool not = SkyUnitExpectation.Not()
+    if not && actual == expected
+        return SkyUnitExpectation.Fail("EqualForm", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " not to equal " + \
+            SkyUnitExpectation.ExpectedDescription())
+    elseIf ! not && actual != expected
+        return SkyUnitExpectation.Fail("EqualForm", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " to equal " + \
+            SkyUnitExpectation.ExpectedDescription())
+    endIf
+    return SkyUnitExpectation.Pass("EqualForm")
 endFunction

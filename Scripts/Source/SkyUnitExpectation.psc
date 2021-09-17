@@ -38,7 +38,7 @@ function BeginExpectation(string expectationType, int testId = 0) global
     JMap.setStr(expectation, "expectationType", expectationType)
     JMap.setStr(expectation, "status", "pending")
     JMap.setObj(expectation, "actual", JMap.object())
-    JMap.setObj(expectation, "expected", JMap.object()
+    JMap.setObj(expectation, "expected", JMap.object())
 endFunction
 
 ; Marks the current expectation as a "Not" expectation.
@@ -86,7 +86,7 @@ endFunction
 ; The `assertionType` is required and should generally match your custom
 ; assertion's function name, e.g. `"EqualString"` for the `EqualString()` assertion.
 ; You must use _either_ `Fail()` _or_ `Pass()` from your assertion.
-function Fail(string assertionType, string failureMessage, int expectationId = 0) global
+bool function Fail(string assertionType, string failureMessage, int expectationId = 0) global
     if ! expectationId
         expectationId = SkyUnitPrivateAPI.SkyUnitData_GetCurrentExpectation()
     endIf
@@ -95,19 +95,45 @@ function Fail(string assertionType, string failureMessage, int expectationId = 0
         JMap.setStr(expectationId, "status", "failing")
         JMap.setStr(expectationId, "failureMessage", failureMessage)
     endIf
+    return false
 endFunction
 
 ; Fails the current expectation (optionally with the failure message)
 ; The `assertionType` is required and should generally match your custom
 ; assertion's function name, e.g. `"EqualString"` for the `EqualString()` assertion.
 ; You must use _either_ `Fail()` _or_ `Pass()` from your assertion.
-function Pass(string assertionType, int expectationId = 0) global
+bool function Pass(string assertionType, int expectationId = 0) global
     if ! expectationId
         expectationId = SkyUnitPrivateAPI.SkyUnitData_GetCurrentExpectation()
     endIf
     if expectationId
         JMap.setStr(expectationId, "assertionType", assertionType)
         JMap.setStr(expectationId, "status", "passing")
+    endIf
+    return true
+endFunction
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Helper for getting "Expected [Style] [Value]"
+;; and "to equal [Style] [value]"
+;; This returns the [Style] [value] bits.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+string function ExpectedDescription() global
+    string type = GetExpectedType()
+    if type == "String"
+        return "String \"" + GetExpectedString() + "\""
+    else
+        return type + " " + GetExpectedText()
+    endIf
+endFunction
+
+string function ActualDescription() global
+    string type = GetActualType()
+    if type == "String"
+        return "String \"" + GetActualString() + "\""
+    else
+        return type + " " + GetActualText()
     endIf
 endFunction
 
@@ -220,12 +246,15 @@ endFunction
 ; Sets the "actual value" (as provided to an `Expect*()` function) [String version]
 ; Intended to be called by an assertion function to get the data which is being asserted on.
 ; Note: there can only be 1 "actual value", e.g. either a String or an Int (or JContainer data object) etc
-function SetActualString(string value, int expectationId = 0) global
+function SetActualString(string value, bool autoSetText = true, int expectationId = 0) global
     if ! expectationId
         expectationId = SkyUnitPrivateAPI.SkyUnitData_GetCurrentExpectation()
     endIf
     if expectationId
         JMap.setStr(JMap.getObj(expectationId, "actual"), "data", value)
+        if autoSetText
+            SetActualText(value)
+        endIf
     endIf
 endFunction
 
@@ -241,19 +270,22 @@ string function GetExpectedString(int expectationId = 0) global
 endFunction
 
 ; Sets the "expected value" [String version]
-function SetExpectedString(string value, int expectationId = 0) global
+function SetExpectedString(string value, bool autoSetText = true, int expectationId = 0) global
     if ! expectationId
         expectationId = SkyUnitPrivateAPI.SkyUnitData_GetCurrentExpectation()
     endIf
     if expectationId
         JMap.setStr(JMap.getObj(expectationId, "expected"), "data", value)
+        if autoSetText
+            SetActualText(value)
+        endIf
     endIf
 endFunction
 
 ; Gets the "actual value" (as provided to an `Expect*()` function) [Int version]
 ; Intended to be called by an assertion function to easily get text of what type was provided.
 ; Note: there can only be 1 "actual value", e.g. either a Int or an Int (or JContainer data object) etc
-string function GetActualInt(int expectationId = 0) global
+int function GetActualInt(int expectationId = 0) global
     if ! expectationId
         expectationId = SkyUnitPrivateAPI.SkyUnitData_GetCurrentExpectation()
     endIf
@@ -265,18 +297,21 @@ endFunction
 ; Sets the "actual value" (as provided to an `Expect*()` function) [Int version]
 ; Intended to be called by an assertion function to get the data which is being asserted on.
 ; Note: there can only be 1 "actual value", e.g. either a Int or an Int (or JContainer data object) etc
-function SetActualInt(int value, int expectationId = 0) global
+function SetActualInt(int value, bool autoSetText = true, int expectationId = 0) global
     if ! expectationId
         expectationId = SkyUnitPrivateAPI.SkyUnitData_GetCurrentExpectation()
     endIf
     if expectationId
         JMap.setInt(JMap.getObj(expectationId, "actual"), "data", value)
+        if autoSetText
+            SetActualText(value)
+        endIf
     endIf
 endFunction
 
 ; Gets the "expected value" [Int version]
 ; Note: there can only be 1 "expected value", e.g. either a Int or an Int (or JContainer data object) etc
-string function GetExpectedInt(int expectationId = 0) global
+int function GetExpectedInt(int expectationId = 0) global
     if ! expectationId
         expectationId = SkyUnitPrivateAPI.SkyUnitData_GetCurrentExpectation()
     endIf
@@ -286,19 +321,73 @@ string function GetExpectedInt(int expectationId = 0) global
 endFunction
 
 ; Sets the "expected value" [Int version]
-function SetExpectedInt(int value, int expectationId = 0) global
+function SetExpectedInt(int value, bool autoSetText = true, int expectationId = 0) global
     if ! expectationId
         expectationId = SkyUnitPrivateAPI.SkyUnitData_GetCurrentExpectation()
     endIf
     if expectationId
         JMap.setInt(JMap.getObj(expectationId, "expected"), "data", value)
+        if autoSetText
+            SetActualText(value)
+        endIf
+    endIf
+endFunction
+
+; Gets the "actual value" (as provided to an `Expect*()` function) [JObject version]
+; JObjectended to be called by an assertion function to easily get text of what type was provided.
+; Note: there can only be 1 "actual value", e.g. either a JObject or an JObject (or JContainer data object) etc
+int function GetActualJObject(int expectationId = 0) global
+    if ! expectationId
+        expectationId = SkyUnitPrivateAPI.SkyUnitData_GetCurrentExpectation()
+    endIf
+    if expectationId
+        return JMap.getObj(JMap.getObj(expectationId, "actual"), "data")
+    endIf
+endFunction
+
+; Sets the "actual value" (as provided to an `Expect*()` function) [JObject version]
+; JObjectended to be called by an assertion function to get the data which is being asserted on.
+; Note: there can only be 1 "actual value", e.g. either a JObject or an JObject (or JContainer data object) etc
+function SetActualJObject(int value, bool autoSetText = true, int expectationId = 0) global
+    if ! expectationId
+        expectationId = SkyUnitPrivateAPI.SkyUnitData_GetCurrentExpectation()
+    endIf
+    if expectationId
+        JMap.setObj(JMap.getObj(expectationId, "actual"), "data", value)
+        if autoSetText
+            SetActualText(value)
+        endIf
+    endIf
+endFunction
+
+; Gets the "expected value" [JObject version]
+; Note: there can only be 1 "expected value", e.g. either a JObject or an JObject (or JContainer data object) etc
+int function GetExpectedJObject(int expectationId = 0) global
+    if ! expectationId
+        expectationId = SkyUnitPrivateAPI.SkyUnitData_GetCurrentExpectation()
+    endIf
+    if expectationId
+        return JMap.getObj(JMap.getObj(expectationId, "expected"), "data")
+    endIf
+endFunction
+
+; Sets the "expected value" [JObject version]
+function SetExpectedJObject(int value, bool autoSetText = true, int expectationId = 0) global
+    if ! expectationId
+        expectationId = SkyUnitPrivateAPI.SkyUnitData_GetCurrentExpectation()
+    endIf
+    if expectationId
+        JMap.setObj(JMap.getObj(expectationId, "expected"), "data", value)
+        if autoSetText
+            SetActualText(value)
+        endIf
     endIf
 endFunction
 
 ; Gets the "actual value" (as provided to an `Expect*()` function) [Bool version]
 ; Boolended to be called by an assertion function to easily get text of what type was provided.
 ; Note: there can only be 1 "actual value", e.g. either a Bool or an Bool (or JContainer data object) etc
-string function GetActualBool(int expectationId = 0) global
+bool function GetActualBool(int expectationId = 0) global
     if ! expectationId
         expectationId = SkyUnitPrivateAPI.SkyUnitData_GetCurrentExpectation()
     endIf
@@ -310,22 +399,28 @@ endFunction
 ; Sets the "actual value" (as provided to an `Expect*()` function) [Bool version]
 ; Boolended to be called by an assertion function to get the data which is being asserted on.
 ; Note: there can only be 1 "actual value", e.g. either a Bool or an Bool (or JContainer data object) etc
-function SetActualBool(bool value, int expectationId = 0) global
+function SetActualBool(bool value, bool autoSetText = true, int expectationId = 0) global
     if ! expectationId
         expectationId = SkyUnitPrivateAPI.SkyUnitData_GetCurrentExpectation()
     endIf
     if expectationId
         if value
             JMap.setInt(JMap.getObj(expectationId, "actual"), "data", 1)
+            if autoSetText
+                SetActualText("true")
+            endIf
         else
             JMap.setInt(JMap.getObj(expectationId, "actual"), "data", 0)
+            if autoSetText
+                SetActualText("false")
+            endIf
         endIf
     endIf
 endFunction
 
 ; Gets the "expected value" [Bool version]
 ; Note: there can only be 1 "expected value", e.g. either a Bool or an Bool (or JContainer data object) etc
-string function GetExpectedBool(int expectationId = 0) global
+bool function GetExpectedBool(int expectationId = 0) global
     if ! expectationId
         expectationId = SkyUnitPrivateAPI.SkyUnitData_GetCurrentExpectation()
     endIf
@@ -335,15 +430,21 @@ string function GetExpectedBool(int expectationId = 0) global
 endFunction
 
 ; Sets the "expected value" [Bool version]
-function SetExpectedBool(bool value, int expectationId = 0) global
+function SetExpectedBool(bool value, bool autoSetText = true, int expectationId = 0) global
     if ! expectationId
         expectationId = SkyUnitPrivateAPI.SkyUnitData_GetCurrentExpectation()
     endIf
     if expectationId
         if value
             JMap.setInt(JMap.getObj(expectationId, "expected"), "data", 1)
+            if autoSetText
+                SetActualText("true")
+            endIf
         else
             JMap.setInt(JMap.getObj(expectationId, "expected"), "data", 0)
+            if autoSetText
+                SetActualText("false")
+            endIf
         endIf
     endIf
 endFunction
@@ -351,7 +452,7 @@ endFunction
 ; Gets the "actual value" (as provided to an `Expect*()` function) [Float version]
 ; Floatended to be called by an assertion function to easily get text of what type was provided.
 ; Note: there can only be 1 "actual value", e.g. either a Float or an Float (or JContainer data object) etc
-string function GetActualFloat(int expectationId = 0) global
+float function GetActualFloat(int expectationId = 0) global
     if ! expectationId
         expectationId = SkyUnitPrivateAPI.SkyUnitData_GetCurrentExpectation()
     endIf
@@ -363,18 +464,21 @@ endFunction
 ; Sets the "actual value" (as provided to an `Expect*()` function) [Float version]
 ; Floatended to be called by an assertion function to get the data which is being asserted on.
 ; Note: there can only be 1 "actual value", e.g. either a Float or an Float (or JContainer data object) etc
-function SetActualFloat(float value, int expectationId = 0) global
+function SetActualFloat(float value, bool autoSetText = true, int expectationId = 0) global
     if ! expectationId
         expectationId = SkyUnitPrivateAPI.SkyUnitData_GetCurrentExpectation()
     endIf
     if expectationId
         JMap.setFlt(JMap.getObj(expectationId, "actual"), "data", value)
+        if autoSetText
+            SetActualText(value)
+        endIf
     endIf
 endFunction
 
 ; Gets the "expected value" [Float version]
 ; Note: there can only be 1 "expected value", e.g. either a Float or an Float (or JContainer data object) etc
-string function GetExpectedFloat(int expectationId = 0) global
+float function GetExpectedFloat(int expectationId = 0) global
     if ! expectationId
         expectationId = SkyUnitPrivateAPI.SkyUnitData_GetCurrentExpectation()
     endIf
@@ -384,19 +488,22 @@ string function GetExpectedFloat(int expectationId = 0) global
 endFunction
 
 ; Sets the "expected value" [Float version]
-function SetExpectedFloat(float value, int expectationId = 0) global
+function SetExpectedFloat(float value, bool autoSetText = true, int expectationId = 0) global
     if ! expectationId
         expectationId = SkyUnitPrivateAPI.SkyUnitData_GetCurrentExpectation()
     endIf
     if expectationId
         JMap.setFlt(JMap.getObj(expectationId, "expected"), "data", value)
+        if autoSetText
+            SetActualText(value)
+        endIf
     endIf
 endFunction
 
 ; Gets the "actual value" (as provided to an `Expect*()` function) [Form version]
 ; Formended to be called by an assertion function to easily get text of what type was provided.
 ; Note: there can only be 1 "actual value", e.g. either a Form or an Form (or JContainer data object) etc
-string function GetActualForm(int expectationId = 0) global
+Form function GetActualForm(int expectationId = 0) global
     if ! expectationId
         expectationId = SkyUnitPrivateAPI.SkyUnitData_GetCurrentExpectation()
     endIf
@@ -405,21 +512,37 @@ string function GetActualForm(int expectationId = 0) global
     endIf
 endFunction
 
+; Gets the "type" of the "actual value" Form, e.g. Actor -vs- Spell -vs- Weapon etc
+; Formended to be called by an assertion function to easily get text of what type was provided.
+; Note: there can only be 1 "actual value", e.g. either a Form or an Form (or JContainer data object) etc
+string function GetActualFormType(int expectationId = 0) global
+    if ! expectationId
+        expectationId = SkyUnitPrivateAPI.SkyUnitData_GetCurrentExpectation()
+    endIf
+    if expectationId
+        return JMap.getForm(JMap.getObj(expectationId, "actual"), "formType")
+    endIf
+endFunction
+
 ; Sets the "actual value" (as provided to an `Expect*()` function) [Form version]
 ; Formended to be called by an assertion function to get the data which is being asserted on.
 ; Note: there can only be 1 "actual value", e.g. either a Form or an Form (or JContainer data object) etc
-function SetActualForm(Form value, int expectationId = 0) global
+function SetActualForm(Form value, string type, bool autoSetText = true, int expectationId = 0) global
     if ! expectationId
         expectationId = SkyUnitPrivateAPI.SkyUnitData_GetCurrentExpectation()
     endIf
     if expectationId
         JMap.setForm(JMap.getObj(expectationId, "actual"), "data", value)
+        JMap.setStr(JMap.getObj(expectationId, "actual"), "formType", type)
+        if autoSetText
+            SetActualText(value)
+        endIf
     endIf
 endFunction
 
 ; Gets the "expected value" [Form version]
 ; Note: there can only be 1 "expected value", e.g. either a Form or an Form (or JContainer data object) etc
-string function GetExpectedForm(int expectationId = 0) global
+Form function GetExpectedForm(int expectationId = 0) global
     if ! expectationId
         expectationId = SkyUnitPrivateAPI.SkyUnitData_GetCurrentExpectation()
     endIf
@@ -428,22 +551,105 @@ string function GetExpectedForm(int expectationId = 0) global
     endIf
 endFunction
 
+; Gets the "type" of the "g value" Form, e.g. Actor -vs- Spell -vs- Weapon etc
+; Note: there can only be 1 "expected value", e.g. either a Form or an Form (or JContainer data object) etc
+string function GetExpectedFormType(int expectationId = 0) global
+    if ! expectationId
+        expectationId = SkyUnitPrivateAPI.SkyUnitData_GetCurrentExpectation()
+    endIf
+    if expectationId
+        return JMap.getForm(JMap.getObj(expectationId, "expected"), "formType")
+    endIf
+endFunction
+
 ; Sets the "expected value" [Form version]
-function SetExpectedForm(Form value, int expectationId = 0) global
+function SetExpectedForm(Form value, string type, bool autoSetText = true, int expectationId = 0) global
     if ! expectationId
         expectationId = SkyUnitPrivateAPI.SkyUnitData_GetCurrentExpectation()
     endIf
     if expectationId
         JMap.setForm(JMap.getObj(expectationId, "expected"), "data", value)
+        JMap.setStr(JMap.getObj(expectationId, "expected"), "formType", type)
+        if autoSetText
+            SetActualText(value)
+        endIf
     endIf
 endFunction
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Values which cannot be stored in JContainers
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+; Gets the "actual value" (as provided to an `Expect*()` function) [Alias version]
+; Aliasended to be called by an assertion function to easily get text of what type was provided.
+; Note: there can only be 1 "actual value", e.g. either a Alias or an Alias (or JContainer data object) etc
+;
+; **[Alias] Special Note:** only one Alias can be set at a time.
+; This shouldn't matter in most scenarios.
+; The Alias will NOT be stored in the data structure which stores test results.
+; _Implementation detail: JContainers cannot store aliases_
+; Because this cannot be saved in the data result, we only use Actual and not Expected.
+Alias function GetActualAlias(int expectationId = 0) global
+    return SkyUnitPrivateAPI.GetInstance().CurrentExpectationActualValue_Alias
+endFunction
 
+; Sets the "actual value" (as provided to an `Expect*()` function) [Alias version]
+; Aliasended to be called by an assertion function to get the data which is being asserted on.
+; Note: there can only be 1 "actual value", e.g. either a Alias or an Alias (or JContainer data object) etc
+;
+; **[Alias] Special Note:** only one Alias can be set at a time.
+; This shouldn't matter in most scenarios.
+; The Alias will NOT be stored in the data structure which stores test results.
+; _Implementation detail: JContainers cannot store aliases_
+; Because this cannot be saved in the data result, we only use Actual and not Expected.
+function SetActualAlias(Alias value, bool autoSetText = true, int expectationId = 0) global
+    if ! expectationId
+        expectationId = SkyUnitPrivateAPI.SkyUnitData_GetCurrentExpectation()
+    endIf
+    if expectationId
+        SkyUnitPrivateAPI.GetInstance().CurrentExpectationActualValue_Alias = value
+        if autoSetText
+            SetActualText(value)
+        endIf
+    endIf
+endFunction
 
+; Gets the "actual value" (as provided to an `Expect*()` function) [ActiveMagicEffect version]
+; ActiveMagicEffectended to be called by an assertion function to easily get text of what type was provided.
+; Note: there can only be 1 "actual value", e.g. either a ActiveMagicEffect or an ActiveMagicEffect (or JContainer data object) etc
+;
+; **[ActiveMagicEffect] Special Note:** only one ActiveMagicEffect can be set at a time.
+; This shouldn't matter in most scenarios.
+; The ActiveMagicEffect will NOT be stored in the data structure which stores test results.
+; _Implementation detail: JContainers cannot store aliases_
+; Because this cannot be saved in the data result, we only use Actual and not Expected.
+ActiveMagicEffect function GetActualActiveMagicEffect(int expectationId = 0) global
+    return SkyUnitPrivateAPI.GetInstance().CurrentExpectationActualValue_ActiveMagicEffect
+endFunction
 
-
+; Sets the "actual value" (as provided to an `Expect*()` function) [ActiveMagicEffect version]
+; ActiveMagicEffectended to be called by an assertion function to get the data which is being asserted on.
+; Note: there can only be 1 "actual value", e.g. either a ActiveMagicEffect or an ActiveMagicEffect (or JContainer data object) etc
+;
+; **[ActiveMagicEffect] Special Note:** only one ActiveMagicEffect can be set at a time.
+; This shouldn't matter in most scenarios.
+; The ActiveMagicEffect will NOT be stored in the data structure which stores test results.
+; _Implementation detail: JContainers cannot store aliases_
+; Because this cannot be saved in the data result, we only use Actual and not Expected.
+function SetActualActiveMagicEffect(ActiveMagicEffect value, bool autoSetText = true, int expectationId = 0) global
+    if ! expectationId
+        expectationId = SkyUnitPrivateAPI.SkyUnitData_GetCurrentExpectation()
+    endIf
+    if expectationId
+        SkyUnitPrivateAPI.GetInstance().CurrentExpectationActualValue_ActiveMagicEffect = value
+        if autoSetText
+            SetActualText(value)
+        endIf
+    endIf
+endFunction
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Storing Actual/Expected Array Values
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+; TODO ;
