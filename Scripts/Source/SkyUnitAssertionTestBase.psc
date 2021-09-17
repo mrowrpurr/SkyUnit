@@ -29,50 +29,50 @@ endFunction
 ;
 ; See the documentation on SkyUnitAssertionTestBase for example usage.
 function SwitchToContext_Fake()
-    if ! SkyUnitAPI.ContextExists("fake")
-        SkyUnitAPI.CreateContext("fake")
+    if ! SkyUnitPrivateAPI.ContextExists("fake")
+        SkyUnitPrivateAPI.CreateContext("fake")
     endIf
-    SkyUnitAPI.SwitchToContext("fake")
+    SkyUnitPrivateAPI.SwitchToContext("fake")
 endFunction
 
 ; Switches back to the "real" test context.
 ; The one that's actually running your tests!
 function SwitchToContext_Real()
-    SkyUnitAPI.SwitchToContext("default")
+    SkyUnitPrivateAPI.SwitchToContext("default")
 endFunction
 
 ; Begin a test suite. This registers a name with no associated script (for testing).
 ; If you want this to be fake, be sure to SwitchToContext_Fake() first.
 function CreateTestSuite(string testScriptName)
     _currentTestScriptName = testScriptName
-    SkyUnitAPI.RegisterTestSuite(None, _currentTestScriptName)
+    SkyUnitPrivateAPI.RegisterTestSuite(None, _currentTestScriptName)
 endFunction
 
 ; Begin a test suite. This registers an actual script.
 ; If you want this to be fake, be sure to SwitchToContext_Fake() first.
 function CreateTestSuiteForScript(SkyUnitTest testScript)
-    _currentTestScriptName = SkyUnitAPI.ScriptDisplayName(testScript)
-    SkyUnitAPI.RegisterTestSuite(testScript)
+    _currentTestScriptName = SkyUnitPrivateAPI.ScriptDisplayName(testScript)
+    SkyUnitPrivateAPI.RegisterTestSuite(testScript)
 endFunction
 
 ; Begin a test for test suite created using CreateTestSuite().
 ; If you want this to be fake, be sure to SwitchToContext_Fake() first.
 function CreateTest(string testName)
-    SkyUnitAPI.Test_BeginTestRun(_currentTestScriptName, testName)
+    SkyUnitPrivateAPI.Test_BeginTestRun(_currentTestScriptName, testName)
 endFunction
 
 ; End the current test.
 ; Should only be called after using CreateTest().
 ; If you want this to be fake, be sure to SwitchToContext_Fake() first.
 function EndTest()
-    SkyUnitAPI.Fn_EndTestRun()
+    SkyUnitPrivateAPI.Fn_EndTestRun()
 endFunction
 
 ; Sets up a new fake test.
 ; If no suite has been used yet for this test, a new one is created.
 ; This does not require SwitchToContext_Fake(), it automatically creates the test in the fake context.
 function SetupFakeTest(string testName = "")
-    string currentContext = SkyUnitAPI.CurrentContext()
+    string currentContext = SkyUnitPrivateAPI.CurrentContext()
     SwitchToContext_Fake()
     if ! _currentTestScriptName
         CreateTestSuite("FakeTestScriptName")
@@ -81,7 +81,7 @@ function SetupFakeTest(string testName = "")
         testName = "FakeTest_" + Utility.RandomInt(1, 10000) + "_" + Utility.RandomInt(1, 10000)
     endIf
     CreateTest(testName)
-    SkyUnitAPI.SwitchToContext(currentContext)
+    SkyUnitPrivateAPI.SwitchToContext(currentContext)
 endFunction
 
 ; Same as SetupFakeTest() except it also begins an expectation.
@@ -89,7 +89,7 @@ endFunction
 ; It will only setup a new test suite if one is not already setup.
 ; This does not require SwitchToContext_Fake(), it automatically creates the test in the fake context.
 function SetupFakeExpectation(string testName = "")
-    string currentContext = SkyUnitAPI.CurrentContext()
+    string currentContext = SkyUnitPrivateAPI.CurrentContext()
     SwitchToContext_Fake()
     if ! _currentTestScriptName
         CreateTestSuite("FakeTestScriptName")
@@ -98,6 +98,6 @@ function SetupFakeExpectation(string testName = "")
         testName = "FakeTest_" + Utility.RandomInt(1, 10000) + "_" + Utility.RandomInt(1, 10000)
     endIf
     CreateTest(testName)
-    SkyUnitAPI.BeginExpectation()
-    SkyUnitAPI.SwitchToContext(currentContext)
+    SkyUnitPrivateAPI.BeginExpectation()
+    SkyUnitPrivateAPI.SwitchToContext(currentContext)
 endFunction

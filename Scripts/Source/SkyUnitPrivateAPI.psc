@@ -1,7 +1,10 @@
-scriptName SkyUnitAPI extends ReferenceAlias  
+scriptName SkyUnitPrivateAPI extends ReferenceAlias  
 {[PRIVATE] [DO NOT USE]
 
 Internal API for SkyUnit and SkyUnit UI.
+
+Please see `SkyUnitTest` for implementing tests
+and `SkyUnitExpectation` for implementing custom expectations and assertions.
 
 This is used to:
 - Detect SkyUnit tests when the game loads.
@@ -145,10 +148,10 @@ float function CurrentVersion() global
     return 1.0
 endFunction
 
-; Returns the instance of the SkyUnitAPI script
-SkyUnitAPI function GetInstance() global
+; Returns the instance of the SkyUnitPrivateAPI script
+SkyUnitPrivateAPI function GetInstance() global
     Quest skyUnitQuest = Game.GetFormFromFile(0xd65, "SkyUnit.esp") as Quest
-    return skyUnitQuest.GetAliasByName("PlayerRef") as SkyUnitAPI
+    return skyUnitQuest.GetAliasByName("PlayerRef") as SkyUnitPrivateAPI
 endFunction
 
 ; Blocks until SkyUnit is ready for test registration and data querying
@@ -374,7 +377,7 @@ int function ClaimAvailableTestSuiteScriptArraySlotNumber() global
 endFunction
 
 function SetTestScriptForSlotNumber(int slotNumber, SkyUnitTest testScript) global
-    SkyUnitAPI api = GetInstance()
+    SkyUnitPrivateAPI api = GetInstance()
     int arrayNumber = slotNumber / 128
     int arrayIndex = slotNumber % 128
     if arrayNumber == 0
@@ -401,7 +404,7 @@ function SetTestScriptForSlotNumber(int slotNumber, SkyUnitTest testScript) glob
 endFunction
 
 SkyUnitTest function GetTestScriptForSlotNumber(int slotNumber) global
-    SkyUnitAPI api = GetInstance()
+    SkyUnitPrivateAPI api = GetInstance()
     int arrayNumber = slotNumber / 128
     int arrayIndex = slotNumber % 128
     if arrayNumber == 0
@@ -493,32 +496,6 @@ function Fn_EndTestRun() global
         JMap.setStr(testSuiteResult, "status", "passing")
     endIf
     SkyUnitData_SetCurrentTestResult(0)
-endFunction
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Test Expectations / Assertions
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-function BeginExpectation() global
-    int expectation = JMap.object()
-    JArray.addObj(SkyUnitData_CurrentExpectationsArray(), expectation)
-    SkyUnitData_SetCurrentExpectation(expectation)
-    int expectationData = JMap.object()
-    JMap.setObj(expectation, "data", expectationData)
-endFunction
-
-function FailExpectation(string failureMessage) global
-    JMap.setStr(SkyUnitData_GetCurrentExpectation(), "failureMessage", failureMessage)
-    JMap.setStr(SkyUnitData_GetCurrentTestResult(), "status", "failing")
-    JMap.setStr(SkyUnitData_GetLatestSuiteResult(), "status", "failing")
-endFunction
-
-function SetExpectationAsNotExpectation() global
-    JMap.setInt(SkyUnitData_GetCurrentExpectation(), "not", 1)
-endFunction
-
-bool function Not() global
-    return JMap.getInt(SkyUnitData_GetCurrentExpectation(), "not") == 1
 endFunction
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

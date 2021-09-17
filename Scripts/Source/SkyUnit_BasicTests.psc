@@ -20,10 +20,10 @@ function Tests()
 endFunction
 
 function StartingQuestRegistersTestScripts_Test()
-    SkyUnitAPI.DeleteContext("fake")
+    SkyUnitPrivateAPI.DeleteContext("fake")
     
     SwitchToContext_Fake()
-    string[] testSuites = SkyUnitAPI.TestSuites()
+    string[] testSuites = SkyUnitPrivateAPI.TestSuites()
     SwitchToContext_Real()
     
     Assert(testSuites.Length == 0, "Expected fake context to have no loaded test suites " + testSuites)
@@ -37,7 +37,7 @@ function StartingQuestRegistersTestScripts_Test()
     ; Wait for the ExampleTest1 and ExampleTest2 scripts to be loaded
     ; Wait for 1 whole second which is hopefully enough (because we don't have closures/lambdas to make AssertWait())
     Utility.WaitMenuMode(1.0)
-    testSuites = SkyUnitAPI.TestSuites()
+    testSuites = SkyUnitPrivateAPI.TestSuites()
 
     SwitchToContext_Real()
     Assert(testSuites.Length == 2, "Expected 2 test suites to get loaded " + testSuites)
@@ -47,7 +47,7 @@ endFunction
 
 function GetTestSuiteNames_Test()
     ; SwitchToContext_Fake()
-    ; Assert(SkyUnitAPI.TestSuites().Length == 0, "Expected fake context to have no loaded test suites")
+    ; Assert(SkyUnitPrivateAPI.TestSuites().Length == 0, "Expected fake context to have no loaded test suites")
 
     ; ; Start 
     ; SkyUnitTestExamples.StartExamplesQuest()
@@ -56,7 +56,7 @@ function GetTestSuiteNames_Test()
     ; CreateTestSuite(SkyUnitTestExamples.GetExampleTest1())
     ; CreateTest("Example Test")
 
-    ; Debug.MessageBox("2 Here are the test suite names : " + SkyUnitAPI.TestSuites())
+    ; Debug.MessageBox("2 Here are the test suite names : " + SkyUnitPrivateAPI.TestSuites())
 
     ; CreateTestSuite(SkyUnitTestExamples.GetExampleTest1())
 

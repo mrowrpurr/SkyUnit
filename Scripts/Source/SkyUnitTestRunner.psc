@@ -3,5 +3,5 @@ scriptName SkyUnitTestRunner extends ActiveMagicEffect
 It displays a list of all available tests to be run.}
 
 event OnEffectStart(Actor target, Actor caster)
-    SkyUnitAPI.ShowUI()
+    SkyUnitPrivateAPI.ShowUI()
 endEvent

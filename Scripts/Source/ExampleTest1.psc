@@ -7,11 +7,11 @@ function Tests()
 endFunction
 
 function PassingTest()
-    SkyUnitAPI.Info("PassingTest()")
+    SkyUnitPrivateAPI.Info("PassingTest()")
     ; Nothing for right now
 endFunction
 
 function FailingTest()
-    SkyUnitAPI.Info("FailingTest()")
+    SkyUnitPrivateAPI.Info("FailingTest()")
     Fail("Oh jeez. This failed.")
 endFunction

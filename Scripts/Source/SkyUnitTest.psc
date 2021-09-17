@@ -7,7 +7,7 @@ scriptName SkyUnitTest extends Quest hidden
 ;
 ; If you must override this, please be sure to call parent.OnInit()
 event OnInit()
-    SkyUnitAPI.RegisterTestSuite(self)
+    SkyUnitPrivateAPI.RegisterTestSuite(self)
 endEvent
 
 ; Override the `Tests()` function to define your test cases
@@ -52,7 +52,7 @@ endFunction
 ;   endFunction
 ; ```
 SkyUnitTest function Test(string testName)
-    SkyUnitAPI.Test_BeginTestRun(SkyUnitAPI.ScriptDisplayName(self), testName)
+    SkyUnitPrivateAPI.Test_BeginTestRun(SkyUnitPrivateAPI.ScriptDisplayName(self), testName)
     return self
 endFunction
 
@@ -74,32 +74,35 @@ endFunction
 ;   endFunction
 ; ```
 function Fn(bool testFunction)
-    SkyUnitAPI.Fn_EndTestRun()
+    SkyUnitPrivateAPI.Fn_EndTestRun()
 endFunction
 
-; Marks this as a "not" assertion, e.g. `ExpectString("").Not.To(EqualString(""))`
-SkyUnitTest property Not
-    SkyUnitTest function get()
-        SkyUnitAPI.SetExpectationAsNotExpectation()
-        return self
-    endFunction
-endProperty
+; Marks this as a "not" assertion, e.g. `ExpectString("").Not().To(EqualString(""))`
+SkyUnitTest function Not()
+    SkyUnitExpectation.ToggleNotExpectation()
+    return self
+endFunction
 
 ; Provide an assertion, e.g. `ExpectString("").To(EqualString(""))`
 function To(bool assertionFunction)
 endFunction
 
+; TODO
+; TODO
+; TODO
+; TODO
 function BeforeAll()
 endFunction
-
 function AfterAll()
 endFunction
-
 function BeforeEach()
 endFunction
-
 function AfterEach()
 endFunction
+; TODO
+; TODO
+; TODO
+; TODO
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Simple Assert() and Fail()
@@ -108,7 +111,9 @@ endFunction
 ; Simplest assertion.
 ; If the provided expression does not evaluate to true, this will fail.
 function Assert(bool actual, string failureMessage = "")
-    if ! actual
+    if actual
+        Pass()
+    else
         Fail(failureMessage)
     endIf
 endFunction
@@ -116,16 +121,61 @@ endFunction
 ; Fails the current test with the provided message.
 ; The failure message will be shown in the test results.
 function Fail(string failureMessage)
-    SkyUnitAPI.BeginExpectation()
-    SkyUnitAPI.FailExpectation(failureMessage)
+    SkyUnitExpectation.BeginExpectation("Fail")
+    SkyUnitExpectation.Fail("Fail", failureMessage)
+endFunction
+
+; Pass the current test (unless test has any failing expectations)
+function Pass()
+    SkyUnitExpectation.BeginExpectation("Pass")
+    SkyUnitExpectation.Pass("Pass")
 endFunction
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Expectation Functions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+function ExpectString(string actual)
+    SkyUnitExpectation.SetPrimaryDataType("String")
+    SkyUnitExpectation.SetPrimaryDataText(actual)
+    SkyUnitExpectation.SetString("_data", actual)
+endFunction
 
+function ExpectInt(int actual)
+    SkyUnitExpectation.SetPrimaryDataType("Int")
+    SkyUnitExpectation.SetPrimaryDataText(actual)
+    SkyUnitExpectation.SetInt("_data", actual)
+endFunction
+
+function ExpectFloat(float actual)
+    SkyUnitExpectation.SetPrimaryDataType("Float")
+    SkyUnitExpectation.SetPrimaryDataText(actual)
+    SkyUnitExpectation.SetFloat("_data", actual)
+endFunction
+
+function ExpectForm(Form actual)
+    SkyUnitExpectation.SetPrimaryDataType("Form")
+    SkyUnitExpectation.SetPrimaryDataText(actual)
+    SkyUnitExpectation.SetForm("_data", actual)
+endFunction
+
+function ExpectBool(bool actual)
+    SkyUnitExpectation.SetPrimaryDataType("Bool")
+    SkyUnitExpectation.SetPrimaryDataText(actual)
+    SkyUnitExpectation.SetBool("_data", actual)
+endFunction
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Assertion Functions - Equal
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+function EqualString(string expected)
+    string actual
+    if SkyUnitExpectation.GetPrimaryDataType() == "String"
+        actual = SkyUnitExpectation.GetString("_data")
+    else
+        actual = SkyUnitExpectation.GetString("_text")
+    endIf
+    bool not = SkyUnitExpectation.Not()
+
+endFunction
