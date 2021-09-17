@@ -18,7 +18,7 @@ endEvent
 ;   scriptName MyTests extend SkyUnitTest
 ;
 ;   function Tests()
-;       ; Tests without .Fn() functions are considered "pending".
+;       ; Tests without .Fn() functions are considered "PENDING".
 ;       ; This can be useful for tracking a TODO list of tests to write.
 ;       Test("Pending test")
 ;
@@ -40,7 +40,7 @@ endFunction
 ;   scriptName MyTests extend SkyUnitTest
 ;
 ;   function Tests()
-;       ; Tests without .Fn() functions are considered "pending".
+;       ; Tests without .Fn() functions are considered "PENDING".
 ;       ; This can be useful for tracking a TODO list of tests to write.
 ;       Test("Pending test")
 ;

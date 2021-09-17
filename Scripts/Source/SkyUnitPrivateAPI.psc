@@ -452,7 +452,7 @@ int function RunTestSuite(string testSuiteName) global
     SkyUnitData_SetCurrentlyRunningTestSuite(testSuiteResult)
     SkyUnitData_SetLatestSuiteResult(testSuiteResult)
     JMap.setStr(testSuiteResult, "testSuite", testSuiteName)
-    JMap.setStr(testSuiteResult, "status", "pending")
+    JMap.setStr(testSuiteResult, "status", "PENDING")
     JMap.setObj(testSuiteResult, "tests", JMap.object())
     SkyUnitTest testScript = GetTestScriptBySuiteName(testSuiteName)
 
@@ -477,24 +477,26 @@ endFunction
 function Test_BeginTestRun(string testSuiteName, string testName) global
     JMap.setObj(SkyUnitData_TestSuiteTestsMap(testSuiteName), testName, JMap.object())
     int testResult = JMap.object()
-    int currentlyRunningTestsMap = JMap.getObj(SkyUnitData_GetCurrentlyRunningTestSuite(), "tests")
+    int currentlyRunningTestSuiteResult = SkyUnitData_GetCurrentlyRunningTestSuite()
+    int currentlyRunningTestsMap = JMap.getObj(currentlyRunningTestSuiteResult, "tests")
     JMap.setObj(currentlyRunningTestsMap, testName, testResult)
     JMap.setStr(testResult, "testName", testName)
-    JMap.setStr(testResult, "status", "pending")
+    JMap.setStr(testResult, "status", "PENDING")
     JMap.setObj(testResult, "expectations", JArray.object())
+    JMap.setInt(testResult, "testSuiteResultId", currentlyRunningTestSuiteResult)
     SkyUnitData_SetCurrentTestResult(testResult)
     SkyUnitData_SetCurrentExpectation(0)
 endFunction
 
 function Fn_EndTestRun() global
     int testResult = SkyUnitData_GetCurrentTestResult()
-    if JMap.getStr(testResult, "status") != "failing"
-        JMap.setStr(testResult, "status", "passing")
+    if JMap.getStr(testResult, "status") != "FAILING"
+        JMap.setStr(testResult, "status", "PASSING")
     endIf
     ; if JMap.getStr(SkyUnitData_GetLatestSuiteResultForTestSuite())
     int testSuiteResult = SkyUnitData_GetLatestSuiteResult()
-    if JMap.getStr(testSuiteResult, "status") != "failing"
-        JMap.setStr(testSuiteResult, "status", "passing")
+    if JMap.getStr(testSuiteResult, "status") != "FAILING"
+        JMap.setStr(testSuiteResult, "status", "PASSING")
     endIf
     SkyUnitData_SetCurrentTestResult(0)
 endFunction
