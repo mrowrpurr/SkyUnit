@@ -60,6 +60,8 @@ endFunction
 
 function ExpectString_Test()
     SetupFakeTest()
+
+    ; Failing Case
     SwitchToContext_Fake()
     bool result = ExpectString("Hello").To(EqualString("Not Hello"))
     int expectation = SkyUnitExpectation.LatestExpectationID()
@@ -67,8 +69,6 @@ function ExpectString_Test()
     SwitchToContext_Real()
     Assert(! result, "Expected comparing strings 'Hello' and 'Not Hello' to return false")
     Assert(SkyUnitExpectation.GetStatus(expectation) == "FAILING", "[Fail Example] Checking status")
-    Debug.Trace("Failure Message: " + SkyUnitExpectation.GetFailureMessage(expectation))
-    ExpectString(SkyUnitExpectation.GetFailureMessage(expectation)).To(EqualString("Expected String \"Hello\" to equal String \"Not Hello\""))
     Assert(SkyUnitExpectation.GetFailureMessage(expectation) == "Expected String \"Hello\" to equal String \"Not Hello\"", "[Fail Example] Checking failure message")
     Assert(SkyUnitExpectation.GetActualType(expectation) == "String", "[Fail Example] Checking actual type")
     Assert(SkyUnitExpectation.GetActualText(expectation) == "String", "[Fail Example] Checking actual text")
@@ -77,6 +77,7 @@ function ExpectString_Test()
     Assert(SkyUnitExpectation.GetExpectedText(expectation) == "String", "[Fail Example] Checking expected text")
     Assert(SkyUnitExpectation.GetExpectedString(expectation) == "Not Hello", "[Fail Example] Checking expected value")
 
+    ; Passing Case
     SwitchToContext_Fake()
     result = ExpectString("Hi there").To(EqualString("Hi there"))
     expectation = SkyUnitExpectation.LatestExpectationID()
@@ -92,5 +93,35 @@ function ExpectString_Test()
     Assert(SkyUnitExpectation.GetExpectedText(expectation) == "String", "[Pass Example] Checking expected text")
     Assert(SkyUnitExpectation.GetExpectedString(expectation) == "Hi there", "[Pass Example] Checking expected value")
 
-    ; Now a NOT example! 2 of them!
+    ; Not() Failing Case 
+    SwitchToContext_Fake()
+    result = ExpectString("Hi there").Not().To(EqualString("Hi there"))
+    expectation = SkyUnitExpectation.LatestExpectationID()
+
+    SwitchToContext_Real()
+    ; Assert(result, "Expected comparing strings 'Hi there' and 'Hi there' to return true")
+    ; Assert(SkyUnitExpectation.GetStatus(expectation) == "PASSING", "[Pass Example] Checking status")
+    ; Assert(SkyUnitExpectation.GetFailureMessage(expectation) == "", "[Pass Example] Checking failure message")
+    ; Assert(SkyUnitExpectation.GetActualType(expectation) == "String", "[Pass Example] Checking actual type")
+    ; Assert(SkyUnitExpectation.GetActualText(expectation) == "String", "[Pass Example] Checking actual text")
+    ; Assert(SkyUnitExpectation.GetActualString(expectation) == "Hi there", "[Pass Example] Checking actual value")
+    ; Assert(SkyUnitExpectation.GetExpectedType(expectation) == "String", "[Pass Example] Checking expected type")
+    ; Assert(SkyUnitExpectation.GetExpectedText(expectation) == "String", "[Pass Example] Checking expected text")
+    ; Assert(SkyUnitExpectation.GetExpectedString(expectation) == "Hi there", "[Pass Example] Checking expected value")
+
+    ; Not() Passing Case 
+    SwitchToContext_Fake()
+    result = ExpectString("Hello").Not().To(EqualString("Not Hello"))
+    expectation = SkyUnitExpectation.LatestExpectationID()
+
+    SwitchToContext_Real()
+    ; Assert(result, "Expected comparing strings 'Hi there' and 'Hi there' to return true")
+    ; Assert(SkyUnitExpectation.GetStatus(expectation) == "PASSING", "[Pass Example] Checking status")
+    ; Assert(SkyUnitExpectation.GetFailureMessage(expectation) == "", "[Pass Example] Checking failure message")
+    ; Assert(SkyUnitExpectation.GetActualType(expectation) == "String", "[Pass Example] Checking actual type")
+    ; Assert(SkyUnitExpectation.GetActualText(expectation) == "String", "[Pass Example] Checking actual text")
+    ; Assert(SkyUnitExpectation.GetActualString(expectation) == "Hi there", "[Pass Example] Checking actual value")
+    ; Assert(SkyUnitExpectation.GetExpectedType(expectation) == "String", "[Pass Example] Checking expected type")
+    ; Assert(SkyUnitExpectation.GetExpectedText(expectation) == "String", "[Pass Example] Checking expected text")
+    ; Assert(SkyUnitExpectation.GetExpectedString(expectation) == "Hi there", "[Pass Example] Checking expected value")
 endFunction
