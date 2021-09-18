@@ -221,12 +221,20 @@ string function GetDescription(int expectationId = 0) global
     endIf
     SkyUnitPrivateAPI.Info("Get Description of expectation " + expectationId)
     string description = ""
-    description += GetExpectationType(expectationId) + "(" + GetActualText(expectationId) + ")"
+    if GetActualType(expectationId) == "String"
+        description += GetExpectationType(expectationId) + "(\"" + GetActualText(expectationId) + "\")"
+    else
+        description += GetExpectationType(expectationId) + "(" + GetActualText(expectationId) + ")"
+    endIf
     if IsNotExpectation(expectationId)
         description += ".Not()"
     endIf
     description += ".To("
-    description += GetAssertionType(expectationId) + "(" + GetExpectedText(expectationId) + ")"
+    if GetExpectedType() == "String"
+        description += GetAssertionType(expectationId) + "(\"" + GetExpectedText(expectationId) + "\")"
+    else
+        description += GetAssertionType(expectationId) + "(" + GetExpectedText(expectationId) + ")"
+    endIf
     description += ")"
     return description
 endFunction
@@ -247,7 +255,9 @@ endFunction
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 string function ExpectedDescription() global
+    Debug.Trace("Getting EXPECTED Description WHAT THE FUCK IS THE TYPE")
     string type = GetExpectedType()
+    Debug.Trace("The TYPE for EXPECTED is " + type)
     if type == "String"
         return "String \"" + GetExpectedString() + "\""
     else
@@ -408,10 +418,10 @@ function SetExpectedString(string value, bool autoSetText = true, bool autoSetTy
     if expectationId
         JMap.setStr(JMap.getObj(expectationId, "expected"), "data", value)
         if autoSetText
-            SetActualText(value, expectationId)
+            SetExpectedText(value, expectationId)
         endIf
         if autoSetType
-            SetActualType("String", expectationId)
+            SetExpectedType("String", expectationId)
         endIf
     endIf
 endFunction
@@ -465,10 +475,10 @@ function SetExpectedInt(int value, bool autoSetText = true, bool autoSetType = t
     if expectationId
         JMap.setInt(JMap.getObj(expectationId, "expected"), "data", value)
         if autoSetText
-            SetActualText(value, expectationId)
+            SetExpectedText(value, expectationId)
         endIf
         if autoSetType
-            SetActualType("Int", expectationId)
+            SetExpectedType("Int", expectationId)
         endIf
     endIf
 endFunction
@@ -522,10 +532,10 @@ function SetExpectedJObject(int value, bool autoSetText = true, bool autoSetType
     if expectationId
         JMap.setObj(JMap.getObj(expectationId, "expected"), "data", value)
         if autoSetText
-            SetActualText(value, expectationId)
+            SetExpectedText(value, expectationId)
         endIf
         if autoSetType
-            SetActualType("JObject", expectationId)
+            SetExpectedType("JObject", expectationId)
         endIf
     endIf
 endFunction
@@ -587,16 +597,16 @@ function SetExpectedBool(bool value, bool autoSetText = true, bool autoSetType =
         if value
             JMap.setInt(JMap.getObj(expectationId, "expected"), "data", 1)
             if autoSetText
-                SetActualText("true")
+                SetExpectedText("true")
             endIf
         else
             JMap.setInt(JMap.getObj(expectationId, "expected"), "data", 0)
             if autoSetText
-                SetActualText("false")
+                SetExpectedText("false")
             endIf
         endIf
         if autoSetType
-            SetActualType("Bool", expectationId)
+            SetExpectedType("Bool", expectationId)
         endIf
     endIf
 endFunction
@@ -650,10 +660,10 @@ function SetExpectedFloat(float value, bool autoSetText = true, bool autoSetType
     if expectationId
         JMap.setFlt(JMap.getObj(expectationId, "expected"), "data", value)
         if autoSetText
-            SetActualText(value, expectationId)
+            SetExpectedText(value, expectationId)
         endIf
         if autoSetType
-            SetActualType("Float", expectationId)
+            SetExpectedType("Float", expectationId)
         endIf
     endIf
 endFunction
@@ -732,10 +742,10 @@ function SetExpectedForm(Form value, string type, bool autoSetText = true, bool 
         JMap.setForm(JMap.getObj(expectationId, "expected"), "data", value)
         JMap.setStr(JMap.getObj(expectationId, "expected"), "formType", type)
         if autoSetText
-            SetActualText(value, expectationId)
+            SetExpectedText(value, expectationId)
         endIf
         if autoSetType
-            SetActualType("Form", expectationId)
+            SetExpectedType("Form", expectationId)
         endIf
     endIf
 endFunction

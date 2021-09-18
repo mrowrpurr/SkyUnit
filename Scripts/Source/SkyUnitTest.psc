@@ -330,6 +330,7 @@ bool function EqualString(string expected)
         actual = SkyUnitExpectation.GetActualText()
     endIf
     bool not = SkyUnitExpectation.Not()
+    Debug.Trace("THIS IS EQUAL STRING AND WE ARE CALLING THE STUPID FUCKING FUNTION")
     if not && actual == expected
         return SkyUnitExpectation.Fail("EqualString", "Expected " + \
             SkyUnitExpectation.ActualDescription() + " not to equal " + \

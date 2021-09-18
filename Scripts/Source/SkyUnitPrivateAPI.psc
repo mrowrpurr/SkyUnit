@@ -655,10 +655,10 @@ function ShowSingleTestResult(string testSuiteName, string testName, int testRes
     while i < expectationCount
         int expectation = SkyUnitExpectation.GetNthExpectation(testResult, i)
         string status = SkyUnitExpectation.GetStatus(expectation)
-        string expectationNumber = "#" + i
+        string expectationNumber = "#" + i + 1
         string description = SkyUnitExpectation.GetDescription(expectation)
         string failureMessage = SkyUnitExpectation.GetFailureMessage(expectation)
-        text += expectationNumber + " [" + status + "] " + description + "\n"
+        text += expectationNumber + " [" + status + "]\n" + ">>>" + description + "<<<\n"
         if failureMessage
             text += failureMessage + "\n"
         endIf
