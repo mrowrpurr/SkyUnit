@@ -42,6 +42,32 @@ function BeginExpectation(string expectationType, int testId = 0) global
     JMap.setInt(expectation, "testResultId", testId)
 endFunction
 
+; If you want to *store* expectations for any reason, you can do:
+; 
+; ```
+; ExpectString("Hello").To(EqualString("World"))
+; int expectation = SkyUnitExpectation.LatestExpectationID()
+; ```
+;
+; This returns an identifier which can be used with any of the `SkyUnitExpectation`
+; functions which Get/Set Actual/Expected data, e.g.
+;
+; ```
+; Debug.Trace(GetActualType(expectation))
+; ; => "String"
+; Debug.Trace(GetActualString(expectation))
+; ; => "Hello
+; Debug.Trace(GetExpectedString(expectation))
+; ; => "World
+; ```
+;
+; This low-level interface is mostly intended for usage by SkyUnit UI and test reporters.
+;
+; _It is also used in the SkyUnit test suite to test that SkyUnit functions correctly._
+int function LatestExpectationID() global
+    return SkyUnitPrivateAPI.SkyUnitData_GetCurrentExpectation()
+endFunction
+
 ; Marks the current expectation as a "Not" expectation.
 ; You **must** check whether or not your assertion is being run using "Not"
 ; by checking `SkyUnitExpectation.Not()` which returns true if the expectation
@@ -72,6 +98,23 @@ bool function Not(int expectationId = 0) global
     endIf
 endFunction
 
+; Returns the currently running test.
+; Every `Expect*()` function **MUST** return a `SkyUnitTest` using this function.
+;
+; Example:
+;
+; ```
+; SkyUnitTest function ExpectSomething(Something thing) global
+;   bool not = SkyUnitExpectation.Not()
+;   ; ... <your expectation logic> ...
+;   return SkyUnitExpectation.CurrentTest()
+; endFunction
+; ```
+SkyUnitTest function CurrentTest() global
+    SkyUnitPrivateAPI.Info("CurrentTest() " + SkyUnitPrivateAPI.SkyUnitData_GetCurrentTestScript())
+    return SkyUnitPrivateAPI.SkyUnitData_GetCurrentTestScript()
+endFunction
+
 ; Gets the expectation "type" as set by `SkyUnitExpectation.Begin(<type>)`
 ; e.g. `"ExpectString"` for the `ExpectString()` expectation. 
 string function GetExpectationType(int expectationId = 0) global
@@ -80,6 +123,16 @@ string function GetExpectationType(int expectationId = 0) global
     endIf
     if expectationId
         return JMap.getStr(expectationId, "expectationType")
+    endIf
+endFunction
+
+; Gets the assertion "type" as set by `SkyUnitExpectation.Fail(<type>)` or `SkyUnitExpectation.Pass(<type>)`
+string function GetAssertionType(int expectationId = 0) global
+    if ! expectationId
+        expectationId = SkyUnitPrivateAPI.SkyUnitData_GetCurrentExpectation()
+    endIf
+    if expectationId
+        return JMap.getStr(expectationId, "assertionType")
     endIf
 endFunction
 
@@ -120,6 +173,73 @@ bool function Pass(string assertionType, int expectationId = 0) global
     return true
 endFunction
 
+; Using an "Expectation identifier" retrieved via `LatestExpectationID()`
+; this function will return the status of the expectation which will be
+; one of: `PENDING`, `PASSING`, `FAILING`.
+;
+; The `PENDING` status will only be present if an `Expect*()` function was called with no assertion function
+; or if the assertion function forgot to call `SkyUnitExpectation.Fail()` or `SkyUnitExpectation.Pass()`
+string function GetStatus(int expectationId = 0) global
+    if ! expectationId
+        expectationId = SkyUnitPrivateAPI.SkyUnitData_GetCurrentExpectation()
+    endIf
+    return JMap.getStr(expectationId, "status")
+endFunction
+
+; Using an "Expectation identifier" retrieved via `LatestExpectationID()`
+; this function will return the failure message of the expectation, if any.
+string function GetFailureMessage(int expectationId = 0) global
+    if ! expectationId
+        expectationId = SkyUnitPrivateAPI.SkyUnitData_GetCurrentExpectation()
+    endIf
+    return JMap.getStr(expectationId, "failureMessage")
+endFunction
+
+; Returns the total number of expectations for the given test result.
+; Can be used to create test reporters or custom UIs which display test results.
+; Used by the built-in SkyUnit UI for displaying expectation results.
+int function GetExpectationCount(int testResult) global
+    SkyUnitPrivateAPI.Info("Get Expectation Count from " + testResult)
+    JValue.writeToFile(testResult, "ThisIsTheTestResult.json")
+    return JArray.count(JMap.getObj(testResult, "expectations"))
+endFunction
+
+; Returns the Nth expectation at the specified index of the test result.
+; Use `GetExpectationCount()` to get the total count of expectations for a test.
+; Can be used to create test reporters or custom UIs which display test results.
+; Used by the built-in SkyUnit UI for displaying expectation results.
+int function GetNthExpectation(int testResult, int index) global
+    SkyUnitPrivateAPI.Info("Get Nth Expectation from result " + testResult + " N = " + index)
+    return JArray.getObj(JMap.getObj(testResult, "expectations"), index)
+endFunction
+
+; Returns a text representation of a given expectation.
+; Uses the provided expectation and assertion types and the provided expectation and assertion data.
+string function GetDescription(int expectationId = 0) global
+    if ! expectationId
+        expectationId = SkyUnitPrivateAPI.SkyUnitData_GetCurrentExpectation()
+    endIf
+    SkyUnitPrivateAPI.Info("Get Description of expectation " + expectationId)
+    string description = ""
+    description += GetExpectationType(expectationId) + "(" + GetActualText(expectationId) + ")"
+    if IsNotExpectation(expectationId)
+        description += ".Not()"
+    endIf
+    description += ".To("
+    description += GetAssertionType(expectationId) + "(" + GetExpectedText(expectationId) + ")"
+    description += ")"
+    return description
+endFunction
+
+; Returns whether the given expectation is a "Not" expectation.
+; Used by the built-in SkyUnit UI for displaying expectation results.
+bool function IsNotExpectation(int expectationId = 0) global
+    if ! expectationId
+        expectationId = SkyUnitPrivateAPI.SkyUnitData_GetCurrentExpectation()
+    endIf
+    return JMap.getInt(expectationId, "not") == 1
+endFunction
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Helper for getting "Expected [Style] [Value]"
 ;; and "to equal [Style] [value]"
@@ -154,6 +274,7 @@ string function GetActualType(int expectationId = 0) global
     if ! expectationId
         expectationId = SkyUnitPrivateAPI.SkyUnitData_GetCurrentExpectation()
     endIf
+    SkyUnitPrivateAPI.Info("Get Actual Type " + expectationId)
     if expectationId
         return JMap.getStr(JMap.getObj(expectationId, "actual"), "type")
     endIf

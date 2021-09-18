@@ -243,6 +243,16 @@ function SkyUnitData_SetCurrentTestResult(int testResult) global
     JDB.solveObjSetter(".skyUnit.currentContext.currentTestResult", testResult)
 endFunction
 
+SkyUnitTest function SkyUnitData_GetCurrentTestScript() global
+    int currentlyRunningTestResult = SkyUnitData_GetCurrentTestResult()
+    if currentlyRunningTestResult
+        string testSuiteName = JMap.getStr(currentlyRunningTestResult, "testSuiteName")
+        if testSuiteName
+            return GetTestScriptBySuiteName(testSuiteName)
+        endIf
+    endIf
+endFunction
+
 int function SkyUnitData_CurrentExpectationsArray() global
     return JMap.getObj(SkyUnitData_GetCurrentTestResult(), "expectations")
 endFunction
@@ -470,7 +480,9 @@ int function RunTestSuite(string testSuiteName) global
 endFunction
 
 int function RunSingleTest(string testSuiteName, string testName) global
-    return JMap.getObj(RunTestSuite(testSuiteName), testName)
+    Info("Run Single Test " + testSuiteName + " " + testName)
+    int tests = JMap.getObj(RunTestSuite(testSuiteName), "tests")
+    return JMap.getObj(tests, testName)
 endFunction
 
 ; TODO - Before Each
@@ -481,6 +493,7 @@ function Test_BeginTestRun(string testSuiteName, string testName) global
     int currentlyRunningTestsMap = JMap.getObj(currentlyRunningTestSuiteResult, "tests")
     JMap.setObj(currentlyRunningTestsMap, testName, testResult)
     JMap.setStr(testResult, "testName", testName)
+    JMap.setStr(testResult, "testSuiteName", testSuiteName)
     JMap.setStr(testResult, "status", "PENDING")
     JMap.setObj(testResult, "expectations", JArray.object())
     JMap.setInt(testResult, "testSuiteResultId", currentlyRunningTestSuiteResult)
@@ -603,37 +616,153 @@ function ShowTestSuiteTestsUI(string testSuiteName) global
         string testName = testNames[selection - textOptionCount]
         int testResult = RunSingleTest(testSuiteName, testName)
         ShowSingleTestResult(testSuiteName, testName, testResult)
-        ShowTestSuiteTestsUI(testSuiteName)
-        string filename = "SkyUnit_Testing.json"
-        JValue.writeToFile(SkyUnitData_TopLevelMap(), filename)
+        WriteSkyUnitDebugJsonFile()
     endIf
 endFunction
 
 function ShowSingleTestResult(string testSuiteName, string testName, int testResult) global
-    Debug.MessageBox("Test Result: " + JMap.getStr(testResult, "status"))
+    Info("Show Single Test Result " + testSuiteName + " " + testName + " test result: " + testResult)
+    int failing = 0
+    int passing = 0
+    int pending = 0
+    int skipped = 0
+
+    int i = 0
+    int expectationCount = SkyUnitExpectation.GetExpectationCount(testResult)
+    Info("EXPECTATION COUNT: " + expectationCount)
+    while i < expectationCount
+        int expectation = SkyUnitExpectation.GetNthExpectation(testResult, i)
+        Info("EXPECTATION: " + expectation)
+        string status = SkyUnitExpectation.GetStatus(expectation)
+        if status == "FAILING"
+            failing += 0
+        elseIf status == "PASSING"
+            passing += 0
+        elseIf status == "PENDING"
+            pending += 0
+        elseIf status == "SKIPPED"
+            skipped += 0
+        endIf
+        i += 1
+    endWhile
+
+    string text = "[" + testSuiteName + "]\n\n" + testName + "\n"
+    text += GetTestSummaryLine(failing, passing, pending, skipped) + "\n"
+
+    Info("Text: " + text + " " + failing + " " + passing + " " + skipped)
+
+    i = 0
+    while i < expectationCount
+        int expectation = SkyUnitExpectation.GetNthExpectation(testResult, i)
+        string status = SkyUnitExpectation.GetStatus(expectation)
+        string expectationNumber = "#" + i
+        string description = SkyUnitExpectation.GetDescription(expectation)
+        string failureMessage = SkyUnitExpectation.GetFailureMessage(expectation)
+        text += expectationNumber + " [" + status + "] " + description + "\n"
+        if failureMessage
+            text += failureMessage + "\n"
+        endIf
+        i += 1
+    endWhile
+
+    Info("Text Now: " + text)
+
+    Debug.MessageBox(text)
 endFunction
 
 function RunTestSuiteAndDisplayResult(string testSuiteName) global
     int testSuiteResult = RunTestSuite(testSuiteName)
     string text = ""
 
-    text += "[" + testSuiteName + "]\n"
-    text += JMap.getStr(testSuiteResult, "status") + "\n\n"
-
     int tests = JMap.getObj(testSuiteResult, "tests")
     string[] testNames = JMap.allKeysPArray(tests)
+
+    int failing = JArray.object()
+    int passing = JArray.object()
+    int pending = JArray.object()
+    int skipped = JArray.object()
 
     int i = 0
     while i < testNames.Length
         string name = testNames[i]
         int test = JMap.getObj(tests, name)
         string status = JMap.getStr(test, "status")
-        text += status + " - " + name + "\n"
-        if status == "failed"
-            ; get the failed expectations...
+        if status == "FAILING"
+            JArray.addStr(failing, name)
+        elseIf status == "PASSING"
+            JArray.addStr(passing, name)
+        elseIf status == "PENDING"
+            JArray.addStr(pending, name)
+        elseIf status == "SKIPPED"
+            JArray.addStr(skipped, name)
         endIf
         i += 1
     endWhile
+
+    text += "[" + testSuiteName + "]\n"
+    text += JMap.getStr(testSuiteResult, "status") + "\n\n"
+    text += GetTestSummaryLine(JArray.count(failing), JArray.count(passing), JArray.count(pending), JArray.count(skipped)) + "\n"
+    
+    if JArray.count(failing) > 0
+        text += "\nFailing:\n"
+        i = 0
+        while i < JArray.count(failing)
+            text += JArray.getStr(failing, i) + "\n"
+            i += 1
+        endWhile
+    endIf
+    if JArray.count(passing) > 0
+        text += "\nPassing:\n"
+        i = 0
+        while i < JArray.count(passing)
+            text += JArray.getStr(passing, i) + "\n"
+            i += 1
+        endWhile
+    endIf
+    if JArray.count(pending) > 0
+        text += "\nPending:\n"
+        i = 0
+        while i < JArray.count(pending)
+            text += JArray.getStr(pending, i) + "\n"
+            i += 1
+        endWhile
+    endIf
+    if JArray.count(skipped) > 0
+        text += "\nSkipped:\n"
+        i = 0
+        while i < JArray.count(skipped)
+            text += JArray.getStr(skipped, i) + "\n"
+            i += 1
+        endWhile
+    endIf
+
     Debug.MessageBox(text)
+
     WriteSkyUnitDebugJsonFile()
+endFunction
+
+string function GetTestSummaryLine(int failing, int passing, int pending, int skipped, string separator = ", ") global
+    string text = ""
+    if failing > 0
+        text += failing + " failed"
+    endIf
+    if passing > 0
+        if text
+            text += separator
+        endIf
+        text += passing + " passed"
+    endIf
+    if pending > 0
+        if text
+            text += separator
+        endIf
+        text += pending + " pending"
+    endIf
+    if skipped > 0
+        if text
+            text += separator
+        endIf
+        text += skipped + " skipped"
+    endIf
+    return text
 endFunction

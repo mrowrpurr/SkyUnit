@@ -135,125 +135,185 @@ endFunction
 ;; Expectation Functions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-function ExpectString(string actual)
+SkyUnitTest function ExpectString(string actual)
+    SkyUnitExpectation.BeginExpectation("ExpectString")
     SkyUnitExpectation.SetActualString(actual)
+    return SkyUnitExpectation.CurrentTest()
 endFunction
 
-function ExpectInt(int actual)
+SkyUnitTest function ExpectInt(int actual)
+    SkyUnitExpectation.BeginExpectation("ExpectInt")
     SkyUnitExpectation.SetActualInt(actual)
+    return SkyUnitExpectation.CurrentTest()
 endFunction
 
-function ExpectBool(bool actual)
+SkyUnitTest function ExpectBool(bool actual)
+    SkyUnitExpectation.BeginExpectation("ExpectBool")
     SkyUnitExpectation.SetActualBool(actual)
+    return SkyUnitExpectation.CurrentTest()
 endFunction
 
-function ExpectFloat(float actual)
+SkyUnitTest function ExpectFloat(float actual)
+    SkyUnitExpectation.BeginExpectation("ExpectFloat")
     SkyUnitExpectation.SetActualFloat(actual)
+    return SkyUnitExpectation.CurrentTest()
 endFunction
 
-function ExpectForm(Form actual)
+SkyUnitTest function ExpectForm(Form actual)
+    SkyUnitExpectation.BeginExpectation("ExpectForm")
     SkyUnitExpectation.SetActualForm(actual, "Form")
+    return SkyUnitExpectation.CurrentTest()
 endFunction
 
-function ExpectPlayer()
+SkyUnitTest function ExpectPlayer()
+    SkyUnitExpectation.BeginExpectation("ExpectPlayer")
     Form actual = Game.GetPlayer()
     SkyUnitExpectation.SetActualForm(actual, "Actor")
+    return SkyUnitExpectation.CurrentTest()
 endFunction
 
-function ExpectActor(Actor actual)
+SkyUnitTest function ExpectActor(Actor actual)
+    SkyUnitExpectation.BeginExpectation("ExpectActor")
     SkyUnitExpectation.SetActualForm(actual, "Actor")
+    return SkyUnitExpectation.CurrentTest()
 endFunction
 
-function ExpectActorBase(ActorBase actual)
+SkyUnitTest function ExpectActorBase(ActorBase actual)
+    SkyUnitExpectation.BeginExpectation("ExpectActorBase")
     SkyUnitExpectation.SetActualForm(actual, "ActorBase")
+    return SkyUnitExpectation.CurrentTest()
 endFunction
 
-function ExpectSpell(Spell actual)
+SkyUnitTest function ExpectSpell(Spell actual)
+    SkyUnitExpectation.BeginExpectation("ExpectSpell")
     SkyUnitExpectation.SetActualForm(actual, "Spell")
+    return SkyUnitExpectation.CurrentTest()
 endFunction
 
-function ExpectShout(Shout actual)
+SkyUnitTest function ExpectShout(Shout actual)
+    SkyUnitExpectation.BeginExpectation("ExpectShout")
     SkyUnitExpectation.SetActualForm(actual, "Shout")
+    return SkyUnitExpectation.CurrentTest()
 endFunction
 
-function ExpectQuest(Quest actual)
+SkyUnitTest function ExpectQuest(Quest actual)
+    SkyUnitExpectation.BeginExpectation("ExpectQuest")
     SkyUnitExpectation.SetActualForm(actual, "Quest")
+    return SkyUnitExpectation.CurrentTest()
 endFunction
 
-function ExpectEnchantment(Enchantment actual)
+SkyUnitTest function ExpectEnchantment(Enchantment actual)
+    SkyUnitExpectation.BeginExpectation("ExpectEnchantment")
     SkyUnitExpectation.SetActualForm(actual, "Enchantment")
+    return SkyUnitExpectation.CurrentTest()
 endFunction
 
-function ExpectScroll(Scroll actual)
+SkyUnitTest function ExpectScroll(Scroll actual)
+    SkyUnitExpectation.BeginExpectation("ExpectScroll")
     SkyUnitExpectation.SetActualForm(actual, "Scroll")
+    return SkyUnitExpectation.CurrentTest()
 endFunction
 
-function ExpectPerk(Perk actual)
+SkyUnitTest function ExpectPerk(Perk actual)
+    SkyUnitExpectation.BeginExpectation("ExpectPerk")
     SkyUnitExpectation.SetActualForm(actual, "Perk")
+    return SkyUnitExpectation.CurrentTest()
 endFunction
 
-function ExpectIngredient(Ingredient actual)
+SkyUnitTest function ExpectIngredient(Ingredient actual)
+    SkyUnitExpectation.BeginExpectation("ExpectIngredient")
     SkyUnitExpectation.SetActualForm(actual, "Ingredient")
+    return SkyUnitExpectation.CurrentTest()
 endFunction
 
-function ExpectFormList(FormList actual)
+SkyUnitTest function ExpectFormList(FormList actual)
+    SkyUnitExpectation.BeginExpectation("ExpectFormList")
     SkyUnitExpectation.SetActualForm(actual, "FormList")
+    return SkyUnitExpectation.CurrentTest()
 endFunction
 
-function ExpectArmor(Armor actual)
+SkyUnitTest function ExpectArmor(Armor actual)
+    SkyUnitExpectation.BeginExpectation("ExpectArmor")
     SkyUnitExpectation.SetActualForm(actual, "Armor")
+    return SkyUnitExpectation.CurrentTest()
 endFunction
 
-function ExpectWeapon(Weapon actual)
+SkyUnitTest function ExpectWeapon(Weapon actual)
+    SkyUnitExpectation.BeginExpectation("ExpectWeapon")
     SkyUnitExpectation.SetActualForm(actual, "Weapon")
+    return SkyUnitExpectation.CurrentTest()
 endFunction
 
-function ExpectPotion(Potion actual)
+SkyUnitTest function ExpectPotion(Potion actual)
+    SkyUnitExpectation.BeginExpectation("ExpectPotion")
     SkyUnitExpectation.SetActualForm(actual, "Potion")
+    return SkyUnitExpectation.CurrentTest()
 endFunction
 
-function ExpectCell(Cell actual)
+SkyUnitTest function ExpectCell(Cell actual)
+    SkyUnitExpectation.BeginExpectation("ExpectCell")
     SkyUnitExpectation.SetActualForm(actual, "Cell")
+    return SkyUnitExpectation.CurrentTest()
 endFunction
 
-function ExpectLocation(Location actual)
+SkyUnitTest function ExpectLocation(Location actual)
+    SkyUnitExpectation.BeginExpectation("ExpectLocation")
     SkyUnitExpectation.SetActualForm(actual, "Location")
+    return SkyUnitExpectation.CurrentTest()
 endFunction
 
-function ExpectLight(Light actual)
+SkyUnitTest function ExpectLight(Light actual)
+    SkyUnitExpectation.BeginExpectation("ExpectLight")
     SkyUnitExpectation.SetActualForm(actual, "Light")
+    return SkyUnitExpectation.CurrentTest()
 endFunction
 
-function ExpectGlobalVariable(GlobalVariable actual)
+SkyUnitTest function ExpectGlobalVariable(GlobalVariable actual)
+    SkyUnitExpectation.BeginExpectation("ExpectGlobalVariable")
     SkyUnitExpectation.SetActualForm(actual, "GlobalVariable")
+    return SkyUnitExpectation.CurrentTest()
 endFunction
 
-function ExpectFaction(Faction actual)
+SkyUnitTest function ExpectFaction(Faction actual)
+    SkyUnitExpectation.BeginExpectation("ExpectFaction")
     SkyUnitExpectation.SetActualForm(actual, "Faction")
+    return SkyUnitExpectation.CurrentTest()
 endFunction
 
-function ExpectPackage(Package actual)
+SkyUnitTest function ExpectPackage(Package actual)
+    SkyUnitExpectation.BeginExpectation("ExpectPackage")
     SkyUnitExpectation.SetActualForm(actual, "Package")
+    return SkyUnitExpectation.CurrentTest()
 endFunction
 
-function ExpectScene(Scene actual)
+SkyUnitTest function ExpectScene(Scene actual)
+    SkyUnitExpectation.BeginExpectation("ExpectScene")
     SkyUnitExpectation.SetActualForm(actual, "Scene")
+    return SkyUnitExpectation.CurrentTest()
 endFunction
 
-function ExpectObjectReference(ObjectReference actual)
+SkyUnitTest function ExpectObjectReference(ObjectReference actual)
+    SkyUnitExpectation.BeginExpectation("ExpectObjectReferece")
     SkyUnitExpectation.SetActualForm(actual, "ObjectReference")
+    return SkyUnitExpectation.CurrentTest()
 endFunction
 
-function ExpectMagicEffect(MagicEffect actual)
+SkyUnitTest function ExpectMagicEffect(MagicEffect actual)
+    SkyUnitExpectation.BeginExpectation("ExpectMagicEffect")
     SkyUnitExpectation.SetActualForm(actual, "MagicEffect")
+    return SkyUnitExpectation.CurrentTest()
 endFunction
 
-function ExpectActivetMagicEffect(ActiveMagicEffect actual)
+SkyUnitTest function ExpectActiveMagicEffect(ActiveMagicEffect actual)
+    SkyUnitExpectation.BeginExpectation("ExpectActiveMagicEffect")
     SkyUnitExpectation.SetActualActiveMagicEffect(actual)
+    return SkyUnitExpectation.CurrentTest()
 endFunction
 
-function ExpectAlias(Alias actual)
+SkyUnitTest function ExpectAlias(Alias actual)
+    SkyUnitExpectation.BeginExpectation("ExpectAlias")
     SkyUnitExpectation.SetActualAlias(actual)
+    return SkyUnitExpectation.CurrentTest()
 endFunction
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -261,6 +321,7 @@ endFunction
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 bool function EqualString(string expected)
+    SkyUnitPrivateAPI.Info("Equal String " + expected)
     SkyUnitExpectation.SetExpectedString(expected)
     string actual
     if SkyUnitExpectation.GetActualType() == "String"

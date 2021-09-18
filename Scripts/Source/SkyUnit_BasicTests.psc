@@ -2,6 +2,10 @@ scriptName SkyUnit_BasicTests extends SkyUnitAssertionTestBase
 {Basic tests for loading test suite scripts, test functions,
 getting test names, running test suite scripts, and getting the results.}
 
+
+; TODO RENAME THIS
+
+
 function Tests()
     Test("Starting quest automatically registers test suite scripts").Fn(StartingQuestRegistersTestScripts_Test())
     Test("Get test suite names") ; .Fn(GetTestSuiteNames_Test())

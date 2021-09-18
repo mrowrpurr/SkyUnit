@@ -45,7 +45,11 @@ endFunction
 ; If you want this to be fake, be sure to SwitchToContext_Fake() first.
 function CreateTestSuite(string testScriptName)
     _currentTestScriptName = testScriptName
-    SkyUnitPrivateAPI.RegisterTestSuite(None, _currentTestScriptName)
+    ;;
+    ;; TODO FIX THIS
+    ;;;
+    ; SkyUnitPrivateAPI.RegisterTestSuite(None, _currentTestScriptName)
+    SkyUnitPrivateAPI.RegisterTestSuite(SkyUnitTestExamples.GetExampleTest1(), _currentTestScriptName)
 endFunction
 
 ; Begin a test suite. This registers an actual script.
