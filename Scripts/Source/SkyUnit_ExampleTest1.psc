@@ -16,15 +16,47 @@ bool property Test_PassingTest1_Enabled auto
 bool property Test_FailingTest1_Enabled auto
 bool property Test_PendingTest1_Enabled auto
 
-SkyUnit_ExampleTest1 function GetInstance() global
-    return Game.GetFormFromFile(0x0808, "SkyUnitTests.esp") as SkyUnit_ExampleTest1
+bool property ResetTestLogs auto
+string[] property TestLogs auto
+
+SkyUnit_ExampleTest1 function ResetTests()
+    ResetTestLogs = true
+    TestLogs = Utility.CreateStringArray(0)
+    Test_PassingTest1_Enabled = true
+    Test_FailingTest1_Enabled = true
+    Test_PendingTest1_Enabled = true
+    return self
 endFunction
 
-function ResetTests() global
-    SkyUnit_ExampleTest1 test = GetInstance()
-    test.Test_PassingTest1_Enabled = true
-    test.Test_FailingTest1_Enabled = true
-    test.Test_PendingTest1_Enabled = true
+function AddToLog(string text)
+    if TestLogs && ! ResetTestLogs
+        TestLogs = Utility.ResizeStringArray(TestLogs, TestLogs.Length + 1)
+        TestLogs[TestLogs.Length - 1] = text
+    else
+        TestLogs = new string[1]
+        TestLogs[0] = text
+        ResetTestLogs = false
+    endIf
+endFunction
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Before/After All/Each
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+function BeforeAll()
+    AddToLog("Before All")
+endFunction
+
+function AfterAll()
+    AddToLog("After All")
+endFunction
+
+function BeforeEach()
+    AddToLog("Before Each")
+endFunction
+
+function AfterEach()
+    AddToLog("After Each")
 endFunction
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -32,21 +64,30 @@ endFunction
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 function Tests()
+    AddToLog("Begin Tests")
     if Test_PassingTest1_Enabled
+        AddToLog("Test(Passing Test 1)")
         Test("Passing Test 1").Fn(PassingTest1_Test())
     endIf
     if Test_FailingTest1_Enabled
+        AddToLog("Test(Failing Test 1)")
         Test("Failing Test 1").Fn(FailingTest1_Test())
     endIf
     if Test_PendingTest1_Enabled
+        AddToLog("Test(Pending Test 1)")
         Test("Pending Test 1") ; Pending, so no associated function
     endIf
+    AddToLog("End Tests")
 endFunction
 
 function PassingTest1_Test()
-    ; Nothing, should pass (no failures)
+    AddToLog("Begin Passing Test 1")
+    ExpectString("Hello from ExampleTest1").To(EqualString("Hello from ExampleTest1"))
+    AddToLog("End Passing Test 1")
 endFunction
 
 function FailingTest1_Test()
-    Fail("Manually failed FailingTest1")
+    AddToLog("Failing Passing Test 1")
+    ExpectString("Hello from ExampleTest1").To(EqualString("This is a different string"))
+    AddToLog("Failing Passing Test 1")
 endFunction

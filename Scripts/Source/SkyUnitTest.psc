@@ -10,6 +10,24 @@ event OnInit()
     SkyUnitPrivateAPI.RegisterTestSuite(self)
 endEvent
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Run Tests
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+; Runs all tests in this test suite and returns an identifier for a test result
+; which can be used to get the information about each test run and their expectations.
+int function Run()
+    return SkyUnitPrivateAPI.RunTestSuite(SkyUnitPrivateAPI.ScriptDisplayName(self))
+endFunction
+
+; Returns a list of all of the defined test names in this test suite script.
+;
+; _Note: calling this function runs the test suite. Specifically, it runs the `Tests()` function._
+string[] function TestNames()
+    ; TODO Change This Up, it doesn't call BeforeAll/AfterAll correctly etc
+    return SkyUnitPrivateAPI.TestNamesInSuite(SkyUnitPrivateAPI.ScriptDisplayName(self))
+endFunction
+
 ; Override the `Tests()` function to define your test cases
 ;
 ; Example:
@@ -87,48 +105,61 @@ endFunction
 function To(bool assertionFunction)
 endFunction
 
-; TODO
-; TODO
-; TODO
-; TODO
 function BeforeAll()
+    SkyUnitPrivateAPI.Info("BeforeAll not defined for " + self + " (this is not an error)")
 endFunction
+
 function AfterAll()
+    SkyUnitPrivateAPI.Info("AfterAll not defined for " + self + " (this is not an error)")
 endFunction
+
 function BeforeEach()
+    SkyUnitPrivateAPI.Info("BeforeEach not defined for " + self + " (this is not an error)")
 endFunction
+
 function AfterEach()
+    SkyUnitPrivateAPI.Info("AfterEach not defined for " + self + " (this is not an error)")
 endFunction
-; TODO
-; TODO
-; TODO
-; TODO
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Simple Assert() and Fail()
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-; Simplest assertion.
-; If the provided expression does not evaluate to true, this will fail.
-function Assert(bool actual, string failureMessage = "")
+; If the provided expression does not evaluate to true, fail this expectation.
+bool function Assert(bool actual, string failureMessage = "")
+    SkyUnitExpectation.BeginExpectation("Assert")
+    SkyUnitExpectation.SetActualBool(actual)
     if actual
-        Pass()
+        return SkyUnitExpectation.Pass("Assert")
     else
-        Fail(failureMessage)
+    endIf
+        return SkyUnitExpectation.Fail("Assert", failureMessage)
+endFunction
+
+; If the provided expression evaluates to true, this will fail.
+bool function Refute(bool actual, string failureMessage = "")
+    SkyUnitExpectation.BeginExpectation("Refute")
+    SkyUnitExpectation.SetActualBool(actual)
+    if actual
+        return SkyUnitExpectation.Fail("Refute", failureMessage)
+    else
+        return SkyUnitExpectation.Pass("Refute")
     endIf
 endFunction
 
 ; Fails the current test with the provided message.
 ; The failure message will be shown in the test results.
-function Fail(string failureMessage)
+bool function Fail(string failureMessage)
     SkyUnitExpectation.BeginExpectation("Fail")
     SkyUnitExpectation.Fail("Fail", failureMessage)
+    return false
 endFunction
 
 ; Pass the current test (unless test has any failing expectations)
-function Pass()
+bool function Pass()
     SkyUnitExpectation.BeginExpectation("Pass")
     SkyUnitExpectation.Pass("Pass")
+    return true
 endFunction
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -321,7 +352,6 @@ endFunction
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 bool function EqualString(string expected)
-    SkyUnitPrivateAPI.Info("Equal String " + expected)
     SkyUnitExpectation.SetExpectedString(expected)
     string actual
     if SkyUnitExpectation.GetActualType() == "String"
@@ -330,7 +360,6 @@ bool function EqualString(string expected)
         actual = SkyUnitExpectation.GetActualText()
     endIf
     bool not = SkyUnitExpectation.Not()
-    Debug.Trace("THIS IS EQUAL STRING AND WE ARE CALLING THE STUPID FUCKING FUNTION")
     if not && actual == expected
         return SkyUnitExpectation.Fail("EqualString", "Expected " + \
             SkyUnitExpectation.ActualDescription() + " not to equal " + \

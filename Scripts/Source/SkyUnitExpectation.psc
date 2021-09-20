@@ -111,7 +111,6 @@ endFunction
 ; endFunction
 ; ```
 SkyUnitTest function CurrentTest() global
-    SkyUnitPrivateAPI.Info("CurrentTest() " + SkyUnitPrivateAPI.SkyUnitData_GetCurrentTestScript())
     return SkyUnitPrivateAPI.SkyUnitData_GetCurrentTestScript()
 endFunction
 
@@ -199,7 +198,6 @@ endFunction
 ; Can be used to create test reporters or custom UIs which display test results.
 ; Used by the built-in SkyUnit UI for displaying expectation results.
 int function GetExpectationCount(int testResult) global
-    SkyUnitPrivateAPI.Info("Get Expectation Count from " + testResult)
     JValue.writeToFile(testResult, "ThisIsTheTestResult.json")
     return JArray.count(JMap.getObj(testResult, "expectations"))
 endFunction
@@ -209,7 +207,6 @@ endFunction
 ; Can be used to create test reporters or custom UIs which display test results.
 ; Used by the built-in SkyUnit UI for displaying expectation results.
 int function GetNthExpectation(int testResult, int index) global
-    SkyUnitPrivateAPI.Info("Get Nth Expectation from result " + testResult + " N = " + index)
     return JArray.getObj(JMap.getObj(testResult, "expectations"), index)
 endFunction
 
@@ -219,7 +216,6 @@ string function GetDescription(int expectationId = 0) global
     if ! expectationId
         expectationId = SkyUnitPrivateAPI.SkyUnitData_GetCurrentExpectation()
     endIf
-    SkyUnitPrivateAPI.Info("Get Description of expectation " + expectationId)
     string description = ""
     if GetActualType(expectationId) == "String"
         description += GetExpectationType(expectationId) + "(\"" + GetActualText(expectationId) + "\")"
@@ -255,9 +251,7 @@ endFunction
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 string function ExpectedDescription() global
-    Debug.Trace("Getting EXPECTED Description WHAT THE FUCK IS THE TYPE")
     string type = GetExpectedType()
-    Debug.Trace("The TYPE for EXPECTED is " + type)
     if type == "String"
         return "String \"" + GetExpectedString() + "\""
     else
@@ -284,7 +278,6 @@ string function GetActualType(int expectationId = 0) global
     if ! expectationId
         expectationId = SkyUnitPrivateAPI.SkyUnitData_GetCurrentExpectation()
     endIf
-    SkyUnitPrivateAPI.Info("Get Actual Type " + expectationId)
     if expectationId
         return JMap.getStr(JMap.getObj(expectationId, "actual"), "type")
     endIf
@@ -308,6 +301,7 @@ string function GetExpectedType(int expectationId = 0) global
     if expectationId
         return JMap.getStr(JMap.getObj(expectationId, "expected"), "type")
     endIf
+    return ""
 endFunction
 
 ; Sets the "data type" of the "expected value"

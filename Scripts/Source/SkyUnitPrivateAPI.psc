@@ -43,6 +43,16 @@ SkyUnitTest[] property TestSuiteScripts9 auto
 Alias property CurrentExpectationActualValue_Alias auto
 ActiveMagicEffect property CurrentExpectationActualValue_ActiveMagicEffect auto
 
+; Messages and hacky alias for dynamically setting Message text
+Message property SkyUnitOkMessage auto
+Form property SkyUnitMessageTextFormBase auto
+
+function OkMessageBox(string text) global
+    SkyUnitPrivateAPI api = SkyUnitPrivateAPI.GetInstance()
+    api.SkyUnitMessageTextFormBase.SetName(text)
+    api.SkyUnitOkMessage.Show()
+endFunction
+
 event OnInit()
     PerformModInstallation()
     Utility.WaitMenuMode(2.5)
@@ -184,7 +194,7 @@ string[] function TestNamesInSuite(string testSuiteName) global
     if ! alreadyLoadedTestNames
         SkyUnitTest testScript = GetTestScriptBySuiteName(testSuiteName)
         GetLock()
-        testScript.Tests()
+        testScript.Tests() ; TODO TODO TODO TODO Update this to properly run things including the BeforeEach/After etc!
         ReleaseLock()
         JMap.setInt(testSuiteMap, "testNamesLoaded", 1)
     endIf
@@ -459,6 +469,7 @@ endFunction
 int function RunTestSuite(string testSuiteName) global
     GetLock()
     int testSuiteResult = JMap.object()
+    Info("Run Test Suite: " + testSuiteName + " (test result #" + testSuiteResult + ")")
     SkyUnitData_SetCurrentlyRunningTestSuite(testSuiteResult)
     SkyUnitData_SetLatestSuiteResult(testSuiteResult)
     JMap.setStr(testSuiteResult, "testSuite", testSuiteName)
@@ -466,11 +477,21 @@ int function RunTestSuite(string testSuiteName) global
     JMap.setObj(testSuiteResult, "tests", JMap.object())
     SkyUnitTest testScript = GetTestScriptBySuiteName(testSuiteName)
 
-    ; TODO : BeforeAll()
+    Test_BeginTestRun(testSuiteName, SpecialTestNames_BeforeAll(), runBeforeEach = false)
+    testScript.BeforeAll()
+    Fn_EndTestRun(runAfterEach = false)
 
     testScript.Tests()
 
-    ; TODO : AfterAll()
+    Test_BeginTestRun(testSuiteName, SpecialTestNames_AfterAll(), runBeforeEach = false)
+    testScript.AfterAll()
+    Fn_EndTestRun(runAfterEach = false)
+
+    int currentTestResult = SkyUnitData_GetCurrentTestResult()
+    if currentTestResult
+        ; The last one didn't finish, e.g. it was pending. We need to make sure to run AfterEach()
+        Fn_EndTestRun()
+    endIf
 
     SkyUnitData_SetCurrentExpectation(0)
     SkyUnitData_SetCurrentTestResult(0)
@@ -479,14 +500,22 @@ int function RunTestSuite(string testSuiteName) global
     return testSuiteResult
 endFunction
 
-int function RunSingleTest(string testSuiteName, string testName) global
-    Info("Run Single Test " + testSuiteName + " " + testName)
-    int tests = JMap.getObj(RunTestSuite(testSuiteName), "tests")
-    return JMap.getObj(tests, testName)
+string function SpecialTestNames_BeforeAll() global
+    return "[SkyUnitTest.BeforeAll()]"
+endFunction
+
+string function SpecialTestNames_AfterAll() global
+    return "[SkyUnitTest.AfterAll()]"
 endFunction
 
 ; TODO - Before Each
-function Test_BeginTestRun(string testSuiteName, string testName) global
+function Test_BeginTestRun(string testSuiteName, string testName, bool runBeforeEach = true) global
+    int currentTestResult = SkyUnitData_GetCurrentTestResult()
+    if currentTestResult
+        ; The previouis one didn't finish, e.g. it was pending. We need to make sure to run AfterEach()
+        Fn_EndTestRun()
+    endIf
+
     JMap.setObj(SkyUnitData_TestSuiteTestsMap(testSuiteName), testName, JMap.object())
     int testResult = JMap.object()
     int currentlyRunningTestSuiteResult = SkyUnitData_GetCurrentlyRunningTestSuite()
@@ -499,9 +528,17 @@ function Test_BeginTestRun(string testSuiteName, string testName) global
     JMap.setInt(testResult, "testSuiteResultId", currentlyRunningTestSuiteResult)
     SkyUnitData_SetCurrentTestResult(testResult)
     SkyUnitData_SetCurrentExpectation(0)
+
+    if runBeforeEach
+        SkyUnitData_GetCurrentTestScript().BeforeEach() ; BeforeEach always runs, even for pending tests. Because of Papyrus limitations.
+    endIf
 endFunction
 
-function Fn_EndTestRun() global
+function Fn_EndTestRun(bool runAfterEach = true) global
+    if runAfterEach
+        SkyUnitData_GetCurrentTestScript().AfterEach()
+    endIf
+
     int testResult = SkyUnitData_GetCurrentTestResult()
     if JMap.getStr(testResult, "status") != "FAILING"
         JMap.setStr(testResult, "status", "PASSING")
@@ -530,21 +567,18 @@ endFunction
 function ShowTestSuiteChooserUI(string[] testSuiteNames) global
     string option_RunAllTests_text = "Run All Tests"
     string option_RunTestsMatchingFilter_text = "Run Tests Matching Filter"
-    string option_ViewTestSuite_text = "View Test Suite"
-    string option_ViewTestSuitesMatchingFilter_text = "View Test Suites Matching Filter"
+    string option_BrowseTestSuites_text = "Browse Test Suites"
 
     int option_RunAllTests_index = 0
     int option_RunTestsMatchingFilter_index = 1
-    int option_ViewTestSuite_index = 2
-    int option_ViewTestSuitesMatchingFilter_index = 3
+    int option_BrowseTestSuites_index = 2
 
     uilistmenu listMenu = uiextensions.GetMenu("UIListMenu") as uilistmenu
 
-    int textOptionCount = 6
+    int textOptionCount = 5
     listMenu.AddEntryItem(option_RunAllTests_text)
     listMenu.AddEntryItem(option_RunTestsMatchingFilter_text)
-    listMenu.AddEntryItem(option_ViewTestSuite_text)
-    listMenu.AddEntryItem(option_ViewTestSuitesMatchingFilter_text)
+    listMenu.AddEntryItem(option_BrowseTestSuites_text)
     listMenu.AddEntryItem(" ")
     listMenu.AddEntryItem("--- [Choose Test Suite to Run] ---")
 
@@ -559,22 +593,28 @@ function ShowTestSuiteChooserUI(string[] testSuiteNames) global
     int selection = listMenu.GetResultInt()
     if selection > -1
         if selection == option_RunAllTests_index
-            Debug.MessageBox("Not yet supported...")
+            RunAllTestSuitesAndDisplayResult(testSuiteNames)
         elseIf selection == option_RunTestsMatchingFilter_index
-            Debug.MessageBox("Not yet supported...")
-        elseIf selection == option_ViewTestSuite_index
-            ShowViewTestSuiteChooserUI(testSuiteNames)
-        elseIf selection == option_ViewTestSuite_index
-            ShowViewTestSuiteChooserUI(testSuiteNames)
-        elseIf selection == option_ViewTestSuitesMatchingFilter_index
-            Debug.MessageBox("Not yet supported...")
+            ShowAllTestSuiteFilterAndRunAllTestResultsAndDisplayResult(testSuiteNames)
+        elseIf selection == option_BrowseTestSuites_index
+            ShowBrowseTestSuitesChooserUI(testSuiteNames)
+        elseIf selection == option_BrowseTestSuites_index
+            ShowBrowseTestSuitesChooserUI(testSuiteNames)
         elseIf selection >= textOptionCount
             RunTestSuiteAndDisplayResult(testSuiteNames[selection - textOptionCount])
         endIf
     endIf
 endFunction
 
-function ShowViewTestSuiteChooserUI(string[] testSuiteNames) global
+function RunAllTestSuitesAndDisplayResult(string[] testSuiteNames) global
+    Debug.MessageBox("TODO")
+endFunction
+
+function ShowAllTestSuiteFilterAndRunAllTestResultsAndDisplayResult(string[] testSuiteNames) global
+    Debug.MessageBox("TODO")
+endFunction
+
+function ShowBrowseTestSuitesChooserUI(string[] testSuiteNames) global
     uilistmenu listMenu = uiextensions.GetMenu("UIListMenu") as uilistmenu
 
     int textOptionCount = 1
@@ -614,14 +654,18 @@ function ShowTestSuiteTestsUI(string testSuiteName) global
     int selection = listMenu.GetResultInt()
     if selection > -1
         string testName = testNames[selection - textOptionCount]
-        int testResult = RunSingleTest(testSuiteName, testName)
+        int tests = JMap.getObj(RunTestSuite(testSuiteName), "tests")
+        int testResult = JMap.getObj(tests, testName)
         ShowSingleTestResult(testSuiteName, testName, testResult)
         WriteSkyUnitDebugJsonFile()
     endIf
 endFunction
 
 function ShowSingleTestResult(string testSuiteName, string testName, int testResult) global
-    Info("Show Single Test Result " + testSuiteName + " " + testName + " test result: " + testResult)
+
+
+
+    Info("Show Single Test Result " + testSuiteName + " " + testName + " (test result #" + JMap.getInt(testResult, "testSuiteResultId") + " > #" + testResult + ")")
     int failing = 0
     int passing = 0
     int pending = 0
@@ -629,10 +673,8 @@ function ShowSingleTestResult(string testSuiteName, string testName, int testRes
 
     int i = 0
     int expectationCount = SkyUnitExpectation.GetExpectationCount(testResult)
-    Info("EXPECTATION COUNT: " + expectationCount)
     while i < expectationCount
         int expectation = SkyUnitExpectation.GetNthExpectation(testResult, i)
-        Info("EXPECTATION: " + expectation)
         string status = SkyUnitExpectation.GetStatus(expectation)
         if status == "FAILING"
             failing += 0
@@ -649,8 +691,6 @@ function ShowSingleTestResult(string testSuiteName, string testName, int testRes
     string text = "[" + testSuiteName + "]\n\n" + testName + "\n"
     text += GetTestSummaryLine(failing, passing, pending, skipped) + "\n"
 
-    Info("Text: " + text + " " + failing + " " + passing + " " + skipped)
-
     i = 0
     while i < expectationCount
         int expectation = SkyUnitExpectation.GetNthExpectation(testResult, i)
@@ -665,9 +705,8 @@ function ShowSingleTestResult(string testSuiteName, string testName, int testRes
         i += 1
     endWhile
 
-    Info("Text Now: " + text)
-
-    Debug.MessageBox(text)
+    ; Debug.MessageBox(text)
+    OkMessageBox(text)
 endFunction
 
 function RunTestSuiteAndDisplayResult(string testSuiteName) global
@@ -736,7 +775,8 @@ function RunTestSuiteAndDisplayResult(string testSuiteName) global
         endWhile
     endIf
 
-    Debug.MessageBox(text)
+    ; Debug.MessageBox(text)
+    OkMessageBox(text)
 
     WriteSkyUnitDebugJsonFile()
 endFunction
