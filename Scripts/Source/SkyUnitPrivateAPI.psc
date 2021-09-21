@@ -134,14 +134,17 @@ function CreateContext(string name) global
     int context = JMap.object()
     JDB.solveObjSetter(".skyUnit.contexts." + name, context, createMissingKeys = true)
     JMap.setStr(context, "contextName", name)
+    ; Initialized Objects
     JMap.setObj(context, "testSuitesByName", JMap.object())
     JMap.setObj(context, "testSuiteMostRecentResultsByName", JMap.object())
-    JMap.setObj(context, "currentTestResult", JMap.object())
-    JMap.setObj(context, "currentTestSuiteResult", JMap.object())
-    JMap.setObj(context, "currentlyRunningTestSuite", JMap.object())
-    JMap.setObj(context, "currentlyRunningTestRun", JMap.object())
     JMap.setObj(context, "testRuns", JMap.object())
-    JMap.setObj(context, "currentExpectation", JMap.object())
+    ; Uninitialized Objects`coc riverwood
+
+    JMap.setObj(context, "currentTestResult", 0)
+    JMap.setObj(context, "currentTestSuiteResult", 0)
+    JMap.setObj(context, "currentlyRunningTestSuite", 0)
+    JMap.setObj(context, "currentlyRunningTestRun", 0)
+    JMap.setObj(context, "currentExpectation", 0)
     JMap.setFlt(context, "lock", 0.0)
 endFunction
 
@@ -248,7 +251,7 @@ int function SkyUnitData_CreateNewTestRunMap(string testRunName = "") global
     JMap.setObj(testRuns, testRunName, testRun)
     JMap.setStr(testRun, "testRunName", testRunName)
     JMap.setObj(testRun, "testSuites", JMap.object())
-    JMap.setFlt(testRun, "startTime", Utility.GetCurrentRealTime())
+    Info("Create New Test Run #" + testRun)
     return testRun
 endFunction
 
@@ -513,48 +516,55 @@ endFunction
 ;; Running Tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-function DoneWithTestResult(int testResult) global
-    JValue.release(testResult)
-endFunction
-
 ; Run all test suites and return a result which contains .testSuites[test suite name] => test suite result.
-int function RunAllTestSuites(bool forceRerun = false) global
-    int testRun = SkyUnitData_CreateNewTestRunMap()
-    SkyUnitData_SetCurrentlyRunningTestRun(testRun)
+int function RunAllTestSuites(int testRun = 0, bool forceRerun = false) global
+    if ! testRun
+        testRun = SkyUnitData_GetCurrentlyRunningTestRun()
+    endIf
+    if ! testRun || forceRerun
+        testRun = SkyUnitData_CreateNewTestRunMap()
+        SkyUnitData_SetCurrentlyRunningTestRun(testRun)
+    endIf
+
+    Info("Run All Test Suites (test run #" + testRun + ")")
+
     string[] testSuiteNames = TestSuites()
+    Info("Test Suites: " + testSuiteNames)
     int i = 0
     while i < testSuiteNames.Length
         RunTestSuite(testSuiteNames[i], testRun, forceRerun)
         i += 1
     endWhile
-    ; TODO DRY
-    float now = Utility.GetCurrentRealTime()
-    float startTime = JMap.getFlt(testRun, "startTime")
-    float duration = now - startTime
-    JMap.setFlt(testRun, "endTime", now)
-    JMap.setFlt(testRun, "duration", duration)
-    ;
-    SkyUnitData_SetCurrentlyRunningTestRun(0)
+
     return testRun
 endFunction
 
 ; Run the specified test suite and return a result which contains .testSuites[test suite name] => test suite result/
 ; This returns the same data structure as RunAllTestSuites() but only the specified test suite script will have been run.
 int function RunTestSuite(string testSuiteName, int parentTestRun = 0, bool forceRerun = false) global
+    Info("RunTestSuite() test run #" + parentTestRun)
     GetLock()
+    Info("AAA")
 
-    if SkyUnitData_TestSuiteHasBeenRun(testSuiteName) && ! forceRerun
+    if ! parentTestRun
+        Info("BBB")
+        parentTestRun = SkyUnitData_GetCurrentlyRunningTestRun()
+        if ! parentTestRun
+            Info("CCC")
+            parentTestRun = SkyUnitData_CreateNewTestRunMap()
+            SkyUnitData_SetCurrentlyRunningTestRun(parentTestRun)
+        endIf
+    endIf
+    Info("DDD")
+
+    if ! forceRerun && SkyUnitData_TestSuiteHasBeenRun(testSuiteName)
         int previousTestRun = SkyUnitData_GetMostRecentResultForTestSuiteByName(testSuiteName)
         Info("Test Suite has previously been run, returning cached result: " + testSuiteName + " (test run #" + previousTestRun + ")")
+        ReleaseLock()
         return previousTestRun
     endIf
 
-    bool shouldStopTestRun = parentTestRun == 0
-
-    if ! parentTestRun
-        parentTestRun = SkyUnitData_CreateNewTestRunMap()
-        SkyUnitData_SetCurrentlyRunningTestRun(parentTestRun)
-    endIf
+    Info("Run Test Suite: " + testSuiteName + " (test run #" + parentTestRun + ")")
 
     int parentTestSuitesMap = JMap.getObj(parentTestRun, "testSuites")
     int testSuiteResult = JMap.object()
@@ -565,24 +575,30 @@ int function RunTestSuite(string testSuiteName, int parentTestRun = 0, bool forc
     SkyUnitData_SetLatestSuiteResult(testSuiteResult)
     JMap.setStr(testSuiteResult, "testSuite", testSuiteName)
     JMap.setStr(testSuiteResult, "status", "PENDING")
+    float startTime = Utility.GetCurrentRealTime()
+    JMap.setFlt(testSuiteResult, "startTime", startTime)
     JMap.setObj(testSuiteResult, "tests", JMap.object())
     SkyUnitTest testScript = GetTestScriptBySuiteName(testSuiteName)
 
-    Test_BeginTestRun(testSuiteName, SpecialTestNames_BeforeAll(), runBeforeEach = false)
+    ; Test_BeginTestRun(testSuiteName, SpecialTestNames_BeforeAll(), runBeforeEach = false)
     testScript.BeforeAll()
-    Fn_EndTestRun(runAfterEach = false)
+    ; Fn_EndTestRun(runAfterEach = false)
 
     testScript.Tests()
 
-    Test_BeginTestRun(testSuiteName, SpecialTestNames_AfterAll(), runBeforeEach = false)
+    ; Test_BeginTestRun(testSuiteName, SpecialTestNames_AfterAll(), runBeforeEach = false)
     testScript.AfterAll()
-    Fn_EndTestRun(runAfterEach = false)
+    ; Fn_EndTestRun(runAfterEach = false)
 
     int currentTestResult = SkyUnitData_GetCurrentTestResult()
     if currentTestResult
         ; The last one didn't finish, e.g. it was pending. We need to make sure to run AfterEach()
         Fn_EndTestRun(markPassed = false)
     endIf
+
+    float endTime = Utility.GetCurrentRealTime()
+    JMap.setFlt(testSuiteResult, "endTime", endTime)
+    JMap.setFlt(testSuiteResult, "duration", endTime - startTime)
 
     SkyUnitData_SetCurrentExpectation(0)
     SkyUnitData_SetCurrentTestResult(0)
@@ -591,29 +607,18 @@ int function RunTestSuite(string testSuiteName, int parentTestRun = 0, bool forc
     ; Cache result (caches the full testRun for this for consistency)
     SkyUnitData_AddTestSuiteResultToMostRecentlyRunResults(testSuiteName, parentTestRun)
 
-    if shouldStopTestRun
-        ; TODO DRY
-        float now = Utility.GetCurrentRealTime()
-        float startTime = JMap.getFlt(parentTestRun, "startTime")
-        float duration = now - startTime
-        JMap.setFlt(parentTestRun, "endTime", now)
-        JMap.setFlt(parentTestRun, "duration", duration)
-        ;
-        SkyUnitData_SetCurrentlyRunningTestRun(0)
-    endIf
-
     ReleaseLock()
 
     return parentTestRun
 endFunction
 
-string function SpecialTestNames_BeforeAll() global
-    return "[SkyUnitTest.BeforeAll()]"
-endFunction
+; string function SpecialTestNames_BeforeAll() global
+;     return "[SkyUnitTest.BeforeAll()]"
+; endFunction
 
-string function SpecialTestNames_AfterAll() global
-    return "[SkyUnitTest.AfterAll()]"
-endFunction
+; string function SpecialTestNames_AfterAll() global
+;     return "[SkyUnitTest.AfterAll()]"
+; endFunction
 
 ; TODO - Before Each
 function Test_BeginTestRun(string testSuiteName, string testName, bool runBeforeEach = true) global
@@ -634,6 +639,7 @@ function Test_BeginTestRun(string testSuiteName, string testName, bool runBefore
     JMap.setStr(testResult, "testSuiteName", testSuiteName)
     JMap.setStr(testResult, "status", "PENDING")
     JMap.setObj(testResult, "expectations", JArray.object())
+    JMap.setFlt(testResult, "startTime", Utility.GetCurrentRealTime())
     JMap.setInt(testResult, "testSuiteResultId", currentlyRunningTestSuiteResult)
     SkyUnitData_SetCurrentTestResult(testResult)
     SkyUnitData_SetCurrentExpectation(0)
@@ -649,6 +655,12 @@ function Fn_EndTestRun(bool runAfterEach = true, bool markPassed = true) global
     endIf
 
     int testResult = SkyUnitData_GetCurrentTestResult()
+
+    float endTime = Utility.GetCurrentRealTime()
+    float startTime = JMap.getFlt(testResult, "startTime")
+    JMap.setFlt(testResult, "endTime", endTime)
+    JMap.setFlt(testResult, "duration", endTime - startTime)
+
     if markPassed
         if JMap.getStr(testResult, "status") != "FAILING"
             JMap.setStr(testResult, "status", "PASSING")
@@ -663,209 +675,41 @@ function Fn_EndTestRun(bool runAfterEach = true, bool markPassed = true) global
 endFunction
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; SkyUnit User Interface
+;; SkyUnit User Interface - SkyUnitUI
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ; Display the UI (if there are any tests available to run)
 function ShowUI() global
     string[] testSuiteNames = TestSuites()
     if testSuiteNames.Length > 0
-        UI_Show_MainMenu(testSuiteNames)
+        UI_Show_MainMenu()
     else
         Debug.MessageBox("No tests found")
     endIf
 endFunction
 
-; function ShowBrowseTestSuitesChooserUI(string[] testSuiteNames) global
-;     UIListMenu listMenu = uiextensions.GetMenu("UIListMenu") as UIListMenu
+; Main Menu for SkyUnit
+;
+; Shows all test suite names so you can quickly run a specific suite and see its results!
+function UI_Show_MainMenu() global
+    Info("[UI] Main Menu")
 
-;     int textOptionCount = 1
-;     listMenu.AddEntryItem("--- [View Test Suite] ---")
+    string[] testSuiteNames = TestSuites()
 
-;     int suiteIndex = 0
-;     while suiteIndex < testSuiteNames.Length
-;         listMenu.AddEntryItem(testSuiteNames[suiteIndex])
-;         suiteIndex += 1
-;     endWhile
-
-;     listMenu.OpenMenu()
-
-;     int selection = listMenu.GetResultInt()
-;     if selection > -1
-;         string testSuiteName = testSuiteNames[selection - textOptionCount]
-;         ShowTestSuiteTestsUI(testSuiteName)
-;     endIf
-; endFunction
-
-; function ShowTestSuiteTestsUI(string testSuiteName) global
-;     string[] testNames = TestNamesInSuite(testSuiteName)
-
-;     UIListMenu listMenu = uiextensions.GetMenu("UIListMenu") as UIListMenu
-
-;     int textOptionCount = 1
-;     listMenu.AddEntryItem("--- [" + testSuiteName + "] ---")
-
-;     int testIndex = 0
-;     while testIndex < testNames.Length
-;         listMenu.AddEntryItem(testNames[testIndex])
-;         testIndex += 1
-;     endWhile
-
-;     listMenu.OpenMenu()
-
-;     int selection = listMenu.GetResultInt()
-;     if selection > -1
-;         string testName = testNames[selection - textOptionCount]
-;         int tests = JMap.getObj(RunTestSuite(testSuiteName), "tests")
-;         int testResult = JMap.getObj(tests, testName)
-;         ShowSingleTestResult(testSuiteName, testName, testResult)
-;         WriteSkyUnitDebugJsonFile()
-;     endIf
-; endFunction
-
-; function ShowSingleTestResult(string testSuiteName, string testName, int testResult) global
-
-
-
-;     Info("Show Single Test Result " + testSuiteName + " " + testName + " (test result #" + JMap.getInt(testResult, "testSuiteResultId") + " > #" + testResult + ")")
-;     int failing = 0
-;     int passing = 0
-;     int pending = 0
-;     int skipped = 0
-
-;     int i = 0
-;     int expectationCount = SkyUnitExpectation.GetExpectationCount(testResult)
-;     while i < expectationCount
-;         int expectation = SkyUnitExpectation.GetNthExpectation(testResult, i)
-;         string status = SkyUnitExpectation.GetStatus(expectation)
-;         if status == "FAILING"
-;             failing += 0
-;         elseIf status == "PASSING"
-;             passing += 0
-;         elseIf status == "PENDING"
-;             pending += 0
-;         elseIf status == "SKIPPED"
-;             skipped += 0
-;         endIf
-;         i += 1
-;     endWhile
-
-;     string text = "[" + testSuiteName + "]\n\n" + testName + "\n"
-;     text += GetTestSummaryLine(failing, passing, pending, skipped) + "\n"
-
-;     i = 0
-;     while i < expectationCount
-;         int expectation = SkyUnitExpectation.GetNthExpectation(testResult, i)
-;         string status = SkyUnitExpectation.GetStatus(expectation)
-;         string expectationNumber = "#" + (i + 1)
-;         string description = SkyUnitExpectation.GetDescription(expectation)
-;         string failureMessage = SkyUnitExpectation.GetFailureMessage(expectation)
-;         if status == "FAILING"
-;             text += expectationNumber + " [" + status + "]\n" + description + "\n"
-;             if failureMessage
-;                 text += failureMessage + "\n"
-;             endIf
-;         endIf
-;         i += 1
-;     endWhile
-
-;     ; Debug.MessageBox(text)
-;     OkMessageBox(text)
-; endFunction
-
-; function RunTestSuiteAndDisplayResult(string testSuiteName) global
-;     int testSuiteResult = RunTestSuite(testSuiteName)
-;     string text = ""
-
-;     int tests = JMap.getObj(testSuiteResult, "tests")
-;     string[] testNames = JMap.allKeysPArray(tests)
-
-;     int failing = JArray.object()
-;     int passing = JArray.object()
-;     int pending = JArray.object()
-;     int skipped = JArray.object()
-
-;     int i = 0
-;     while i < testNames.Length
-;         string name = testNames[i]
-;         int test = JMap.getObj(tests, name)
-;         string status = JMap.getStr(test, "status")
-;         if status == "FAILING"
-;             JArray.addStr(failing, name)
-;         elseIf status == "PASSING"
-;             JArray.addStr(passing, name)
-;         elseIf status == "PENDING"
-;             JArray.addStr(pending, name)
-;         elseIf status == "SKIPPED"
-;             JArray.addStr(skipped, name)
-;         endIf
-;         i += 1
-;     endWhile
-
-;     text += "[" + testSuiteName + "]\n"
-;     text += JMap.getStr(testSuiteResult, "status") + "\n\n"
-;     text += GetTestSummaryLine(JArray.count(failing), JArray.count(passing), JArray.count(pending), JArray.count(skipped)) + "\n"
-    
-;     if JArray.count(failing) > 0
-;         text += "\nFailing:\n"
-;         i = 0
-;         while i < JArray.count(failing)
-;             text += JArray.getStr(failing, i) + "\n"
-;             i += 1
-;         endWhile
-;     endIf
-;     if JArray.count(passing) > 0
-;         text += "\nPassing:\n"
-;         i = 0
-;         while i < JArray.count(passing)
-;             text += JArray.getStr(passing, i) + "\n"
-;             i += 1
-;         endWhile
-;     endIf
-;     if JArray.count(pending) > 0
-;         text += "\nPending:\n"
-;         i = 0
-;         while i < JArray.count(pending)
-;             text += JArray.getStr(pending, i) + "\n"
-;             i += 1
-;         endWhile
-;     endIf
-;     if JArray.count(skipped) > 0
-;         text += "\nSkipped:\n"
-;         i = 0
-;         while i < JArray.count(skipped)
-;             text += JArray.getStr(skipped, i) + "\n"
-;             i += 1
-;         endWhile
-;     endIf
-
-;     ; Debug.MessageBox(text)
-;     OkMessageBox(text)
-
-;     WriteSkyUnitDebugJsonFile()
-; endFunction
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; UI
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-function UI_Show_MainMenu(string[] testSuiteNames) global
-    string option_RunAllTestSuites_text       = "Run All Test Suites"
-    int option_RunAllTestSuites_index         = 0
-    ;
-    string option_FilterTestSuites_text       = "Filter Test Suites"
-    int option_FilterTestSuites_index         = 1
-    ;
-    string option_BrowseTestSuites_text       = "Browse Test Suites"
-    int option_BrowseTestSuites_index         = 2
+    string option_RunAllTestSuites_text = "Run All Test Suites"
+    int option_RunAllTestSuites_index   = 0
+    string option_ViewTestSuites_text   = "View Test Suites"
+    int option_ViewTestSuites_index     = 1
+    string option_FilterTestSuites_text = "Filter Test Suites"
+    int option_FilterTestSuites_index   = 2
 
     UIListMenu listMenu = uiextensions.GetMenu("UIListMenu") as UIListMenu
 
     int textOptionCount = 5 ; Including an empty space and "Choose Test Suite to Run"
 
     listMenu.AddEntryItem(option_RunAllTestSuites_text)
+    listMenu.AddEntryItem(option_ViewTestSuites_text)
     listMenu.AddEntryItem(option_FilterTestSuites_text)
-    listMenu.AddEntryItem(option_BrowseTestSuites_text)
     listMenu.AddEntryItem(" ")
     listMenu.AddEntryItem("--- [Choose Test Suite to Run] ---")
 
@@ -875,27 +719,36 @@ function UI_Show_MainMenu(string[] testSuiteNames) global
         suiteIndex += 1
     endWhile
 
+    ; XXX.RegisterForKey(30) ; A - Run [A]ll ; <--- Use a Quest script to support keyboard shortcuts, e.g. F for filter, A for all, V for view
     listMenu.OpenMenu()
+    ; XXX.UnregisterForKey(30) ; A
 
     int selection = listMenu.GetResultInt()
     if selection > -1
         if selection == option_RunAllTestSuites_index
-            UI_Show_AllTestSuiteResults(RunAllTestSuites())
+            Debug.Notification("Running all tests...")
+            float startTime = Utility.GetCurrentRealTime()
+            int testRun = RunAllTestSuites(forceRerun = true)
+            float endTime = Utility.GetCurrentRealTime()
+            UI_Show_AllTestSuiteResults(testRun, endTime - startTime)
+        elseIf selection == option_ViewTestSuites_index
+            UI_Show_ViewAllTestSuites()
         elseIf selection == option_FilterTestSuites_index
-            ; ShowAllTestSuiteFilterAndRunAllTestResultsAndDisplayResult(testSuiteNames)
-        elseIf selection == option_BrowseTestSuites_index
-            ; ShowBrowseTestSuitesChooserUI(testSuiteNames)
-        elseIf selection == option_BrowseTestSuites_index
-            ; ShowBrowseTestSuitesChooserUI(testSuiteNames)
-        elseIf selection >= textOptionCount
-            ; RunTestSuiteAndDisplayResult(testSuiteNames[selection - textOptionCount])
+            UI_Show_ViewAllTestSuites(GetTextEntryResult())
+        else
+            string testSuiteName = testSuiteNames[selection - textOptionCount]
+            UI_Show_TestSuiteResult(RunTestSuite(testSuiteName), testSuiteName)
         endIf
     endIf
 endFunction
 
-function UI_Show_AllTestSuiteResults(int testRun) global
+; Display Results of Running All Test Results
+function UI_Show_AllTestSuiteResults(int testRun, float duration) global
+    Info("[UI] Run All Test Suites (test run #" + testRun + ")")
+
     int testSuites = JMap.getObj(testRun, "testSuites")
     string[] testSuiteNames = JMap.allKeysPArray(testSuites)
+
     int i = 0
     int testNamesByStatus = JMap.object()
     while i < testSuiteNames.Length
@@ -906,47 +759,293 @@ function UI_Show_AllTestSuiteResults(int testRun) global
         i += 1
     endWhile
 
-    ; 15 Lines
-    string text = "[All Test Suites]\n\n"
+    string text = ""
     text += UI_GetTestSummaryLineFromMap(testNamesByStatus) + "\n"
     text += UI_GetLinesShowingNamesForEachStatus(testNamesByStatus)
-    string[] durationParts = StringUtil.Split(JMap.getFlt(testRun, "duration"), ".")
+    string[] durationParts = StringUtil.Split(duration, ".")
     text += "\n\nDuration: " + durationParts[0] + "." + StringUtil.Substring(durationParts[1], 0, 2) + " seconds"
+    UI_Show_AllTestSuiteResults_Message(testRun, text)
+endFunction
 
+; Displays All Suites Test Results with various options
+function UI_Show_AllTestSuiteResults_Message(int testRun, string text) global
+    Info("[UI] All Test Results Message (test run #" + testRun + ")")
     SkyUnitPrivateAPI api = SkyUnitPrivateAPI.GetInstance()
     api.SkyUnitMessageTextFormBase.SetName(text)
-    api.SkyUnitAllTestSuitesMessage.Show()
 
-    JValue.writeToFile(SkyUnitData_TopLevelMap(), "AllTestResults.json")
-    Debug.Notification("Wrote AllTestResults.json")
+    int mainMenu = 0
+    int viewAllTestSuites = 1
+    int filterAllTestSuites = 2
+    int runAgain = 3
+    int saveResultsToFile = 4
+    int result = api.SkyUnitAllTestSuitesMessage.Show()
+    if result == mainMenu
+        UI_Show_MainMenu()
+    elseIf result == viewAllTestSuites
+        UI_Show_ViewAllTestSuites()
+    elseIf result == filterAllTestSuites
+        UI_Show_ViewAllTestSuites(GetTextEntryResult())
+    elseIf result == runAgain
+        float startTime = Utility.GetCurrentRealTime()
+        testRun = RunAllTestSuites(forceRerun = true)
+        float endTime = Utility.GetCurrentRealTime()
+        UI_Show_AllTestSuiteResults(testRun, endTime - startTime)
+    elseIf result == saveResultsToFile
+        string filename = GetTextEntryResult("AllTestResults.json")
+        if filename
+            SaveToFile(testRun, filename)
+            Debug.MessageBox("Wrote to " + filename)
+            UI_Show_AllTestSuiteResults_Message(testRun, text)
+        endIf
+    endIf
 endFunction
 
-function UI_Show_TestSuiteResult(int testSuiteResult) global
+; Choose a Test Suite to view (will automatically run it as well)
+function UI_Show_ViewAllTestSuites(string filter = "") global
+    Info("[UI] View Test Suite")
 
+    UIListMenu listMenu = uiextensions.GetMenu("UIListMenu") as UIListMenu
+
+    int textOptionCount = 1 ; Including an empty space and "Choose Test Suite"
+    listMenu.AddEntryItem("--- [Choose Test Suite] ---")
+
+    int matchingTestSuiteNames = JArray.object()
+    string[] testSuiteNames = SkyUnitPrivateAPI.TestSuites()
+    bool anyMatching = (filter == "")
+    int suiteIndex = 0
+    while suiteIndex < testSuiteNames.Length
+        string testSuiteName = testSuiteNames[suiteIndex]
+        if ! filter || StringUtil.Find(testSuiteName, filter) > -1
+            listMenu.AddEntryItem(testSuiteName)
+            JArray.addStr(matchingTestSuiteNames, testSuiteName)
+            anyMatching = true
+        endIf
+        suiteIndex += 1
+    endWhile
+
+    if ! anyMatching
+        Debug.MessageBox("No Test Suites found matching filter: " + filter)
+        UI_Show_MainMenu()
+        return
+    endIf
+
+    listMenu.OpenMenu()
+
+    int selection = listMenu.GetResultInt()
+    if selection > 0 ; 0 is the "Choose Test Suite" line
+        string testSuiteName = JArray.getStr(matchingTestSuiteNames, selection - 1)
+        UI_Show_TestSuiteResult(RunTestSuite(testSuiteName), testSuiteName)
+    endIf
 endFunction
 
-function UI_Show_TestResult(int testResult) global
+function UI_Show_TestSuiteResult(int testRun, string testSuiteName) global
+    Info("[UI] View Test Suite: " + testSuiteName)
 
+    int testSuites = JMap.getObj(testRun, "testSuites")
+    int testSuite = JMap.getObj(testSuites, testSuiteName)
+    string suiteStatus = JMap.getStr(testSuite, "status")
+
+    int tests = JMap.getObj(testSuite, "tests")
+    string[] testNames = JMap.allKeysPArray(tests)
+    int i = 0
+    int testNamesByStatus = JMap.object()
+    while i < testNames.Length
+        string testName = testNames[i]    
+        int test = JMap.getObj(tests, testName)
+        string testStatus = JMap.getStr(test, "status")
+        NamesByStatus_AddItem(testNamesByStatus, testName, testStatus)
+        i += 1
+    endWhile
+
+    string text = "[" + testSuiteName + "]\n" + suiteStatus + "\n"
+    text += UI_GetTestSummaryLineFromMap(testNamesByStatus) + "\n"
+    text += UI_GetLinesShowingNamesForEachStatus(testNamesByStatus, maxLines = 7)
+    string[] durationParts = StringUtil.Split(JMap.getFlt(testSuite, "duration"), ".")
+    text += "\n\nDuration: " + durationParts[0] + "." + StringUtil.Substring(durationParts[1], 0, 2) + " seconds"
+    UI_Show_TestSuiteResult_Message(testSuiteName, testRun, text)
 endFunction
 
-function UI_Show_Expectation(int expectationId) global
+function UI_Show_TestSuiteResult_Message(string testSuiteName, int testRun, string text) global
+    SkyUnitPrivateAPI api = SkyUnitPrivateAPI.GetInstance()
+    api.SkyUnitMessageTextFormBase.SetName(text)
 
+    int mainMenu = 0
+    int viewTests = 1
+    int filterTests = 2
+    int runAgain = 3
+    int saveResultsToFile = 4
+    int result = api.SkyUnitTestSuiteMessage.Show()
+    if result == mainMenu
+        UI_Show_MainMenu()
+    elseIf result == viewTests
+        UI_Show_ViewAllTests(testSuiteName, testRun)
+    elseIf result == filterTests
+
+    elseIf result == runAgain
+
+    elseIf result == saveResultsToFile
+        string filename = GetTextEntryResult(testSuiteName + "Results.json")
+        if filename
+            SaveToFile(testRun, filename)
+            Debug.MessageBox("Wrote to " + filename)
+            UI_Show_AllTestSuiteResults_Message(testRun, text)
+        endIf
+    endIf
 endFunction
 
-function UI_PrintToConsole_TestSuiteResult(int testSuiteResult) global
+int function UI_Show_ViewAllTests(string testSuiteName, int testRun) global ; TODO add Filter
+    Info("[UI] View All Tests in Test Suite: " + testSuiteName)
 
+    int testSuites = JMap.getObj(testRun, "testSuites")
+    int testSuite = JMap.getObj(testSuites, testSuiteName)
+    int tests = JMap.getObj(testSuite, "tests")
+
+    UIListMenu listMenu = uiextensions.GetMenu("UIListMenu") as UIListMenu
+
+    int textOptionCount = 1 ; Including an empty space and "Choose Test"
+    listMenu.AddEntryItem("--- [Choose Test] ---")
+
+    string[] testNames = JMap.allKeysPArray(tests)
+    int testIndex = 0
+    while testIndex < testNames.Length
+        string testName = testNames[testIndex]
+        int test = JMap.getObj(tests, testName)
+        string status = JMap.getStr(test, "status")
+        listMenu.AddEntryItem("[" + status + "] " + testName)
+        testIndex += 1
+    endWhile
+
+    listMenu.OpenMenu()
+
+    int selection = listMenu.GetResultInt()
+    if selection > 0 ; 0 is the "Choose Test Suite" line
+        string testName = testNames[selection - 1]
+        UI_Show_TestResult(RunTestSuite(testSuiteName, testRun), testSuiteName, testName)
+    endIf
 endFunction
 
-function UI_PrintToConsole_TestResult(int testSuiteResult) global
+function UI_Show_TestResult(int testRun, string testSuiteName, string testName) global
+    Info("[UI] View Test: " + testSuiteName + " > " + testName)
 
+    int testSuites = JMap.getObj(testRun, "testSuites")
+    int testSuite = JMap.getObj(testSuites, testSuiteName)
+    int tests = JMap.getObj(testSuite, "tests")
+    int test = JMap.getObj(tests, testName)
+    string testStatus = JMap.getStr(test, "status")
+
+    int maxLines = 9
+    int lineCount = 0
+    string expectationFailureText = ""
+    int expectations = JMap.getObj(test, "expectations")
+    int expectationCount = JArray.count(expectations)
+    int expectationsByStatus = JMap.object()
+    int i = 0
+    while i < expectationCount && lineCount < maxLines
+        int expectation = JArray.getObj(expectations, i)
+        string expectationStatus = JMap.getStr(expectation, "status")
+        string expectationDescription = SkyUnitExpectation.GetDescription(expectation)
+        if expectationStatus != "PASSING"
+            lineCount += 1
+            expectationFailureText += "[" + expectationStatus + "] #" + (i + 1) + " " + expectationDescription + "\n"
+            string failureMessage = JMap.getStr(expectation, "failureMessage")
+            if failureMessage && lineCount < maxLines
+                expectationFailureText += failureMessage + "\n"
+                lineCount += 1
+            endIf
+        endIf
+        JMap.setObj(expectationsByStatus, expectationStatus, expectation)
+        NamesByStatus_AddItem(expectationsByStatus, expectationDescription, expectationStatus)
+        i += 1
+    endWhile
+    if lineCount >= maxLines
+        expectationFailureText += "..."
+    endIf
+
+    string text = "[" + testName + "]\n" + testStatus + "\n"
+    text += UI_GetTestSummaryLineFromMap(expectationsByStatus) + "\n"
+    text += expectationFailureText
+    string[] durationParts = StringUtil.Split(JMap.getFlt(test, "duration"), ".")
+    text += "\n\nDuration: " + durationParts[0] + "." + StringUtil.Substring(durationParts[1], 0, 2) + " seconds"
+    UI_Show_TestResult_Message(testSuiteName, testName, testRun, test, text)
 endFunction
 
-function UI_PrintToConsole_Expectation(int testSuiteResult) global
+function UI_Show_TestResult_Message(string testSuiteName, string testName, int testRun, int test, string text) global
+    SkyUnitPrivateAPI api = SkyUnitPrivateAPI.GetInstance()
+    api.SkyUnitMessageTextFormBase.SetName(text)
 
+    int mainMenu = 0
+    int viewTestSuite = 1
+    int viewExpectations = 2
+    int filterExpectations = 3
+    int runAgain = 4
+    int saveResultsToFile = 5
+    int result = api.SkyUnitTestMessage.Show()
+    if result == mainMenu
+        UI_Show_MainMenu()
+    elseIf result == viewTestSuite
+        UI_Show_TestSuiteResult(testRun, testSuiteName)
+    elseIf result == viewExpectations
+        UI_Show_TestExpectations(testRun, testSuiteName, testName)
+    elseIf result == filterExpectations
+        UI_Show_TestExpectations(testRun, testSuiteName, testName, filter = GetTextEntryResult())
+    elseIf result == runAgain
+        RunTestSuite(testSuiteName, testRun, forceRerun = true)        
+        UI_Show_TestResult(testRun, testSuiteName, testName)
+    elseIf result == saveResultsToFile
+        string filename = GetTextEntryResult(testSuiteName + "_" + testName + "Results.json")
+        if filename
+            SaveToFile(testRun, filename)
+            Debug.MessageBox("Wrote to " + filename)
+            UI_Show_TestResult_Message(testSuiteName, testName, testRun, test, text)
+        endIf
+    endIf
 endFunction
 
-string function GetTextEntryResult() global
+function UI_Show_TestExpectations(int testRun, string testSuiteName, string testName, string filter = "") global
+    Info("[UI] Show Test Expectations " + testSuiteName + " > " + testName)
+    int testSuites = JMap.getObj(testRun, "testSuites")
+    int testSuite = JMap.getObj(testSuites, testSuiteName)
+    int tests = JMap.getObj(testSuite, "tests")
+    int test = JMap.getObj(tests, testName)
+    int expectations = JMap.getObj(test, "expectations")
+    int expectationCount = JArray.count(expectations)
+
+    UIListMenu listMenu = uiextensions.GetMenu("UIListMenu") as UIListMenu
+
+    int textOptionCount = 1 ; Including an empty space and "Choose Test Suite"
+    listMenu.AddEntryItem("--- [Choose Expectation] ---")
+
+    int i = 0
+    while i < expectationCount
+        int expectationNumber = i + 1
+        int expectation = JArray.getObj(expectations, i)
+        string description = SkyUnitExpectation.GetDescription(expectation)
+        string status = JMap.getStr(expectation, "status")
+        listMenu.AddEntryItem("#" + expectationNumber + " [" + status + "] " + description)
+        i += 1
+    endWhile
+
+    listMenu.OpenMenu()
+
+    int selection = listMenu.GetResultInt()
+    if selection > -1
+        int selectedExpectation = JArray.getObj(expectations, selection - 1)
+        UI_Show_Expectation(selectedExpectation)
+    endIf
+endFunction
+
+function UI_Show_Expectation(int expectation) global
+    string text = SkyUnitExpectation.GetDescription(expectation) + "\n" + JMap.getStr(expectation, "status") + "\n\n"
+
+    Debug.MessageBox(text) ; TODO
+
+    ; SkyUnitPrivateAPI api = SkyUnitPrivateAPI.GetInstance()
+    ; api.SkyUnitMessageTextFormBase.SetName("...")
+endFunction
+
+string function GetTextEntryResult(string defaultText = "") global
     UITextEntryMenu menu = UIExtensions.GetMenu("UITextEntryMenu") as UITextEntryMenu
+    menu.SetPropertyString("text", defaultText)
     menu.OpenMenu()
     return menu.GetResultString()
 endFunction
@@ -1001,9 +1100,8 @@ string function UI_GetTestSummaryLine(int failing, int passing, int pending, str
     return text
 endFunction
 
-string function UI_GetLinesShowingNamesForEachStatus(int map) global
+string function UI_GetLinesShowingNamesForEachStatus(int map, int maxLines = 9) global
     int totalLines = 0
-    int maxLines = 7
     int failing = JMap.getObj(map, "FAILING")
     int passing = JMap.getObj(map, "PASSING")
     int pending = JMap.getObj(map, "PENDING")
@@ -1011,15 +1109,15 @@ string function UI_GetLinesShowingNamesForEachStatus(int map) global
     int count
     string text = ""
     if failing
-        text += "\n[FAILING]\n"
-        totalLines += 2
+        text += "\n"
+        totalLines += 1
         if totalLines >= maxLines
             return text + "..."
         endIf
         i = 0
         count = JArray.count(failing)
         while i < count
-            text += JArray.getStr(failing, i) + "\n"
+            text += "[FAIL] " + JArray.getStr(failing, i) + "\n"
             totalLines += 1
             if totalLines >= maxLines
                 return text + "..."
@@ -1028,15 +1126,15 @@ string function UI_GetLinesShowingNamesForEachStatus(int map) global
         endWhile
     endIf
     if passing
-        text += "\n[PASSING]\n"
-        totalLines += 2
+        text += "\n"
+        totalLines += 1
         if totalLines >= maxLines
             return text + "..."
         endIf
         i = 0
         count = JArray.count(passing)
         while i < count
-            text += JArray.getStr(passing, i) + "\n"
+            text += "[PASS] " + JArray.getStr(passing, i) + "\n"
             totalLines += 1
             if totalLines >= maxLines
                 return text + "..."
@@ -1045,15 +1143,15 @@ string function UI_GetLinesShowingNamesForEachStatus(int map) global
         endWhile
     endIf
     if pending
-        text += "\n[PENDING]\n"
-        totalLines += 2
+        text += "\n"
+        totalLines += 1
         if totalLines >= maxLines
             return text + "..."
         endIf
         i = 0
         count = JArray.count(pending)
         while i < count
-            text += JArray.getStr(pending, i) + "\n"
+            text += "[PENDING] " + JArray.getStr(pending, i) + "\n"
             totalLines += 1
             if totalLines >= maxLines
                 return text + "..."
@@ -1064,20 +1162,9 @@ string function UI_GetLinesShowingNamesForEachStatus(int map) global
     return text
 endFunction
 
-string function JArray_StrJoin(int array, string separator = " ") global
-    string text = ""
-    if array
-        int count = JArray.count(array)
-        if count
-            int i = 0
-            while i < count
-                text += JArray.getStr(array, i)
-                if i != count - 1 ; Don't add separator after last item
-                    text += separator
-                endIf
-                i += 1
-            endWhile
-        endIf
+function SaveToFile(int object, string fileName) global
+    if fileName
+        MiscUtil.WriteToFile(fileName, "", append = false) ; empty the file in case we're writing an empty object
+        JValue.writeToFile(object, fileName)
     endIf
-    return text
 endFunction

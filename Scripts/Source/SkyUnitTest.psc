@@ -371,7 +371,6 @@ bool function EqualString(string expected)
             SkyUnitExpectation.ActualDescription() + " to equal " + \
             SkyUnitExpectation.ExpectedDescription())
     endIf
-    SkyUnitPrivateAPI.Info("YES IT EQUALS!")
     return SkyUnitExpectation.Pass("EqualString")
 endFunction
 
