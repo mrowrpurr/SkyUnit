@@ -79,7 +79,8 @@ function SetupFakeTest(string testName = "")
     string currentContext = SkyUnitPrivateAPI.CurrentContext()
     SwitchToContext_Fake()
     if ! _currentTestScriptName
-        CreateTestSuite("FakeTestScriptName")
+        ; CreateTestSuite("FakeTestScriptName") ; TODO get rid of being able to pass no script!
+        CreateTestSuiteForScript(SkyUnitTestExamples.GetExampleTest1())
     endIf
     if ! testName
         testName = "FakeTest_" + Utility.RandomInt(1, 10000) + "_" + Utility.RandomInt(1, 10000)

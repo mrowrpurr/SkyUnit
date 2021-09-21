@@ -16,9 +16,9 @@ endEvent
 
 ; Runs all tests in this test suite and returns an identifier for a test result
 ; which can be used to get the information about each test run and their expectations.
-int function Run()
-    return SkyUnitPrivateAPI.RunTestSuite(SkyUnitPrivateAPI.ScriptDisplayName(self))
-endFunction
+; int function Run()
+;     return SkyUnitPrivateAPI.RunTestSuite(SkyUnitPrivateAPI.ScriptDisplayName(self))
+; endFunction
 
 ; Returns a list of all of the defined test names in this test suite script.
 ;
@@ -102,7 +102,8 @@ SkyUnitTest function Not()
 endFunction
 
 ; Provide an assertion, e.g. `ExpectString("").To(EqualString(""))`
-function To(bool assertionFunction)
+bool function To(bool assertionFunction)
+    return assertionFunction
 endFunction
 
 function BeforeAll()
@@ -359,6 +360,7 @@ bool function EqualString(string expected)
     else
         actual = SkyUnitExpectation.GetActualText()
     endIf
+    SkyUnitPrivateAPI.Info("EqualString does actual " + actual + " equal expected " + expected)
     bool not = SkyUnitExpectation.Not()
     if not && actual == expected
         return SkyUnitExpectation.Fail("EqualString", "Expected " + \
@@ -369,6 +371,7 @@ bool function EqualString(string expected)
             SkyUnitExpectation.ActualDescription() + " to equal " + \
             SkyUnitExpectation.ExpectedDescription())
     endIf
+    SkyUnitPrivateAPI.Info("YES IT EQUALS!")
     return SkyUnitExpectation.Pass("EqualString")
 endFunction
 
