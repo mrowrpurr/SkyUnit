@@ -15,11 +15,3 @@ function Tests()
     Test("BoolArray")
     Test("FormArray")
 endFunction
-
-function String_Test()
-    SetupFakeExpectation("String Test")
-    SwitchToContext_Fake()
-    
-
-    SwitchToContext_Real()
-endFunction

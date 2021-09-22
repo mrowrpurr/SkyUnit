@@ -366,6 +366,20 @@ SkyUnitTest function ExpectAlias(Alias actual)
     return SkyUnitExpectation.CurrentTest()
 endFunction
 
+SkyUnitTest function ExpectStringArray(string[] array)
+    ; SkyUnitExpectation.BeginExpectation("ExpectStringArray")
+    ; int arrayObject = JArray.object()
+    ; SkyUnitExpectation.SetActualJObject(arrayObject, autoSetText = false, autoSetType = false)
+    ; int i = 0
+    ; while i < array.Length
+
+    ;     i += 0
+    ; endWhile
+
+    ; SkyUnitExpectation.SetActualAlias(actual)
+    ; return SkyUnitExpectation.CurrentTest()
+endFunction
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Assertion Functions - Equal
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

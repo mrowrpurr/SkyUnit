@@ -43,3 +43,52 @@ function Tests()
     Test("EqualFormArray4")
     Test("EqualFormArray5")
 endFunction
+
+function ExpectStringArray_Test()
+    SetupFakeTest()
+
+    string[] myArray = new string[2]
+    myArray[0] = "Hello"
+    myArray[1] = "World"
+
+    SwitchToContext_Fake()
+    bool result = ExpectStringArray(myArray)
+    int expectation = SkyUnitExpectation.LatestExpectationID()
+
+    SwitchToContext_Real()
+    ; ...
+endFunction
+
+function EqualStringArray_Test()
+    SetupFakeTest()
+
+    ; Failing Case
+    SwitchToContext_Fake()
+    bool result = Assert(1 == 2, "Expected something to equal something else")
+    int expectation = SkyUnitExpectation.LatestExpectationID()
+
+    SwitchToContext_Real()
+
+    ; Passing Case
+
+    ; Not() Failing Case
+
+    ; Not() Passing Case
+endFunction
+
+function EqualStringArray1_Test()
+    SetupFakeTest()
+
+    ; Failing Case
+    SwitchToContext_Fake()
+    bool result = Assert(1 == 2, "Expected something to equal something else")
+    int expectation = SkyUnitExpectation.LatestExpectationID()
+
+    SwitchToContext_Real()
+
+    ; Passing Case
+
+    ; Not() Failing Case
+
+    ; Not() Passing Case
+endFunction

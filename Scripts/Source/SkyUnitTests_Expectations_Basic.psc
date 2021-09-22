@@ -3,7 +3,6 @@ scriptName SkyUnitTests_Expectations_Basic extends SkyUnitAssertionTestBase
 Ensures that each of these functions stores the provided argument(s) as expected.}
 
 function Tests()
-
     ; Test the core, basics expectation/assertion types - Using Assert() and Refute()
     Test("Expect").Fn(Expect_Test())
     Test("ExpectString").Fn(ExpectString_Test())
@@ -18,19 +17,6 @@ function Tests()
     Test("Refute").Fn(Refute_Test())
 
     Test("Custom Failure Messages") ; TODO
-
-    ; ---> Assertions_Array
-    ; Test("ExpectIntArray")
-    ; Test("ExpectFloatArray")
-    ; Test("ExpectBoolArray")
-    ; Test("ExpectStringArray")
-    ; Test("ExpectFormArray")
-
-    ; ---> Expectations_Additional or _Misc
-    ; Test("ExpectPlayer")
-    ; Test("ExpectActor")
-    ; Test("ExpectSpell")
-    ; Test("ExpectObject")
 endFunction
 
 function Assert_Test()

@@ -481,7 +481,7 @@ function SetExpectedInt(int value, bool autoSetText = true, bool autoSetType = t
 endFunction
 
 ; Gets the "actual value" (as provided to an `Expect*()` function) [JObject version]
-; JObjectended to be called by an assertion function to easily get text of what type was provided.
+; Intended to be called by an assertion function to easily get text of what type was provided.
 ; Note: there can only be 1 "actual value", e.g. either a JObject or an JObject (or JContainer data object) etc
 int function GetActualJObject(int expectationId = 0) global
     if ! expectationId
@@ -493,7 +493,7 @@ int function GetActualJObject(int expectationId = 0) global
 endFunction
 
 ; Sets the "actual value" (as provided to an `Expect*()` function) [JObject version]
-; JObjectended to be called by an assertion function to get the data which is being asserted on.
+; Intended to be called by an assertion function to get the data which is being asserted on.
 ; Note: there can only be 1 "actual value", e.g. either a JObject or an JObject (or JContainer data object) etc
 function SetActualJObject(int value, bool autoSetText = true, bool autoSetType = true, int expectationId = 0) global
     if ! expectationId
@@ -538,7 +538,7 @@ function SetExpectedJObject(int value, bool autoSetText = true, bool autoSetType
 endFunction
 
 ; Gets the "actual value" (as provided to an `Expect*()` function) [Bool version]
-; Boolended to be called by an assertion function to easily get text of what type was provided.
+; Intended to be called by an assertion function to easily get text of what type was provided.
 ; Note: there can only be 1 "actual value", e.g. either a Bool or an Bool (or JContainer data object) etc
 bool function GetActualBool(int expectationId = 0) global
     if ! expectationId
@@ -550,7 +550,7 @@ bool function GetActualBool(int expectationId = 0) global
 endFunction
 
 ; Sets the "actual value" (as provided to an `Expect*()` function) [Bool version]
-; Boolended to be called by an assertion function to get the data which is being asserted on.
+; Intended to be called by an assertion function to get the data which is being asserted on.
 ; Note: there can only be 1 "actual value", e.g. either a Bool or an Bool (or JContainer data object) etc
 function SetActualBool(bool value, bool autoSetText = true, bool autoSetType = true, int expectationId = 0) global
     if ! expectationId
@@ -609,7 +609,7 @@ function SetExpectedBool(bool value, bool autoSetText = true, bool autoSetType =
 endFunction
 
 ; Gets the "actual value" (as provided to an `Expect*()` function) [Float version]
-; Floatended to be called by an assertion function to easily get text of what type was provided.
+; Intended to be called by an assertion function to easily get text of what type was provided.
 ; Note: there can only be 1 "actual value", e.g. either a Float or an Float (or JContainer data object) etc
 float function GetActualFloat(int expectationId = 0) global
     if ! expectationId
@@ -621,7 +621,7 @@ float function GetActualFloat(int expectationId = 0) global
 endFunction
 
 ; Sets the "actual value" (as provided to an `Expect*()` function) [Float version]
-; Floatended to be called by an assertion function to get the data which is being asserted on.
+; Intended to be called by an assertion function to get the data which is being asserted on.
 ; Note: there can only be 1 "actual value", e.g. either a Float or an Float (or JContainer data object) etc
 function SetActualFloat(float value, bool autoSetText = true, bool autoSetType = true, int expectationId = 0) global
     if ! expectationId
@@ -666,7 +666,7 @@ function SetExpectedFloat(float value, bool autoSetText = true, bool autoSetType
 endFunction
 
 ; Gets the "actual value" (as provided to an `Expect*()` function) [Form version]
-; Formended to be called by an assertion function to easily get text of what type was provided.
+; Intended to be called by an assertion function to easily get text of what type was provided.
 ; Note: there can only be 1 "actual value", e.g. either a Form or an Form (or JContainer data object) etc
 Form function GetActualForm(int expectationId = 0) global
     if ! expectationId
@@ -678,7 +678,7 @@ Form function GetActualForm(int expectationId = 0) global
 endFunction
 
 ; Gets the "type" of the "actual value" Form, e.g. Actor -vs- Spell -vs- Weapon etc
-; Formended to be called by an assertion function to easily get text of what type was provided.
+; Intended to be called by an assertion function to easily get text of what type was provided.
 ; Note: there can only be 1 "actual value", e.g. either a Form or an Form (or JContainer data object) etc
 string function GetActualFormType(int expectationId = 0) global
     if ! expectationId
@@ -690,7 +690,7 @@ string function GetActualFormType(int expectationId = 0) global
 endFunction
 
 ; Sets the "actual value" (as provided to an `Expect*()` function) [Form version]
-; Formended to be called by an assertion function to get the data which is being asserted on.
+; Intended to be called by an assertion function to get the data which is being asserted on.
 ; Note: there can only be 1 "actual value", e.g. either a Form or an Form (or JContainer data object) etc
 function SetActualForm(Form value, string type, bool autoSetText = true, bool autoSetType = true, int expectationId = 0) global
     if ! expectationId
@@ -752,7 +752,7 @@ endFunction
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ; Gets the "actual value" (as provided to an `Expect*()` function) [Alias version]
-; Aliasended to be called by an assertion function to easily get text of what type was provided.
+; Intended to be called by an assertion function to easily get text of what type was provided.
 ; Note: there can only be 1 "actual value", e.g. either a Alias or an Alias (or JContainer data object) etc
 ;
 ; **[Alias] Special Note:** only one Alias can be set at a time.
@@ -765,7 +765,7 @@ Alias function GetActualAlias(int expectationId = 0) global
 endFunction
 
 ; Sets the "actual value" (as provided to an `Expect*()` function) [Alias version]
-; Aliasended to be called by an assertion function to get the data which is being asserted on.
+; Intended to be called by an assertion function to get the data which is being asserted on.
 ; Note: there can only be 1 "actual value", e.g. either a Alias or an Alias (or JContainer data object) etc
 ;
 ; **[Alias] Special Note:** only one Alias can be set at a time.
@@ -789,7 +789,7 @@ function SetActualAlias(Alias value, bool autoSetText = true, bool autoSetType =
 endFunction
 
 ; Gets the "actual value" (as provided to an `Expect*()` function) [ActiveMagicEffect version]
-; ActiveMagicEffectended to be called by an assertion function to easily get text of what type was provided.
+; Intended to be called by an assertion function to easily get text of what type was provided.
 ; Note: there can only be 1 "actual value", e.g. either a ActiveMagicEffect or an ActiveMagicEffect (or JContainer data object) etc
 ;
 ; **[ActiveMagicEffect] Special Note:** only one ActiveMagicEffect can be set at a time.
@@ -802,7 +802,7 @@ ActiveMagicEffect function GetActualActiveMagicEffect(int expectationId = 0) glo
 endFunction
 
 ; Sets the "actual value" (as provided to an `Expect*()` function) [ActiveMagicEffect version]
-; ActiveMagicEffectended to be called by an assertion function to get the data which is being asserted on.
+; Intended to be called by an assertion function to get the data which is being asserted on.
 ; Note: there can only be 1 "actual value", e.g. either a ActiveMagicEffect or an ActiveMagicEffect (or JContainer data object) etc
 ;
 ; **[ActiveMagicEffect] Special Note:** only one ActiveMagicEffect can be set at a time.
@@ -829,4 +829,495 @@ endFunction
 ;; Storing Actual/Expected Array Values
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-; TODO ;
+; String
+
+; Gets the "actual value" (as provided to an `Expect*()` function) [Bool version]
+; Intended to be called by an assertion function to easily get text of what type was provided.
+; Note: there can only be 1 "actual value", e.g. either a Bool or an Bool (or JContainer data object) etc
+string[] function GetActualStringArray(int expectationId = 0) global
+    if ! expectationId
+        expectationId = SkyUnitPrivateAPI.SkyUnitData_GetCurrentExpectation()
+    endIf
+    if expectationId
+        int arrayObject = JMap.getObj(JMap.getObj(expectationId, "actual"), "data")
+        string[] value
+        int count = JArray.count(arrayObject)
+        if count
+            value = Utility.CreateStringArray(count)
+            int i = 0
+            while i < count
+                value[i] = JArray.getStr(arrayObject, i)
+                i += 1
+            endWhile
+        endIf
+        return value
+    endIf
+endFunction
+
+; Sets the "actual value" (as provided to an `Expect*()` function) [StringArray version]
+; Intended to be called by an assertion function to get the data which is being asserted on.
+; Note: there can only be 1 "actual value", e.g. either a StringArray or an StringArray (or JContainer data object) etc
+function SetActualStringArray(string[] value, bool autoSetText = true, bool autoSetType = true, int expectationId = 0) global
+    if ! expectationId
+        expectationId = SkyUnitPrivateAPI.SkyUnitData_GetCurrentExpectation()
+    endIf
+    if expectationId
+        if autoSetText
+            SetActualText(value)
+        endIf
+        if autoSetType
+            SetActualType("StringArray", expectationId)
+        endIf
+        int arrayObject = JArray.object()
+        JMap.setObj(JMap.getObj(expectationId, "actual"), "data", arrayObject)
+        if value
+            int i = 0
+            while i < value.Length
+                JArray.addStr(arrayObject, value[i])
+                i += 1
+            endWhile
+        endIf
+    endIf
+endFunction
+
+; Gets the "expected value" [StringArray version]
+; Note: there can only be 1 "expected value", e.g. either a StringArray or an StringArray (or JContainer data object) etc
+string[] function GetExpectedStringArray(int expectationId = 0) global
+    if ! expectationId
+        expectationId = SkyUnitPrivateAPI.SkyUnitData_GetCurrentExpectation()
+    endIf
+    if expectationId
+        int arrayObject = JMap.getObj(JMap.getObj(expectationId, "expected"), "data")
+        string[] value
+        int count = JArray.count(arrayObject)
+        if count
+            value = Utility.CreateStringArray(count)
+            int i = 0
+            while i < count
+                value[i] = JArray.getStr(arrayObject, i)
+                i += 1
+            endWhile
+        endIf
+        return value
+    endIf
+endFunction
+
+; Sets the "expected value" [StringArray version]
+function SetExpectedStringArray(string[] value, bool autoSetText = true, bool autoSetType = true, int expectationId = 0) global
+    if ! expectationId
+        expectationId = SkyUnitPrivateAPI.SkyUnitData_GetCurrentExpectation()
+    endIf
+    if expectationId
+        if autoSetText
+            SetExpectedText(value)
+        endIf
+        if autoSetType
+            SetExpectedType("StringArray", expectationId)
+        endIf
+        int arrayObject = JArray.object()
+        JMap.setObj(JMap.getObj(expectationId, "expected"), "data", arrayObject)
+        if value
+            int i = 0
+            while i < value.Length
+                JArray.addStr(arrayObject, value[i])
+                i += 1
+            endWhile
+        endIf
+    endIf
+endFunction
+
+; Int
+
+; Gets the "actual value" (as provided to an `Expect*()` function) [Bool version]
+; Intended to be called by an assertion function to easily get text of what type was provided.
+; Note: there can only be 1 "actual value", e.g. either a Bool or an Bool (or JContainer data object) etc
+int[] function GetActualIntArray(int expectationId = 0) global
+    if ! expectationId
+        expectationId = SkyUnitPrivateAPI.SkyUnitData_GetCurrentExpectation()
+    endIf
+    if expectationId
+        int arrayObject = JMap.getObj(JMap.getObj(expectationId, "actual"), "data")
+        int[] value
+        int count = JArray.count(arrayObject)
+        if count
+            value = Utility.CreateIntArray(count)
+            int i = 0
+            while i < count
+                value[i] = JArray.getInt(arrayObject, i)
+                i += 1
+            endWhile
+        endIf
+        return value
+    endIf
+endFunction
+
+; Sets the "actual value" (as provided to an `Expect*()` function) [IntArray version]
+; Intended to be called by an assertion function to get the data which is being asserted on.
+; Note: there can only be 1 "actual value", e.g. either a IntArray or an IntArray (or JContainer data object) etc
+function SetActualIntArray(int[] value, bool autoSetText = true, bool autoSetType = true, int expectationId = 0) global
+    if ! expectationId
+        expectationId = SkyUnitPrivateAPI.SkyUnitData_GetCurrentExpectation()
+    endIf
+    if expectationId
+        if autoSetText
+            SetActualText(value)
+        endIf
+        if autoSetType
+            SetActualType("IntArray", expectationId)
+        endIf
+        int arrayObject = JArray.object()
+        JMap.setObj(JMap.getObj(expectationId, "actual"), "data", arrayObject)
+        if value
+            int i = 0
+            while i < value.Length
+                JArray.addInt(arrayObject, value[i])
+                i += 1
+            endWhile
+        endIf
+    endIf
+endFunction
+
+; Gets the "expected value" [IntArray version]
+; Note: there can only be 1 "expected value", e.g. either a IntArray or an IntArray (or JContainer data object) etc
+int[] function GetExpectedIntArray(int expectationId = 0) global
+    if ! expectationId
+        expectationId = SkyUnitPrivateAPI.SkyUnitData_GetCurrentExpectation()
+    endIf
+    if expectationId
+        int arrayObject = JMap.getObj(JMap.getObj(expectationId, "expected"), "data")
+        int[] value
+        int count = JArray.count(arrayObject)
+        if count
+            value = Utility.CreateIntArray(count)
+            int i = 0
+            while i < count
+                value[i] = JArray.getInt(arrayObject, i)
+                i += 1
+            endWhile
+        endIf
+        return value
+    endIf
+endFunction
+
+; Sets the "expected value" [IntArray version]
+function SetExpectedIntArray(int[] value, bool autoSetText = true, bool autoSetType = true, int expectationId = 0) global
+    if ! expectationId
+        expectationId = SkyUnitPrivateAPI.SkyUnitData_GetCurrentExpectation()
+    endIf
+    if expectationId
+        if autoSetText
+            SetExpectedText(value)
+        endIf
+        if autoSetType
+            SetExpectedType("IntArray", expectationId)
+        endIf
+        int arrayObject = JArray.object()
+        JMap.setObj(JMap.getObj(expectationId, "expected"), "data", arrayObject)
+        if value
+            int i = 0
+            while i < value.Length
+                JArray.addInt(arrayObject, value[i])
+                i += 1
+            endWhile
+        endIf
+    endIf
+endFunction
+
+; Float
+
+; Gets the "actual value" (as provided to an `Expect*()` function) [Bool version]
+; Intended to be called by an assertion function to easily get text of what type was provided.
+; Note: there can only be 1 "actual value", e.g. either a Bool or an Bool (or JContainer data object) etc
+float[] function GetActualFloatArray(int expectationId = 0) global
+    if ! expectationId
+        expectationId = SkyUnitPrivateAPI.SkyUnitData_GetCurrentExpectation()
+    endIf
+    if expectationId
+        int arrayObject = JMap.getObj(JMap.getObj(expectationId, "actual"), "data")
+        float[] value
+        int count = JArray.count(arrayObject)
+        if count
+            value = Utility.CreateFloatArray(count)
+            int i = 0
+            while i < count
+                value[i] = JArray.getFlt(arrayObject, i)
+                i += 1
+            endWhile
+        endIf
+        return value
+    endIf
+endFunction
+
+; Sets the "actual value" (as provided to an `Expect*()` function) [FloatArray version]
+; Intended to be called by an assertion function to get the data which is being asserted on.
+; Note: there can only be 1 "actual value", e.g. either a FloatArray or an FloatArray (or JContainer data object) etc
+function SetActualFloatArray(float[] value, bool autoSetText = true, bool autoSetType = true, int expectationId = 0) global
+    if ! expectationId
+        expectationId = SkyUnitPrivateAPI.SkyUnitData_GetCurrentExpectation()
+    endIf
+    if expectationId
+        if autoSetText
+            SetActualText(value)
+        endIf
+        if autoSetType
+            SetActualType("FloatArray", expectationId)
+        endIf
+        int arrayObject = JArray.object()
+        JMap.setObj(JMap.getObj(expectationId, "actual"), "data", arrayObject)
+        if value
+            int i = 0
+            while i < value.Length
+                JArray.addFlt(arrayObject, value[i])
+                i += 1
+            endWhile
+        endIf
+    endIf
+endFunction
+
+; Gets the "expected value" [FloatArray version]
+; Note: there can only be 1 "expected value", e.g. either a FloatArray or an FloatArray (or JContainer data object) etc
+float[] function GetExpectedFloatArray(int expectationId = 0) global
+    if ! expectationId
+        expectationId = SkyUnitPrivateAPI.SkyUnitData_GetCurrentExpectation()
+    endIf
+    if expectationId
+        int arrayObject = JMap.getObj(JMap.getObj(expectationId, "expected"), "data")
+        float[] value
+        int count = JArray.count(arrayObject)
+        if count
+            value = Utility.CreateFloatArray(count)
+            int i = 0
+            while i < count
+                value[i] = JArray.getFlt(arrayObject, i)
+                i += 1
+            endWhile
+        endIf
+        return value
+    endIf
+endFunction
+
+; Sets the "expected value" [FloatArray version]
+function SetExpectedFloatArray(float[] value, bool autoSetText = true, bool autoSetType = true, int expectationId = 0) global
+    if ! expectationId
+        expectationId = SkyUnitPrivateAPI.SkyUnitData_GetCurrentExpectation()
+    endIf
+    if expectationId
+        if autoSetText
+            SetExpectedText(value)
+        endIf
+        if autoSetType
+            SetExpectedType("FloatArray", expectationId)
+        endIf
+        int arrayObject = JArray.object()
+        JMap.setObj(JMap.getObj(expectationId, "expected"), "data", arrayObject)
+        if value
+            int i = 0
+            while i < value.Length
+                JArray.addFlt(arrayObject, value[i])
+                i += 1
+            endWhile
+        endIf
+    endIf
+endFunction
+
+; Form
+
+; Gets the "actual value" (as provided to an `Expect*()` function) [Bool version]
+; Intended to be called by an assertion function to easily get text of what type was provided.
+; Note: there can only be 1 "actual value", e.g. either a Bool or an Bool (or JContainer data object) etc
+Form[] function GetActualFormArray(int expectationId = 0) global
+    if ! expectationId
+        expectationId = SkyUnitPrivateAPI.SkyUnitData_GetCurrentExpectation()
+    endIf
+    if expectationId
+        int arrayObject = JMap.getObj(JMap.getObj(expectationId, "actual"), "data")
+        Form[] value
+        int count = JArray.count(arrayObject)
+        if count
+            value = Utility.CreateFormArray(count)
+            int i = 0
+            while i < count
+                value[i] = JArray.getForm(arrayObject, i)
+                i += 1
+            endWhile
+        endIf
+        return value
+    endIf
+endFunction
+
+; Sets the "actual value" (as provided to an `Expect*()` function) [FormArray version]
+; Intended to be called by an assertion function to get the data which is being asserted on.
+; Note: there can only be 1 "actual value", e.g. either a FormArray or an FormArray (or JContainer data object) etc
+function SetActualFormArray(Form[] value, bool autoSetText = true, bool autoSetType = true, int expectationId = 0) global
+    if ! expectationId
+        expectationId = SkyUnitPrivateAPI.SkyUnitData_GetCurrentExpectation()
+    endIf
+    if expectationId
+        if autoSetText
+            SetActualText(value)
+        endIf
+        if autoSetType
+            SetActualType("FormArray", expectationId)
+        endIf
+        int arrayObject = JArray.object()
+        JMap.setObj(JMap.getObj(expectationId, "actual"), "data", arrayObject)
+        if value
+            int i = 0
+            while i < value.Length
+                JArray.addForm(arrayObject, value[i])
+                i += 1
+            endWhile
+        endIf
+    endIf
+endFunction
+
+; Gets the "expected value" [FormArray version]
+; Note: there can only be 1 "expected value", e.g. either a FormArray or an FormArray (or JContainer data object) etc
+Form[] function GetExpectedFormArray(int expectationId = 0) global
+    if ! expectationId
+        expectationId = SkyUnitPrivateAPI.SkyUnitData_GetCurrentExpectation()
+    endIf
+    if expectationId
+        int arrayObject = JMap.getObj(JMap.getObj(expectationId, "expected"), "data")
+        Form[] value
+        int count = JArray.count(arrayObject)
+        if count
+            value = Utility.CreateFormArray(count)
+            int i = 0
+            while i < count
+                value[i] = JArray.getForm(arrayObject, i)
+                i += 1
+            endWhile
+        endIf
+        return value
+    endIf
+endFunction
+
+; Sets the "expected value" [FormArray version]
+function SetExpectedFormArray(Form[] value, bool autoSetText = true, bool autoSetType = true, int expectationId = 0) global
+    if ! expectationId
+        expectationId = SkyUnitPrivateAPI.SkyUnitData_GetCurrentExpectation()
+    endIf
+    if expectationId
+        if autoSetText
+            SetExpectedText(value)
+        endIf
+        if autoSetType
+            SetExpectedType("FormArray", expectationId)
+        endIf
+        int arrayObject = JArray.object()
+        JMap.setObj(JMap.getObj(expectationId, "expected"), "data", arrayObject)
+        if value
+            int i = 0
+            while i < value.Length
+                JArray.addForm(arrayObject, value[i])
+                i += 1
+            endWhile
+        endIf
+    endIf
+endFunction
+
+; Bool
+
+; Gets the "actual value" (as provided to an `Expect*()` function) [Bool version]
+; Intended to be called by an assertion function to easily get text of what type was provided.
+; Note: there can only be 1 "actual value", e.g. either a Bool or an Bool (or JContainer data object) etc
+bool[] function GetActualBoolArray(int expectationId = 0) global
+    if ! expectationId
+        expectationId = SkyUnitPrivateAPI.SkyUnitData_GetCurrentExpectation()
+    endIf
+    if expectationId
+        int arrayObject = JMap.getObj(JMap.getObj(expectationId, "actual"), "data")
+        bool[] value
+        int count = JArray.count(arrayObject)
+        if count
+            value = Utility.CreateBoolArray(count)
+            int i = 0
+            while i < count
+                value[i] = JArray.getInt(arrayObject, i) == 1
+                i += 1
+            endWhile
+        endIf
+        return value
+    endIf
+endFunction
+
+; Sets the "actual value" (as provided to an `Expect*()` function) [BoolArray version]
+; Intended to be called by an assertion function to get the data which is being asserted on.
+; Note: there can only be 1 "actual value", e.g. either a BoolArray or an BoolArray (or JContainer data object) etc
+function SetActualBoolArray(bool[] value, bool autoSetText = true, bool autoSetType = true, int expectationId = 0) global
+    if ! expectationId
+        expectationId = SkyUnitPrivateAPI.SkyUnitData_GetCurrentExpectation()
+    endIf
+    if expectationId
+        if autoSetText
+            SetActualText(value)
+        endIf
+        if autoSetType
+            SetActualType("BoolArray", expectationId)
+        endIf
+        int arrayObject = JArray.object()
+        JMap.setObj(JMap.getObj(expectationId, "actual"), "data", arrayObject)
+        if value
+            int i = 0
+            while i < value.Length
+                int boolInt = 0
+                if value[i]
+                    boolInt = 1
+                endIf
+                JArray.addInt(arrayObject, boolInt)
+                i += 1
+            endWhile
+        endIf
+    endIf
+endFunction
+
+; Gets the "expected value" [BoolArray version]
+; Note: there can only be 1 "expected value", e.g. either a BoolArray or an BoolArray (or JContainer data object) etc
+bool[] function GetExpectedBoolArray(int expectationId = 0) global
+    if ! expectationId
+        expectationId = SkyUnitPrivateAPI.SkyUnitData_GetCurrentExpectation()
+    endIf
+    if expectationId
+        int arrayObject = JMap.getObj(JMap.getObj(expectationId, "expected"), "data")
+        bool[] value
+        int count = JArray.count(arrayObject)
+        if count
+            value = Utility.CreateBoolArray(count)
+            int i = 0
+            while i < count
+                value[i] = JArray.getInt(arrayObject, i) == 1
+                i += 1
+            endWhile
+        endIf
+        return value
+    endIf
+endFunction
+
+; Sets the "expected value" [BoolArray version]
+function SetExpectedBoolArray(bool[] value, bool autoSetText = true, bool autoSetType = true, int expectationId = 0) global
+    if ! expectationId
+        expectationId = SkyUnitPrivateAPI.SkyUnitData_GetCurrentExpectation()
+    endIf
+    if expectationId
+        if autoSetText
+            SetExpectedText(value)
+        endIf
+        if autoSetType
+            SetExpectedType("BoolArray", expectationId)
+        endIf
+        int arrayObject = JArray.object()
+        JMap.setObj(JMap.getObj(expectationId, "expected"), "data", arrayObject)
+        if value
+            int i = 0
+            while i < value.Length
+                int boolInt = 0
+                if value[i]
+                    boolInt = 1
+                endIf
+                JArray.addInt(arrayObject, boolInt)
+                i += 1
+            endWhile
+        endIf
+    endIf
+endFunction
