@@ -226,7 +226,7 @@ string function GetDescription(int expectationId = 0) global
         description += ".Not()"
     endIf
     description += ".To("
-    if GetExpectedType() == "String"
+    if GetExpectedType(expectationId) == "String"
         description += GetAssertionType(expectationId) + "(\"" + GetExpectedText(expectationId) + "\")"
     else
         description += GetAssertionType(expectationId) + "(" + GetExpectedText(expectationId) + ")"

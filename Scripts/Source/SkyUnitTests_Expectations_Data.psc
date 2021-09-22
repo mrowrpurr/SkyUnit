@@ -1,4 +1,4 @@
-scriptName SkyUnitTests_ExpectationData extends SkyUnitAssertionTestBase
+scriptName SkyUnitTests_Expectations_Data extends SkyUnitAssertionTestBase
 {Tests for reading and writing data for expectations,
 i.e. data written by Expect*() functions and ready by assertion functions}
 

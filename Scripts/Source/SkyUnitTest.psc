@@ -167,6 +167,13 @@ endFunction
 ;; Expectation Functions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+; Alias for `ExpectString`
+SkyUnitTest function Expect(string actual)
+    SkyUnitExpectation.BeginExpectation("Expect")
+    SkyUnitExpectation.SetActualString(actual)
+    return SkyUnitExpectation.CurrentTest()
+endFunction
+
 SkyUnitTest function ExpectString(string actual)
     SkyUnitExpectation.BeginExpectation("ExpectString")
     SkyUnitExpectation.SetActualString(actual)
@@ -351,6 +358,29 @@ endFunction
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Assertion Functions - Equal
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+; Alias for `EqualString`
+bool function Equal(string expected)
+    SkyUnitExpectation.SetExpectedString(expected)
+    string actual
+    if SkyUnitExpectation.GetActualType() == "String"
+        actual = SkyUnitExpectation.GetActualString()
+    else
+        actual = SkyUnitExpectation.GetActualText()
+    endIf
+    SkyUnitPrivateAPI.Info("Equal does actual " + actual + " equal expected " + expected)
+    bool not = SkyUnitExpectation.Not()
+    if not && actual == expected
+        return SkyUnitExpectation.Fail("Equal", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " not to equal " + \
+            SkyUnitExpectation.ExpectedDescription())
+    elseIf ! not && actual != expected
+        return SkyUnitExpectation.Fail("Equal", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " to equal " + \
+            SkyUnitExpectation.ExpectedDescription())
+    endIf
+    return SkyUnitExpectation.Pass("Equal")
+endFunction
 
 bool function EqualString(string expected)
     SkyUnitExpectation.SetExpectedString(expected)
