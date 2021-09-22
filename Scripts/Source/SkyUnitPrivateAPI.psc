@@ -905,6 +905,7 @@ int function UI_Show_ViewAllTests(string testSuiteName, int testRun) global ; TO
     int textOptionCount = 1 ; Including an empty space and "Choose Test"
     listMenu.AddEntryItem("--- [Choose Test] ---")
 
+    ; TODO - put the FAILING ones *FIRST* and then Passing and then Pending. But Failing should be FIRST in the list :)
     string[] testNames = JMap.allKeysPArray(tests)
     int testIndex = 0
     while testIndex < testNames.Length
@@ -913,6 +914,10 @@ int function UI_Show_ViewAllTests(string testSuiteName, int testRun) global ; TO
         string status = JMap.getStr(test, "status")
         if status == "PASSING" ; Highlight the ones which aren't passing, so it's really easy to get to the failures!
             listMenu.AddEntryItem(testName)
+        elseIf status == "PENDING" ; Put parens around pending
+            listMenu.AddEntryItem("(" + testName + ")")
+        elseIf status == "FAILING" ; Highlight Failing
+            listMenu.AddEntryItem("[FAIL] - " + testName)
         else
             listMenu.AddEntryItem("[" + status + "] " + testName)
         endIf

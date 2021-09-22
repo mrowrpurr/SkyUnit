@@ -366,18 +366,34 @@ SkyUnitTest function ExpectAlias(Alias actual)
     return SkyUnitExpectation.CurrentTest()
 endFunction
 
-SkyUnitTest function ExpectStringArray(string[] array)
-    ; SkyUnitExpectation.BeginExpectation("ExpectStringArray")
-    ; int arrayObject = JArray.object()
-    ; SkyUnitExpectation.SetActualJObject(arrayObject, autoSetText = false, autoSetType = false)
-    ; int i = 0
-    ; while i < array.Length
+SkyUnitTest function ExpectStringArray(string[] actual)
+    SkyUnitExpectation.BeginExpectation("ExpectStringArray")
+    SkyUnitExpectation.SetActualStringArray(actual)
+    return SkyUnitExpectation.CurrentTest()
+endFunction
 
-    ;     i += 0
-    ; endWhile
+SkyUnitTest function ExpectIntArray(int[] actual)
+    SkyUnitExpectation.BeginExpectation("ExpectIntArray")
+    SkyUnitExpectation.SetActualIntArray(actual)
+    return SkyUnitExpectation.CurrentTest()
+endFunction
 
-    ; SkyUnitExpectation.SetActualAlias(actual)
-    ; return SkyUnitExpectation.CurrentTest()
+SkyUnitTest function ExpectFloatArray(float[] actual)
+    SkyUnitExpectation.BeginExpectation("ExpectFloatArray")
+    SkyUnitExpectation.SetActualFloatArray(actual)
+    return SkyUnitExpectation.CurrentTest()
+endFunction
+
+SkyUnitTest function ExpectFormArray(Form[] actual)
+    SkyUnitExpectation.BeginExpectation("ExpectFormArray")
+    SkyUnitExpectation.SetActualFormArray(actual)
+    return SkyUnitExpectation.CurrentTest()
+endFunction
+
+SkyUnitTest function ExpectBoolArray(bool[] actual)
+    SkyUnitExpectation.BeginExpectation("ExpectBoolArray")
+    SkyUnitExpectation.SetActualBoolArray(actual)
+    return SkyUnitExpectation.CurrentTest()
 endFunction
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -522,4 +538,24 @@ bool function EqualForm(Form expected)
             SkyUnitExpectation.ExpectedDescription())
     endIf
     return SkyUnitExpectation.Pass("EqualForm")
+endFunction
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Assertion Functions - Arrays
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+bool function EqualStringArray(string[] expected)
+    SkyUnitExpectation.SetExpectedStringArray(expected)
+    string[] actual = SkyUnitExpectation.GetActualStringArray()
+    bool not = SkyUnitExpectation.Not()
+    if not && actual == expected
+        return SkyUnitExpectation.Fail("EqualStringArray", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " not to equal " + \
+            SkyUnitExpectation.ExpectedDescription())
+    elseIf ! not && actual != expected
+        return SkyUnitExpectation.Fail("EqualStringArray", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " to equal " + \
+            SkyUnitExpectation.ExpectedDescription())
+    endIf
+    return SkyUnitExpectation.Pass("EqualStringArray")
 endFunction
