@@ -200,7 +200,18 @@ endFunction
 
 SkyUnitTest function ExpectForm(Form actual)
     SkyUnitExpectation.BeginExpectation("ExpectForm")
-    SkyUnitExpectation.SetActualForm(actual, "Form")
+    SkyUnitExpectation.SetActualForm(actual, "Form", autoSetText = false)
+    if actual
+        string name = actual.GetName()
+        if name
+            name += " " + actual
+        else
+            name = actual
+        endIf
+        SkyUnitExpectation.SetActualText(name)
+    else
+        SkyUnitExpectation.SetActualText("None")
+    endIf
     return SkyUnitExpectation.CurrentTest()
 endFunction
 
@@ -468,7 +479,18 @@ bool function EqualFloat(float expected)
 endFunction
 
 bool function EqualForm(Form expected)
-    SkyUnitExpectation.SetExpectedForm(expected, "Form")
+    SkyUnitExpectation.SetExpectedForm(expected, "Form", autoSetText = false)
+    if expected
+        string name = expected.GetName()
+        if name
+            name += " " + expected
+        else
+            name = expected
+        endIf
+        SkyUnitExpectation.SetExpectedText(name)
+    else
+        SkyUnitExpectation.SetExpectedText("None")
+    endIf
     Form actual
     if SkyUnitExpectation.GetActualType() == "Form"
         actual = SkyUnitExpectation.GetActualForm()

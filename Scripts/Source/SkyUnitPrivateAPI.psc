@@ -911,7 +911,11 @@ int function UI_Show_ViewAllTests(string testSuiteName, int testRun) global ; TO
         string testName = testNames[testIndex]
         int test = JMap.getObj(tests, testName)
         string status = JMap.getStr(test, "status")
-        listMenu.AddEntryItem("[" + status + "] " + testName)
+        if status == "PASSING" ; Highlight the ones which aren't passing, so it's really easy to get to the failures!
+            listMenu.AddEntryItem(testName)
+        else
+            listMenu.AddEntryItem("[" + status + "] " + testName)
+        endIf
         testIndex += 1
     endWhile
 
