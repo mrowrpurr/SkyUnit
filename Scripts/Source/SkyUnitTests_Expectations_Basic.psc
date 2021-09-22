@@ -3,60 +3,106 @@ scriptName SkyUnitTests_Expectations_Basic extends SkyUnitAssertionTestBase
 Ensures that each of these functions stores the provided argument(s) as expected.}
 
 function Tests()
-    Test("Expectation Data Basics").Fn(ExpectationDataBasics_Test())
-    
-    Test("Assert")
-    Test("Refute")
 
+    ; Test the core, basics expectation/assertion types - Using Assert() and Refute()
     Test("Expect").Fn(Expect_Test())
     Test("ExpectString").Fn(ExpectString_Test())
     Test("ExpectInt").Fn(ExpectInt_Test())
     Test("ExpectFloat").Fn(ExpectFloat_Test())
     Test("ExpectBool").Fn(ExpectBool_Test())
     Test("ExpectForm").Fn(ExpectForm_Test())
-    Test("ExpectForm with None") ;.Fn(ExpectForm_Test())
+    Test("ExpectForm with None").Fn(ExpectForm_None_Test())
+    
+    ; Confirm that Assert() and Refute() work (using the above expectation/assertion types)
+    Test("Assert").Fn(Assert_Test())
+    Test("Refute").Fn(Refute_Test())
 
-    Test("ExpectIntArray")
-    Test("ExpectFloatArray")
-    Test("ExpectBoolArray")
-    Test("ExpectStringArray")
-    Test("ExpectFormArray")
+    Test("Custom Failure Messages") ; TODO
 
-    Test("ExpectPlayer")
-    Test("ExpectActor")
-    Test("ExpectSpell")
-    Test("ExpectObject")
+    ; ---> Assertions_Array
+    ; Test("ExpectIntArray")
+    ; Test("ExpectFloatArray")
+    ; Test("ExpectBoolArray")
+    ; Test("ExpectStringArray")
+    ; Test("ExpectFormArray")
+
+    ; ---> Expectations_Additional or _Misc
+    ; Test("ExpectPlayer")
+    ; Test("ExpectActor")
+    ; Test("ExpectSpell")
+    ; Test("ExpectObject")
 endFunction
 
-function ExpectationDataBasics_Test()
+function Assert_Test()
+    SetupFakeTest()
+
+    ; Failing Case
     SwitchToContext_Fake()
-    CreateTestSuite("MyTests")
-    CreateTest("MyTest")
-    int expectationCount = JArray.count(SkyUnitPrivateAPI.SkyUnitData_CurrentExpectationsArray())
+    bool result = Assert(1 == 2, "Expected something to equal something else")
+    int expectation = SkyUnitExpectation.LatestExpectationID()
 
     SwitchToContext_Real()
-    Assert(expectationCount == 0, "Expected new test not to have any expectations")
+    ExpectBool(result).To(EqualBool(false))
+    Expect(SkyUnitExpectation.GetStatus(expectation)).To(Equal("FAILING"))
+    Expect(SkyUnitExpectation.GetFailureMessage(expectation)).To(Equal("Expected something to equal something else"))
+    Expect(SkyUnitExpectation.GetActualType(expectation)).To(Equal("Bool"))
+    Expect(SkyUnitExpectation.GetActualText(expectation)).To(Equal("false"))
+    ExpectBool(SkyUnitExpectation.GetActualBool(expectation)).To(EqualBool(false))
+    Expect(SkyUnitExpectation.GetExpectedType(expectation)).To(Equal("")) ; There is no expected for Assert(), only actual
+    Expect(SkyUnitExpectation.GetExpectedText(expectation)).To(Equal(""))
+    Expect(SkyUnitExpectation.GetDescription(expectation)).To(Equal("Assert(false)"))
 
+    ; Passing Case
     SwitchToContext_Fake()
-    SkyUnitExpectation.BeginExpectation("MyExpectation")
-    expectationCount = JArray.count(SkyUnitPrivateAPI.SkyUnitData_CurrentExpectationsArray())
-    string actualValueType = SkyUnitExpectation.GetActualType()
+    result = Assert(1 == 1, "Expected something to equal something else")
+    expectation = SkyUnitExpectation.LatestExpectationID()
 
     SwitchToContext_Real()
-    Assert(expectationCount == 1, "Expected test to have 1 expectation")
-    Assert(actualValueType == "", "Expected new expectation not to have any data type yet for the 'actual' value")
+    ExpectBool(result).To(EqualBool(true))
+    Expect(SkyUnitExpectation.GetStatus(expectation)).To(Equal("PASSING"))
+    Expect(SkyUnitExpectation.GetFailureMessage(expectation)).To(Equal(""))
+    Expect(SkyUnitExpectation.GetActualType(expectation)).To(Equal("Bool"))
+    Expect(SkyUnitExpectation.GetActualText(expectation)).To(Equal("true"))
+    ExpectBool(SkyUnitExpectation.GetActualBool(expectation)).To(EqualBool(true))
+    Expect(SkyUnitExpectation.GetExpectedType(expectation)).To(Equal("")) ; There is no expected for Assert(), only actual
+    Expect(SkyUnitExpectation.GetExpectedText(expectation)).To(Equal(""))
+    Expect(SkyUnitExpectation.GetDescription(expectation)).To(Equal("Assert(true)"))
+endFunction
 
+function Refute_Test()
+    SetupFakeTest()
+
+    ; Failing Case
     SwitchToContext_Fake()
-    SkyUnitExpectation.SetActualInt(42)
-    actualValueType = SkyUnitExpectation.GetActualType()
-    string actualValueText = SkyUnitExpectation.GetActualText()
-    int actualValueInt = SkyUnitExpectation.GetActualInt()
+    bool result = Refute(1 == 1, "Expected something not to equal something else")
+    int expectation = SkyUnitExpectation.LatestExpectationID()
 
     SwitchToContext_Real()
-    Assert(expectationCount == 1, "Expected test to have 1 expectation")
-    Assert(actualValueType == "Int", "Expected actual value type to be Int")
-    Assert(actualValueText == "42", "Expected actual value text to be 42")
-    Assert(actualValueInt == 42, "Expected actual value to equal 42")
+    ExpectBool(result).To(EqualBool(false))
+    Expect(SkyUnitExpectation.GetStatus(expectation)).To(Equal("FAILING"))
+    Expect(SkyUnitExpectation.GetFailureMessage(expectation)).To(Equal("Expected something not to equal something else"))
+    Expect(SkyUnitExpectation.GetActualType(expectation)).To(Equal("Bool"))
+    Expect(SkyUnitExpectation.GetActualText(expectation)).To(Equal("true"))
+    ExpectBool(SkyUnitExpectation.GetActualBool(expectation)).To(EqualBool(true))
+    Expect(SkyUnitExpectation.GetExpectedType(expectation)).To(Equal("")) ; There is no expected for Refute(), only actual
+    Expect(SkyUnitExpectation.GetExpectedText(expectation)).To(Equal(""))
+    Expect(SkyUnitExpectation.GetDescription(expectation)).To(Equal("Refute(true)"))
+
+    ; Passing Case
+    SwitchToContext_Fake()
+    result = Refute(1 == 2, "Expected something not to equal something else")
+    expectation = SkyUnitExpectation.LatestExpectationID()
+
+    SwitchToContext_Real()
+    ExpectBool(result).To(EqualBool(true))
+    Expect(SkyUnitExpectation.GetStatus(expectation)).To(Equal("PASSING"))
+    Expect(SkyUnitExpectation.GetFailureMessage(expectation)).To(Equal(""))
+    Expect(SkyUnitExpectation.GetActualType(expectation)).To(Equal("Bool"))
+    Expect(SkyUnitExpectation.GetActualText(expectation)).To(Equal("false"))
+    ExpectBool(SkyUnitExpectation.GetActualBool(expectation)).To(EqualBool(false))
+    Expect(SkyUnitExpectation.GetExpectedType(expectation)).To(Equal("")) ; There is no expected for Refute(), only actual
+    Expect(SkyUnitExpectation.GetExpectedText(expectation)).To(Equal(""))
+    Expect(SkyUnitExpectation.GetDescription(expectation)).To(Equal("Refute(false)"))
 endFunction
 
 function ExpectString_Test()
@@ -482,6 +528,82 @@ function ExpectForm_Test()
     Assert(SkyUnitExpectation.GetExpectedText(expectation) == "[Actor < (00000014)>]", "[Not Fail Example] Checking expected text")
     Assert(SkyUnitExpectation.GetExpectedForm(expectation) == player, "[Not Fail Example] Checking expected value")
     Assert(SkyUnitExpectation.GetDescription(expectation) == "ExpectForm([Actor < (00000014)>]).Not().To(EqualForm([Actor < (00000014)>]))", "[Not Fail Example] Checking description")
+
+    ; Not() Passing Case 
+    SwitchToContext_Fake()
+    result = ExpectForm(gold).Not().To(EqualForm(lockpick))
+    expectation = SkyUnitExpectation.LatestExpectationID()
+
+    SwitchToContext_Real()
+    Assert(result, "Expected comparing Forms gold and lockpick not to equal to return true")
+    Assert(SkyUnitExpectation.GetStatus(expectation) == "PASSING", "[Not Pass Example] Checking status")
+    Assert(SkyUnitExpectation.GetFailureMessage(expectation) == "", "[Not Pass Example] Checking failure message")
+    Assert(SkyUnitExpectation.GetActualType(expectation) == "Form", "[Not Pass Example] Checking actual type")
+    Assert(SkyUnitExpectation.GetActualText(expectation) == "Gold [MiscObject < (0000000F)>]", "[Not Pass Example] Checking actual text")
+    Assert(SkyUnitExpectation.GetActualForm(expectation) == gold, "[Not Pass Example] Checking actual value")
+    Assert(SkyUnitExpectation.GetExpectedType(expectation) == "Form", "[Not Pass Example] Checking expected type")
+    Assert(SkyUnitExpectation.GetExpectedText(expectation) == "Lockpick [MiscObject < (0000000A)>]", "[Not Pass Example] Checking expected text")
+    Assert(SkyUnitExpectation.GetExpectedForm(expectation) == lockpick, "[Not Pass Example] Checking expected value")
+    Assert(SkyUnitExpectation.GetDescription(expectation) == "ExpectForm(Gold [MiscObject < (0000000F)>]).Not().To(EqualForm(Lockpick [MiscObject < (0000000A)>]))", "[Not Pass Example] Checking description")
+endFunction
+
+function ExpectForm_None_Test()
+    SetupFakeTest()
+
+    Form gold     = Game.GetForm(0xf)
+    Form lockpick = Game.GetForm(0xa)
+    Form nothing
+
+    ; Failing Case
+    SwitchToContext_Fake()
+    bool result = ExpectForm(gold).To(EqualForm(lockpick))
+    int expectation = SkyUnitExpectation.LatestExpectationID()
+
+    SwitchToContext_Real()
+    Refute(result, "Expected comparing Forms gold and lockpick to return false")
+    Assert(SkyUnitExpectation.GetStatus(expectation) == "FAILING", "[Fail Example] Checking status")
+    Assert(SkyUnitExpectation.GetFailureMessage(expectation) == "Expected Form Gold [MiscObject < (0000000F)>] to equal Form Lockpick [MiscObject < (0000000A)>]", "[Fail Example] Checking failure message: " + SkyUnitExpectation.GetFailureMessage(expectation))
+    Assert(SkyUnitExpectation.GetActualType(expectation) == "Form", "[Fail Example] Checking actual type")
+    Assert(SkyUnitExpectation.GetActualText(expectation) == "Gold [MiscObject < (0000000F)>]", "[Fail Example] Checking actual text: " + SkyUnitExpectation.GetActualText(expectation))
+    Assert(SkyUnitExpectation.GetActualForm(expectation) == gold, "[Fail Example] Checking actual value")
+    Assert(SkyUnitExpectation.GetExpectedType(expectation) == "Form", "[Fail Example] Checking expected type")
+    Assert(SkyUnitExpectation.GetExpectedText(expectation) == "Lockpick [MiscObject < (0000000A)>]", "[Fail Example] Checking expected text: " + SkyUnitExpectation.GetExpectedText(expectation))
+    Assert(SkyUnitExpectation.GetExpectedForm(expectation) == lockpick, "[Fail Example] Checking expected value")
+    Assert(SkyUnitExpectation.GetDescription(expectation) == "ExpectForm(Gold [MiscObject < (0000000F)>]).To(EqualForm(Lockpick [MiscObject < (0000000A)>]))", "[Fail Example] Checking description: " + SkyUnitExpectation.GetDescription(expectation))
+
+    ; Passing Case
+    SwitchToContext_Fake()
+    result = ExpectForm(nothing).To(EqualForm(nothing))
+    expectation = SkyUnitExpectation.LatestExpectationID()
+
+    SwitchToContext_Real()
+    Assert(result, "Expected comparing Forms nothing and nothing to return true")
+    Assert(SkyUnitExpectation.GetStatus(expectation) == "PASSING", "[Pass Example] Checking status")
+    Assert(SkyUnitExpectation.GetFailureMessage(expectation) == "", "[Pass Example] Checking failure message")
+    Assert(SkyUnitExpectation.GetActualType(expectation) == "Form", "[Pass Example] Checking actual type")
+    Assert(SkyUnitExpectation.GetActualText(expectation) == "None", "[Pass Example] Checking actual text: " + SkyUnitExpectation.GetActualText(expectation) )
+    Assert(SkyUnitExpectation.GetActualForm(expectation) == nothing, "[Pass Example] Checking actual value")
+    Assert(SkyUnitExpectation.GetExpectedType(expectation) == "Form", "[Pass Example] Checking expected type")
+    Assert(SkyUnitExpectation.GetExpectedText(expectation) == "None", "[Pass Example] Checking expected text")
+    Assert(SkyUnitExpectation.GetExpectedForm(expectation) == nothing, "[Pass Example] Checking expected value")
+    Assert(SkyUnitExpectation.GetDescription(expectation) == "ExpectForm(None).To(EqualForm(None))", "[Pass Example] Checking description: " + SkyUnitExpectation.GetDescription(expectation))
+
+    ; Not() Failing Case 
+    SwitchToContext_Fake()
+    result = ExpectForm(nothing).Not().To(EqualForm(nothing))
+    expectation = SkyUnitExpectation.LatestExpectationID()
+
+    SwitchToContext_Real()
+    Refute(result, "Expected comparing Forms nothing and nothing not to return true")
+    Assert(SkyUnitExpectation.GetStatus(expectation) == "FAILING", "[Not Fail Example] Checking status")
+    Assert(SkyUnitExpectation.GetFailureMessage(expectation) == "Expected Form None not to equal Form None", "[Not Fail Example] Checking failure message, actual: " + SkyUnitExpectation.GetFailureMessage(expectation))
+    Assert(SkyUnitExpectation.GetActualType(expectation) == "Form", "[Not Fail Example] Checking actual type")
+    Assert(SkyUnitExpectation.GetActualText(expectation) == "None", "[Not Fail Example] Checking actual text")
+    Assert(SkyUnitExpectation.GetActualForm(expectation) == nothing, "[Not Fail Example] Checking actual value")
+    Assert(SkyUnitExpectation.GetExpectedType(expectation) == "Form", "[Not Fail Example] Checking expected type")
+    Assert(SkyUnitExpectation.GetExpectedText(expectation) == "None", "[Not Fail Example] Checking expected text")
+    Assert(SkyUnitExpectation.GetExpectedForm(expectation) == nothing, "[Not Fail Example] Checking expected value")
+    Assert(SkyUnitExpectation.GetDescription(expectation) == "ExpectForm(None).Not().To(EqualForm(None))", "[Not Fail Example] Checking description")
 
     ; Not() Passing Case 
     SwitchToContext_Fake()

@@ -225,13 +225,16 @@ string function GetDescription(int expectationId = 0) global
     if IsNotExpectation(expectationId)
         description += ".Not()"
     endIf
-    description += ".To("
-    if GetExpectedType(expectationId) == "String"
-        description += GetAssertionType(expectationId) + "(\"" + GetExpectedText(expectationId) + "\")"
-    else
-        description += GetAssertionType(expectationId) + "(" + GetExpectedText(expectationId) + ")"
+    string expectedType = GetExpectedType(expectationId) ; This will not be present for simple assertions like Assert() and Refute()
+    if expectedType
+        description += ".To("
+        if expectedType == "String"
+            description += GetAssertionType(expectationId) + "(\"" + GetExpectedText(expectationId) + "\")"
+        else
+            description += GetAssertionType(expectationId) + "(" + GetExpectedText(expectationId) + ")"
+        endIf
+        description += ")"
     endIf
-    description += ")"
     return description
 endFunction
 
