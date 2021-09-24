@@ -19,12 +19,24 @@ bool property Test_PendingTest1_Enabled auto
 bool property ResetTestLogs auto
 string[] property TestLogs auto
 
-SkyUnit_ExampleTest1 function ResetTests()
+SkyUnit_ExampleTest1 function ResetTestSuite()
     ResetTestLogs = true
     TestLogs = Utility.CreateStringArray(0)
+    DisableTests()
+    return self
+endFunction
+
+SkyUnit_ExampleTest1 function EnableTests()
     Test_PassingTest1_Enabled = true
     Test_FailingTest1_Enabled = true
     Test_PendingTest1_Enabled = true
+    return self
+endFunction
+
+SkyUnit_ExampleTest1 function DisableTests()
+    Test_PassingTest1_Enabled = false
+    Test_FailingTest1_Enabled = false
+    Test_PendingTest1_Enabled = false
     return self
 endFunction
 

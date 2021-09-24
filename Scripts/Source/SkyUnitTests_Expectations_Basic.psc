@@ -4,12 +4,12 @@ Ensures that each of these functions stores the provided argument(s) as expected
 
 function Tests()
     ; Test the core, basics expectation/assertion types - Using Assert() and Refute()
-    Test("Expect").Fn(Expect_Test())
-    Test("ExpectString").Fn(ExpectString_Test())
-    Test("ExpectInt").Fn(ExpectInt_Test())
-    Test("ExpectFloat").Fn(ExpectFloat_Test())
-    Test("ExpectBool").Fn(ExpectBool_Test())
-    Test("ExpectForm").Fn(ExpectForm_Test())
+    Test("Expect / Equal").Fn(Expect_Test())
+    Test("ExpectString / EqualString").Fn(ExpectString_Test())
+    Test("ExpectInt / EqualInt").Fn(ExpectInt_Test())
+    Test("ExpectFloat / EqualFloat").Fn(ExpectFloat_Test())
+    Test("ExpectBool / EqualBool").Fn(ExpectBool_Test())
+    Test("ExpectForm / EqualForm").Fn(ExpectForm_Test())
     Test("ExpectForm with None").Fn(ExpectForm_None_Test())
     
     ; Confirm that Assert() and Refute() work (using the above expectation/assertion types)

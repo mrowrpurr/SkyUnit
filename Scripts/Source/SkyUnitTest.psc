@@ -559,3 +559,62 @@ bool function EqualStringArray(string[] expected)
     endIf
     return SkyUnitExpectation.Pass("EqualStringArray")
 endFunction
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Generic Assertions
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+bool function BeTrue()
+    SkyUnitExpectation.SetExpectedType("Bool")
+    bool not = SkyUnitExpectation.Not()
+    string actualText = SkyUnitExpectation.GetActualText()
+    string actualType = SkyUnitExpectation.GetActualType()
+    ; TODO Array
+    ; TODO Int
+    ; TODO Float
+    ; TODO Bool
+    if actualType == "Bool"
+        if not && SkyUnitExpectation.GetActualBool()
+            return SkyUnitExpectation.Fail("BeTrue", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " not to be true")
+        elseIf ! not && ! SkyUnitExpectation.GetActualBool()
+            return SkyUnitExpectation.Fail("BeTrue", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " to be true")
+        endIf
+    else
+
+    endIf
+    return SkyUnitExpectation.Pass("BeTrue")
+endFunction
+
+bool function BeFalse()
+    SkyUnitExpectation.SetExpectedType("Bool")
+    bool not = SkyUnitExpectation.Not()
+    string actualText = SkyUnitExpectation.GetActualText()
+    string actualType = SkyUnitExpectation.GetActualType()
+    ; TODO Array
+    ; TODO Int
+    ; TODO Float
+    ; TODO Bool
+    if actualType == "Bool"
+        if not && ! SkyUnitExpectation.GetActualBool()
+            return SkyUnitExpectation.Fail("BeFalse", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " not to be false")
+        elseIf ! not && SkyUnitExpectation.GetActualBool()
+            return SkyUnitExpectation.Fail("BeFalse", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " to be false")
+        endIf
+    else
+
+    endIf
+    return SkyUnitExpectation.Pass("BeFalse")
+endFunction
+
+bool function BeEmpty()
+endFunction
+
+bool function HaveLength(int expected)
+endFunction
+
+bool function ContainText(string expected)
+endFunction

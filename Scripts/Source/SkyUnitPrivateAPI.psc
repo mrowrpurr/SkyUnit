@@ -544,18 +544,14 @@ endFunction
 int function RunTestSuite(string testSuiteName, int parentTestRun = 0, bool forceRerun = false) global
     Info("RunTestSuite() test run #" + parentTestRun)
     GetLock()
-    Info("AAA")
 
     if ! parentTestRun
-        Info("BBB")
         parentTestRun = SkyUnitData_GetCurrentlyRunningTestRun()
         if ! parentTestRun
-            Info("CCC")
             parentTestRun = SkyUnitData_CreateNewTestRunMap()
             SkyUnitData_SetCurrentlyRunningTestRun(parentTestRun)
         endIf
     endIf
-    Info("DDD")
 
     if ! forceRerun && SkyUnitData_TestSuiteHasBeenRun(testSuiteName)
         int previousTestRun = SkyUnitData_GetMostRecentResultForTestSuiteByName(testSuiteName)
@@ -580,15 +576,15 @@ int function RunTestSuite(string testSuiteName, int parentTestRun = 0, bool forc
     JMap.setObj(testSuiteResult, "tests", JMap.object())
     SkyUnitTest testScript = GetTestScriptBySuiteName(testSuiteName)
 
-    ; Test_BeginTestRun(testSuiteName, SpecialTestNames_BeforeAll(), runBeforeEach = false)
+    Test_BeginTestRun(testSuiteName, SpecialTestNames_BeforeAll(), runBeforeEach = false)
     testScript.BeforeAll()
-    ; Fn_EndTestRun(runAfterEach = false)
+    Fn_EndTestRun(runAfterEach = false)
 
     testScript.Tests()
 
-    ; Test_BeginTestRun(testSuiteName, SpecialTestNames_AfterAll(), runBeforeEach = false)
+    Test_BeginTestRun(testSuiteName, SpecialTestNames_AfterAll(), runBeforeEach = false)
     testScript.AfterAll()
-    ; Fn_EndTestRun(runAfterEach = false)
+    Fn_EndTestRun(runAfterEach = false)
 
     int currentTestResult = SkyUnitData_GetCurrentTestResult()
     if currentTestResult
@@ -605,24 +601,28 @@ int function RunTestSuite(string testSuiteName, int parentTestRun = 0, bool forc
     SkyUnitData_SetCurrentlyRunningTestSuite(0)
 
     ; Cache result (caches the full testRun for this for consistency)
-    SkyUnitData_AddTestSuiteResultToMostRecentlyRunResults(testSuiteName, parentTestRun)
+    SkyUnitData_AddTestSuiteResultToMostRecentlyRunResults(testSuiteName, parentTestRun) ; Is this even needed anymore?
 
     ReleaseLock()
 
     return parentTestRun
 endFunction
 
-; string function SpecialTestNames_BeforeAll() global
-;     return "[SkyUnitTest.BeforeAll()]"
-; endFunction
+string function SpecialTestNames_BeforeAll() global
+    return "[SkyUnitTest.BeforeAll()]"
+endFunction
 
-; string function SpecialTestNames_AfterAll() global
-;     return "[SkyUnitTest.AfterAll()]"
-; endFunction
+string function SpecialTestNames_AfterAll() global
+    return "[SkyUnitTest.AfterAll()]"
+endFunction
 
 ; TODO - Before Each
 function Test_BeginTestRun(string testSuiteName, string testName, bool runBeforeEach = true) global
     int currentTestResult = SkyUnitData_GetCurrentTestResult()
+    Info("Running Test... " + testSuiteName + " > " + testName + " (current existing test result: " + currentTestResult + ")")
+    ; if testName == "Run - ExampleTest1"
+        JValue.writeToFile(currentTestResult, "CurrentTestResult " + testSuiteName + " " + testName + ".json")
+    ; endIf
     if currentTestResult
         ; The previouis one didn't finish, e.g. it was pending. We need to make sure to run AfterEach()
         Fn_EndTestRun(markPassed = false) ; It's pending
@@ -715,7 +715,14 @@ function UI_Show_MainMenu() global
 
     int suiteIndex = 0
     while suiteIndex < testSuiteNames.Length
-        listMenu.AddEntryItem(testSuiteNames[suiteIndex])
+        string testSuiteName = testSuiteNames[suiteIndex]
+        int testSuiteResult = SkyUnitData_GetMostRecentResultForTestSuiteByName(testSuiteName)
+        string status = JMap.getStr(testSuiteResult, "status")
+        if status == "FAILING"
+            listMenu.AddEntryItem("[FAIL] " + testSuiteName)
+        else
+            listMenu.AddEntryItem(testSuiteName)
+        endIf
         suiteIndex += 1
     endWhile
 
@@ -816,7 +823,13 @@ function UI_Show_ViewAllTestSuites(string filter = "") global
     while suiteIndex < testSuiteNames.Length
         string testSuiteName = testSuiteNames[suiteIndex]
         if ! filter || StringUtil.Find(testSuiteName, filter) > -1
-            listMenu.AddEntryItem(testSuiteName)
+            int testSuiteResult = SkyUnitData_GetMostRecentResultForTestSuiteByName(testSuiteName)
+            string status = JMap.getStr(testSuiteResult, "status")
+            if status == "FAILING"
+                listMenu.AddEntryItem("[FAIL] " + testSuiteName)
+            else
+                listMenu.AddEntryItem(testSuiteName)
+            endIf
             JArray.addStr(matchingTestSuiteNames, testSuiteName)
             anyMatching = true
         endIf
@@ -915,7 +928,7 @@ int function UI_Show_ViewAllTests(string testSuiteName, int testRun) global ; TO
         if status == "PASSING" ; Highlight the ones which aren't passing, so it's really easy to get to the failures!
             listMenu.AddEntryItem(testName)
         elseIf status == "PENDING" ; Put parens around pending
-            listMenu.AddEntryItem("(" + testName + ")")
+            listMenu.AddEntryItem("* " + testName + " *")
         elseIf status == "FAILING" ; Highlight Failing
             listMenu.AddEntryItem("[FAIL] - " + testName)
         else
