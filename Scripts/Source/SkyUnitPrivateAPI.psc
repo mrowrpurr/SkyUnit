@@ -619,12 +619,9 @@ endFunction
 ; TODO - Before Each
 function Test_BeginTestRun(string testSuiteName, string testName, bool runBeforeEach = true) global
     int currentTestResult = SkyUnitData_GetCurrentTestResult()
-    Info("Running Test... " + testSuiteName + " > " + testName + " (current existing test result: " + currentTestResult + ")")
-    ; if testName == "Run - ExampleTest1"
-        JValue.writeToFile(currentTestResult, "CurrentTestResult " + testSuiteName + " " + testName + ".json")
-    ; endIf
     if currentTestResult
-        ; The previouis one didn't finish, e.g. it was pending. We need to make sure to run AfterEach()
+        ; TODO FIX THIS, IN MY TESTS IT RUNS AfterEach BEFORE TESTS, but I haven't reproduced it in reality *yet*
+        ; The previous one didn't finish, e.g. it was pending. We need to make sure to run AfterEach()
         Fn_EndTestRun(markPassed = false) ; It's pending
     endIf
 
@@ -866,7 +863,12 @@ function UI_Show_TestSuiteResult(int testRun, string testSuiteName) global
         string testName = testNames[i]    
         int test = JMap.getObj(tests, testName)
         string testStatus = JMap.getStr(test, "status")
-        NamesByStatus_AddItem(testNamesByStatus, testName, testStatus)
+        ; Only show the BeforeAll and AfterAll special functions in the "Tests" list if the functions failed (so you can see if stuff is breaking!)
+        if (testName == SkyUnitPrivateAPI.SpecialTestNames_AfterAll() || testName == SkyUnitPrivateAPI.SpecialTestNames_BeforeAll()) && testStatus != "PASSING"
+            NamesByStatus_AddItem(testNamesByStatus, testName, testStatus)
+        elseIf testName != SkyUnitPrivateAPI.SpecialTestNames_AfterAll() && testName != SkyUnitPrivateAPI.SpecialTestNames_BeforeAll()
+            NamesByStatus_AddItem(testNamesByStatus, testName, testStatus)
+        endIf
         i += 1
     endWhile
 

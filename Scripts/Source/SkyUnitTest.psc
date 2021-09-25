@@ -102,7 +102,7 @@ SkyUnitTest function Not()
 endFunction
 
 ; Provide an assertion, e.g. `ExpectString("").To(EqualString(""))`
-bool function To(bool assertionFunction)
+bool function To(bool assertionFunction, string failureMessage = "")
     return assertionFunction
 endFunction
 
@@ -617,4 +617,17 @@ bool function HaveLength(int expected)
 endFunction
 
 bool function ContainText(string expected)
+    SkyUnitExpectation.SetExpectedString(expected)
+    bool not = SkyUnitExpectation.Not()
+    string actualText = SkyUnitExpectation.GetActualText()
+    if not && StringUtil.Find(actualText, expected) > -1
+        return SkyUnitExpectation.Fail("ContainText", "Expected " + \
+        SkyUnitExpectation.ActualDescription() + " not to contain text " + \
+        "\"" + expected + "\"")
+    elseIf ! not && StringUtil.Find(actualText, expected) == -1
+        return SkyUnitExpectation.Fail("ContainText", "Expected " + \
+        SkyUnitExpectation.ActualDescription() + " to contain text " + \
+        "\"" + expected + "\"")
+    endIf
+    return SkyUnitExpectation.Pass("ContainText")
 endFunction

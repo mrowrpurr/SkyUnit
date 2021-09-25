@@ -15,11 +15,26 @@ Assertions will be executed right away and there are helpers here to get their r
 
 string _currentTestScriptName
 
+string property CurrentFakeTestName auto
+int    property CurrentFakeExpectationId auto
+bool   property CurrentFakeExpectationResult auto
+
+; Helper alias for CurrentFakeExpectationId
+int property ExpectationID
+    int function get()
+        return CurrentFakeExpectationId
+    endFunction
+endProperty
+
 function BeforeEach()
     _currentTestScriptName = ""
+    CurrentFakeTestName = SetupFakeTest()
 endFunction
 
 function AfterEach()
+    CurrentFakeTestName = ""
+    CurrentFakeExpectationId = 0
+    CurrentFakeExpectationResult = false
     SwitchToContext_Real()
 endFunction
 
@@ -75,7 +90,7 @@ endFunction
 ; Sets up a new fake test.
 ; If no suite has been used yet for this test, a new one is created.
 ; This does not require SwitchToContext_Fake(), it automatically creates the test in the fake context.
-function SetupFakeTest(string testName = "")
+string function SetupFakeTest(string testName = "")
     string currentContext = SkyUnitPrivateAPI.CurrentContext()
     SwitchToContext_Fake()
     if ! _currentTestScriptName
@@ -87,6 +102,7 @@ function SetupFakeTest(string testName = "")
     endIf
     CreateTest(testName)
     SkyUnitPrivateAPI.SwitchToContext(currentContext)
+    return testName
 endFunction
 
 ; Same as SetupFakeTest() except it also begins an expectation.
@@ -105,4 +121,63 @@ function SetupFakeExpectation(string testName = "")
     CreateTest(testName)
     SkyUnitExpectation.BeginExpectation("MyExpectation")
     SkyUnitPrivateAPI.SwitchToContext(currentContext)
+endFunction
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Expectation Testing DSL
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+; Switches to the Fake context and returns self. Used for testing DSL: `TestExpectation.Define( ExpectX().To(Y()) )
+SkyUnitAssertionTestBase function ExpectExpectation()
+    SwitchToContext_Fake()
+    return self 
+endFunction
+
+; For DSL: `TestExpectation.Define( ExpectX().To(Y()) )
+; Automatically switches to Fake context and then switches back
+function ToPass(bool expectationResult)
+    CurrentFakeExpectationResult = expectationResult
+    CurrentFakeExpectationId = SkyUnitExpectation.LatestExpectationID()
+    SwitchToContext_Real()
+    ExpectBool(expectationResult).To(BeTrue(), "Expected expectation to pass: " + SkyUnitExpectation.GetDescription(CurrentFakeExpectationId))
+    ExpectString(SkyUnitExpectation.GetStatus(CurrentFakeExpectationId)).To(EqualString("PASSING"))
+    Assert(SkyUnitExpectation.GetFailureMessage(CurrentFakeExpectationId) == "", "Expected failure message to be empty but was: " + SkyUnitExpectation.GetFailureMessage(CurrentFakeExpectationId))
+endFunction
+
+; For DSL: `TestExpectation.Define( ExpectX().To(Y()) )
+; Automatically switches to Fake context and then switches back
+function ToFail(bool expectationResult)
+    CurrentFakeExpectationResult = expectationResult
+    CurrentFakeExpectationId = SkyUnitExpectation.LatestExpectationID()
+    SwitchToContext_Real()
+    ExpectBool(expectationResult).To(BeFalse(), "Expected expectation to fail: " + SkyUnitExpectation.GetDescription(CurrentFakeExpectationId))
+    ExpectString(SkyUnitExpectation.GetStatus(CurrentFakeExpectationId)).To(EqualString("FAILING"))
+endFunction
+
+function ExpectFailureMessage(string expectedFailureMessage)
+    Expect(SkyUnitExpectation.GetFailureMessage(CurrentFakeExpectationId)).To(Equal(expectedFailureMessage))
+endFunction
+
+; Update to ContainText
+function ExpectFailureMessageContains(string expectedFailureMessageText)
+    Assert(StringUtil.Find(SkyUnitExpectation.GetFailureMessage(CurrentFakeExpectationId), expectedFailureMessageText) > -1, "Expected failure message to contain text '" + expectedFailureMessageText + "' but was: " + SkyUnitExpectation.GetFailureMessage(CurrentFakeExpectationId))
+endFunction
+
+function ExpectDescription(string expectedDescription)
+    Expect(SkyUnitExpectation.GetDescription(CurrentFakeExpectationId)).To(Equal(expectedDescription))
+endFunction
+
+; Update to ContainText
+function ExpectDescriptionContains(string expectedDescriptionText)
+    Assert(StringUtil.Find(SkyUnitExpectation.GetDescription(CurrentFakeExpectationId), expectedDescriptionText) > -1, "Expected expectation desription to contain text '" + expectedDescriptionText+ "' but was: " + SkyUnitExpectation.GetDescription(CurrentFakeExpectationId))
+endFunction
+
+function ExpectActual(string type, string text)
+    Expect(SkyUnitExpectation.GetActualType(ExpectationID)).To(Equal(type))
+    Expect(SkyUnitExpectation.GetActualText(ExpectationID)).To(Equal(text))
+endFunction
+
+function ExpectExpected(string type, string text)
+    Expect(SkyUnitExpectation.GetExpectedType(ExpectationID)).To(Equal(type))
+    Expect(SkyUnitExpectation.GetExpectedText(ExpectationID)).To(Equal(text))
 endFunction

@@ -20,8 +20,6 @@ function Tests()
 endFunction
 
 function Assert_Test()
-    SetupFakeTest()
-
     ; Failing Case
     SwitchToContext_Fake()
     bool result = Assert(1 == 2, "Expected something to equal something else")
@@ -56,8 +54,6 @@ function Assert_Test()
 endFunction
 
 function Refute_Test()
-    SetupFakeTest()
-
     ; Failing Case
     SwitchToContext_Fake()
     bool result = Refute(1 == 1, "Expected something not to equal something else")
@@ -92,8 +88,6 @@ function Refute_Test()
 endFunction
 
 function ExpectString_Test()
-    SetupFakeTest()
-
     ; Failing Case
     SwitchToContext_Fake()
     bool result = ExpectString("Hello").To(EqualString("Not Hello"))
@@ -164,8 +158,6 @@ function ExpectString_Test()
 endFunction
 
 function Expect_Test()
-    SetupFakeTest()
-
     ; Failing Case
     SwitchToContext_Fake()
     bool result = Expect("Hello").To(Equal("Not Hello"))
@@ -236,8 +228,6 @@ function Expect_Test()
 endFunction
 
 function ExpectInt_Test()
-    SetupFakeTest()
-
     ; Failing Case
     SwitchToContext_Fake()
     bool result = ExpectInt(42).To(EqualInt(12345))
@@ -308,8 +298,6 @@ function ExpectInt_Test()
 endFunction
 
 function ExpectFloat_Test()
-    SetupFakeTest()
-
     ; Failing Case
     SwitchToContext_Fake()
     bool result = ExpectFloat(4.2).To(EqualFloat(123.45))
@@ -386,8 +374,6 @@ function ExpectFloat_Test()
 endFunction
 
 function ExpectBool_Test()
-    SetupFakeTest()
-
     ; Failing Case
     SwitchToContext_Fake()
     bool result = ExpectBool(false).To(EqualBool(true))
@@ -458,8 +444,6 @@ function ExpectBool_Test()
 endFunction
 
 function ExpectForm_Test()
-    SetupFakeTest()
-
     Form gold     = Game.GetForm(0xf)
     Form lockpick = Game.GetForm(0xa)
     Form player   = Game.GetPlayer()
@@ -534,8 +518,6 @@ function ExpectForm_Test()
 endFunction
 
 function ExpectForm_None_Test()
-    SetupFakeTest()
-
     Form gold     = Game.GetForm(0xf)
     Form lockpick = Game.GetForm(0xa)
     Form nothing
