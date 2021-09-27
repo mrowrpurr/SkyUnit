@@ -970,7 +970,7 @@ function UI_Show_TestResult(int testRun, string testSuiteName, string testName) 
         string expectationDescription = SkyUnitExpectation.GetDescription(expectation)
         if expectationStatus != "PASSING"
             lineCount += 1
-            expectationFailureText += "[" + expectationStatus + "] #" + (i + 1) + " " + expectationDescription + "\n"
+            expectationFailureText += "[" + expectationStatus + "] #" + (i + 1) + "\n" ; + " " + expectationDescription + "\n"
             string failureMessage = JMap.getStr(expectation, "failureMessage")
             if failureMessage && lineCount < maxLines
                 expectationFailureText += failureMessage + "\n"
