@@ -13,6 +13,16 @@ Assertions will be executed right away and there are helpers here to get their r
 [TODO ADD EXAMPLES]
 }
 
+Actor _player
+Actor property Player
+    Actor function get()
+        if ! _player
+            _player = Game.GetPlayer()
+        endIf
+        return _player
+    endFunction
+endProperty
+
 string _currentTestScriptName
 
 string property CurrentFakeTestName auto

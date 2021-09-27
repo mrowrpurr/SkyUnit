@@ -217,14 +217,20 @@ endFunction
 
 SkyUnitTest function ExpectPlayer()
     SkyUnitExpectation.BeginExpectation("ExpectPlayer")
-    Form actual = Game.GetPlayer()
-    SkyUnitExpectation.SetActualForm(actual, "Actor")
+    Actor actual = Game.GetPlayer()
+    SkyUnitExpectation.SetActualForm(actual, "Actor", autoSetText = false)
+    SkyUnitExpectation.SetActualText(actual.GetActorBase().GetName() + " " + actual)
     return SkyUnitExpectation.CurrentTest()
 endFunction
 
 SkyUnitTest function ExpectActor(Actor actual)
     SkyUnitExpectation.BeginExpectation("ExpectActor")
-    SkyUnitExpectation.SetActualForm(actual, "Actor")
+    SkyUnitExpectation.SetActualForm(actual, "Actor", autoSetText = false)
+    if actual
+        SkyUnitExpectation.SetActualText(actual.GetActorBase().GetName() + " " + actual)
+    else
+        SkyUnitExpectation.SetActualText("None")
+    endIf
     return SkyUnitExpectation.CurrentTest()
 endFunction
 
@@ -630,4 +636,25 @@ bool function ContainText(string expected)
         "\"" + expected + "\"")
     endIf
     return SkyUnitExpectation.Pass("ContainText")
+endFunction
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Actor Assertions
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+bool function HaveItem(Form item)
+    SkyUnitExpectation.SetExpectedForm(item)
+    Actor theActor = SkyUnitExpectation.GetActualForm() as Actor
+    bool actual = theActor.GetItemCount(item) > 0
+    bool not = SkyUnitExpectation.Not()
+    if not && actual
+        return SkyUnitExpectation.Fail("HaveItem", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " not to have item " + \
+            SkyUnitExpectation.ExpectedDescription())
+    elseIf ! not && ! actual
+        return SkyUnitExpectation.Fail("HaveItem", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " to have item " + \
+            SkyUnitExpectation.ExpectedDescription())
+    endIf
+    return SkyUnitExpectation.Pass("HaveItem")
 endFunction

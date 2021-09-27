@@ -257,6 +257,12 @@ string function ExpectedDescription() global
     string type = GetExpectedType()
     if type == "String"
         return "String \"" + GetExpectedString() + "\""
+    elseIf type == "Form"
+        if GetExpectedFormType() == "Form"
+            return GetExpectedText()
+        else
+            return GetExpectedFormType() + " " + GetExpectedText()
+        endIf
     else
         return type + " " + GetExpectedText()
     endIf
@@ -266,6 +272,12 @@ string function ActualDescription() global
     string type = GetActualType()
     if type == "String"
         return "String \"" + GetActualString() + "\""
+    elseIf type == "Form"
+        if GetActualFormType() == "Form"
+            return GetActualText()
+        else
+            return GetActualFormType() + " " + GetActualText()
+        endIf
     else
         return type + " " + GetActualText()
     endIf
@@ -685,7 +697,7 @@ string function GetActualFormType(int expectationId = 0) global
         expectationId = SkyUnitPrivateAPI.SkyUnitData_GetCurrentExpectation()
     endIf
     if expectationId
-        return JMap.getForm(JMap.getObj(expectationId, "actual"), "formType")
+        return JMap.getStr(JMap.getObj(expectationId, "actual"), "formType")
     endIf
 endFunction
 
@@ -726,12 +738,12 @@ string function GetExpectedFormType(int expectationId = 0) global
         expectationId = SkyUnitPrivateAPI.SkyUnitData_GetCurrentExpectation()
     endIf
     if expectationId
-        return JMap.getForm(JMap.getObj(expectationId, "expected"), "formType")
+        return JMap.getStr(JMap.getObj(expectationId, "expected"), "formType")
     endIf
 endFunction
 
 ; Sets the "expected value" [Form version]
-function SetExpectedForm(Form value, string type, bool autoSetText = true, bool autoSetType = true, int expectationId = 0) global
+function SetExpectedForm(Form value, string type = "Form", bool autoSetText = true, bool autoSetType = true, int expectationId = 0) global
     if ! expectationId
         expectationId = SkyUnitPrivateAPI.SkyUnitData_GetCurrentExpectation()
     endIf
@@ -739,7 +751,11 @@ function SetExpectedForm(Form value, string type, bool autoSetText = true, bool 
         JMap.setForm(JMap.getObj(expectationId, "expected"), "data", value)
         JMap.setStr(JMap.getObj(expectationId, "expected"), "formType", type)
         if autoSetText
-            SetExpectedText(value, expectationId)
+            if value
+                SetExpectedText(value.GetName() + " " + value, expectationId)
+            else
+                SetExpectedText("None", expectationId)
+            endIf
         endIf
         if autoSetType
             SetExpectedType("Form", expectationId)

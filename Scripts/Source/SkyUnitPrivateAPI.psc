@@ -685,6 +685,25 @@ function ShowUI() global
     endIf
 endFunction
 
+function ListenForTestSuiteShortcuts()
+    ; RegisterForKey(0) ; [A] for Run All   - TODO
+    ; RegisterForKey(0) ; [R] for Run Again - TODO
+    RegisterForKey(33) ; [F] for Filter
+endFunction
+
+function UnlistenForTestSuiteShortcuts()
+    UnregisterForKey(33) ; F
+endFunction
+
+event OnKeyDown(int keyCode)
+    if keyCode == 33 ; Filter
+        Input.TapKey(1) ; Escape
+        UI_Show_ViewAllTestSuites(GetTextEntryResult())
+    endIf
+endEvent
+
+UIListMenu property CurrentlyVisibleListMenu auto
+
 ; Main Menu for SkyUnit
 ;
 ; Shows all test suite names so you can quickly run a specific suite and see its results!
@@ -723,9 +742,11 @@ function UI_Show_MainMenu() global
         suiteIndex += 1
     endWhile
 
-    ; XXX.RegisterForKey(30) ; A - Run [A]ll ; <--- Use a Quest script to support keyboard shortcuts, e.g. F for filter, A for all, V for view
+    SkyUnitPrivateAPI api = SkyUnitPrivateAPI.GetInstance()
+    api.ListenForTestSuiteShortcuts()
+    api.CurrentlyVisibleListMenu = listMenu
     listMenu.OpenMenu()
-    ; XXX.UnregisterForKey(30) ; A
+    api.UnlistenForTestSuiteShortcuts()
 
     int selection = listMenu.GetResultInt()
     if selection > -1
