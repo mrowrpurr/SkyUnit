@@ -124,12 +124,12 @@ endFunction
 
 function String_ContainText_Test()
     ; FAIL
-    ExpectExpectation().ToFail(ExpectString("Hello").To(ContainText("Foo")) )
-    ExpectDescription("ExpectString(\"Hello\").To(ContainText(\"Foo\"))")
-    ExpectFailureMessage("Expected String \"Hello\" to contain text \"Foo\"")
-    ExpectActual("String", "Hello")
+    ExpectExpectation().ToFail(ExpectString("Hello World").To(ContainText("Foo")) )
+    ExpectDescription("ExpectString(\"Hello World\").To(ContainText(\"Foo\"))")
+    ExpectFailureMessage("Expected String \"Hello World\" to contain text \"Foo\"")
+    ExpectActual("String", "Hello World")
     ExpectExpected("String", "Foo")
-    ExpectString(SkyUnitExpectation.GetActualString(ExpectationID)).To(EqualString("Hello"))
+    ExpectString(SkyUnitExpectation.GetActualString(ExpectationID)).To(EqualString("Hello World"))
     ExpectString(SkyUnitExpectation.GetExpectedString(ExpectationID)).To(EqualString("Foo"))
 
     ; PASS
@@ -158,5 +158,43 @@ function String_ContainText_Test()
     ExpectString(SkyUnitExpectation.GetExpectedString(ExpectationID)).To(EqualString("Foo"))
 endFunction
 
+; TODO FIXME
 function Array_ContainText_Test()
+    string[] myArray = new string[2]
+    myArray[0] = "Hello"
+    myArray[1] = "World"
+
+    ; FAIL
+    ExpectExpectation().ToFail(ExpectStringArray(myArray).To(ContainText("Foo")) )
+    ExpectDescription("ExpectStringArray([\"Hello\", \"World\"]).To(ContainText(\"Foo\"))")
+    ExpectFailureMessage("Expected StringArray [\"Hello\", \"World\"] to contain text \"Foo\"")
+    ExpectActual("StringArray", "[\"Hello\", \"World\"]")
+    ExpectExpected("String", "Foo")
+    ExpectStringArray(SkyUnitExpectation.GetActualStringArray(ExpectationID)).To(EqualStringArray(myArray))
+    ExpectString(SkyUnitExpectation.GetExpectedString(ExpectationID)).To(EqualString("Foo"))
+
+    ; PASS
+    ExpectExpectation().ToPass(ExpectStringArray(myArray).To(ContainText("World")))
+    ExpectDescription("ExpectStringArray([\"Hello\", \"World\"]).To(ContainText(\"World\"))")
+    ExpectActual("StringArray", "[\"Hello\", \"World\"]")
+    ExpectExpected("String", "World")
+    ExpectStringArray(SkyUnitExpectation.GetActualStringArray(ExpectationID)).To(EqualStringArray(myArray))
+    ExpectString(SkyUnitExpectation.GetExpectedString(ExpectationID)).To(EqualString("World"))
+
+    ; Not() FAIL
+    ExpectExpectation().ToFail(ExpectStringArray(myArray).Not().To(ContainText("World")))
+    ExpectDescription("ExpectStringArray([\"Hello\", \"World\"]).Not().To(ContainText(\"World\"))")
+    ExpectFailureMessage("Expected StringArray [\"Hello\", \"World\"] not to contain text \"World\"")
+    ExpectActual("StringArray", "[\"Hello\", \"World\"]")
+    ExpectExpected("String", "World")
+    ExpectStringArray(SkyUnitExpectation.GetActualStringArray(ExpectationID)).To(EqualStringArray(myArray))
+    ExpectString(SkyUnitExpectation.GetExpectedString(ExpectationID)).To(EqualString("World"))
+
+    ; Not() PASS
+    ExpectExpectation().ToPass(ExpectStringArray(myArray).Not().To(ContainText("Foo")))
+    ExpectDescription("ExpectStringArray([\"Hello\", \"World\"]).Not().To(ContainText(\"Foo\"))")
+    ExpectActual("StringArray", "[\"Hello\", \"World\"]")
+    ExpectExpected("String", "Foo")
+    ExpectStringArray(SkyUnitExpectation.GetActualStringArray(ExpectationID)).To(EqualStringArray(myArray))
+    ExpectString(SkyUnitExpectation.GetExpectedString(ExpectationID)).To(EqualString("Foo"))
 endFunction
