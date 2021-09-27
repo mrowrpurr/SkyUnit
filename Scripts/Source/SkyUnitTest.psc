@@ -658,3 +658,20 @@ bool function HaveItem(Form item)
     endIf
     return SkyUnitExpectation.Pass("HaveItem")
 endFunction
+
+bool function HaveEquippedItem(Form item)
+    SkyUnitExpectation.SetExpectedForm(item)
+    Actor theActor = SkyUnitExpectation.GetActualForm() as Actor
+    bool actual = theActor.IsEquipped(item)
+    bool not = SkyUnitExpectation.Not()
+    if not && actual
+        return SkyUnitExpectation.Fail("HaveEquippedItem", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " not to have item equipped " + \
+            SkyUnitExpectation.ExpectedDescription())
+    elseIf ! not && ! actual
+        return SkyUnitExpectation.Fail("HaveEquippedItem", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " to have item equipped " + \
+            SkyUnitExpectation.ExpectedDescription())
+    endIf
+    return SkyUnitExpectation.Pass("HaveEquippedItem")
+endFunction
