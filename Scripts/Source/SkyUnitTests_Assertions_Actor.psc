@@ -9,7 +9,7 @@ function Tests()
     Test("HavePerk")
     Test("HaveSpell")
     Test("HaveEquippedItem").Fn(HaveEquippedItem_Test())
-    Test("HaveEquippedItemSpell")
+    Test("HaveEquippedItemSpell").Fn(HaveEquippedSpell_Test())
 endFunction
 
 function HaveItem_Test()
@@ -106,4 +106,54 @@ function HaveEquippedItem_Test()
     ExpectExpected("Form", ironDaggerDescription)
     ExpectForm(SkyUnitExpectation.GetActualForm(ExpectationID)).To(EqualForm(Player))
     ExpectForm(SkyUnitExpectation.GetExpectedForm(ExpectationID)).To(EqualForm(ironDagger))
+endFunction
+
+function HaveEquippedSpell_Test()
+    Spell flames = Game.GetForm(0x12FCD) as Spell
+    string flamesDescription = "Flames [Spell < (00012FCD)>]"
+    string playerDescription = Player.GetActorBase().GetName() + " [Actor < (00000014)>]"
+
+    Player.UnequipSpell(flames, 0)
+    Player.UnequipSpell(flames, 1)
+
+    ; Fail
+    ExpectExpectation().ToFail(ExpectPlayer().To(HaveEquippedSpell(flames)))
+    ExpectDescription("ExpectPlayer(" + playerDescription + ").To(HaveEquippedSpell(" + flamesDescription + "))")
+    ExpectFailureMessage("Expected Actor " + playerDescription + " to have item equipped " + flamesDescription)
+    ExpectActual("Form", playerDescription)
+    ExpectExpected("Form", flamesDescription)
+    ExpectForm(SkyUnitExpectation.GetActualForm(ExpectationID)).To(EqualForm(Player))
+    ExpectForm(SkyUnitExpectation.GetExpectedForm(ExpectationID)).To(EqualForm(flames))
+
+    Player.EquipSpell(flames, 0)
+
+    ; Pass
+    ExpectExpectation().ToPass(ExpectPlayer().To(HaveEquippedSpell(flames)))
+    ExpectDescription("ExpectPlayer(" + playerDescription + ").To(HaveEquippedSpell(" + flamesDescription + "))")
+    ExpectFailureMessage("")
+    ExpectActual("Form", playerDescription)
+    ExpectExpected("Form", flamesDescription)
+    ExpectForm(SkyUnitExpectation.GetActualForm(ExpectationID)).To(EqualForm(Player))
+    ExpectForm(SkyUnitExpectation.GetExpectedForm(ExpectationID)).To(EqualForm(flames))
+
+    ; Not() Fail
+    ExpectExpectation().ToFail(ExpectPlayer().Not().To(HaveEquippedSpell(flames)))
+    ExpectDescription("ExpectPlayer(" + playerDescription + ").Not().To(HaveEquippedSpell(" + flamesDescription + "))")
+    ExpectFailureMessage("Expected Actor " + playerDescription + " not to have item equipped " + flamesDescription)
+    ExpectActual("Form", playerDescription)
+    ExpectExpected("Form", flamesDescription)
+    ExpectForm(SkyUnitExpectation.GetActualForm(ExpectationID)).To(EqualForm(Player))
+    ExpectForm(SkyUnitExpectation.GetExpectedForm(ExpectationID)).To(EqualForm(flames))
+
+    Player.UnequipSpell(flames, 0)
+    Player.UnequipSpell(flames, 1)
+
+    ; Not() Pass
+    ExpectExpectation().ToPass(ExpectPlayer().Not().To(HaveEquippedSpell(flames)))
+    ExpectDescription("ExpectPlayer(" + playerDescription + ").Not().To(HaveEquippedSpell(" + flamesDescription + "))")
+    ExpectFailureMessage("")
+    ExpectActual("Form", playerDescription)
+    ExpectExpected("Form", flamesDescription)
+    ExpectForm(SkyUnitExpectation.GetActualForm(ExpectationID)).To(EqualForm(Player))
+    ExpectForm(SkyUnitExpectation.GetExpectedForm(ExpectationID)).To(EqualForm(flames))
 endFunction
