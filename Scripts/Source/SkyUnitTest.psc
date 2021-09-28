@@ -702,19 +702,64 @@ endFunction
 ;; Quest Assertions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+SkyUnitTest function Stage(int stageId)
+    SkyUnitExpectation.SetActualType("QuestStage")
+    SkyUnitExpectation.SetActualInt(stageId, autoSetText = false, autoSetType = false, dataKey = "stage")
+    Quest theQuest = SkyUnitExpectation.GetActualForm() as Quest
+
+    ; Default ExpectQuest()
+    ; But add .Stage(X)
+    string description = SkyUnitExpectation.GetExpectationType() + "(" + SkyUnitExpectation.GetActualText() + ")" + \
+        ".Stage(" + stageId + ")"
+
+    SkyUnitExpectation.SetActualDescription(description)
+    return self
+endFunction
+
+SkyUnitTest function Objective(int objectiveId)
+    SkyUnitExpectation.SetActualType("QuestObjective")
+    SkyUnitExpectation.SetActualInt(objectiveId, autoSetText = false, autoSetType = false, dataKey = "objective")
+    Quest theQuest = SkyUnitExpectation.GetActualForm() as Quest
+
+    ; Default ExpectQuest()
+    ; But add .Objective(X)
+    string description = SkyUnitExpectation.GetExpectationType() + "(" + SkyUnitExpectation.GetActualText() + ")" + \
+        ".Objective(" + objectiveId + ")"
+
+    SkyUnitExpectation.SetActualDescription(description)
+    return self
+endFunction
+
 bool function BeComplete()
     SkyUnitExpectation.SetExpectedType("Bool")
     Quest theQuest = SkyUnitExpectation.GetActualForm() as Quest
-    bool actual = theQuest.IsCompleted()
+    bool actual
     bool not = SkyUnitExpectation.Not()
-    if not && actual
-        return SkyUnitExpectation.Fail("BeComplete", "Expected " + \
-            SkyUnitExpectation.ActualDescription() + " not to be complete")
-    elseIf ! not && ! actual
-        return SkyUnitExpectation.Fail("BeComplete", "Expected " + \
-            SkyUnitExpectation.ActualDescription() + " to be complete")
+    string actualType = SkyUnitExpectation.GetActualType()
+    if actualType == "QuestStage"
+        int stageId = SkyUnitExpectation.GetActualInt(dataKey = "stage")
+        actual = theQuest.IsStageDone(stageId)
+        if not && actual
+            return SkyUnitExpectation.Fail("BeComplete", "Expected " + \
+                SkyUnitExpectation.ActualDescription() + " Stage " + stageId + " not to be complete")
+        elseIf ! not && ! actual
+            return SkyUnitExpectation.Fail("BeComplete", "Expected " + \
+                SkyUnitExpectation.ActualDescription() + " Stage " + stageId + " to be complete")
+        endIf
+        return SkyUnitExpectation.Pass("BeComplete")
+    elseIf actualType == "QuestObjective"
+        ; TODO
+    else
+        actual = theQuest.IsCompleted()
+        if not && actual
+            return SkyUnitExpectation.Fail("BeComplete", "Expected " + \
+                SkyUnitExpectation.ActualDescription() + " not to be complete")
+        elseIf ! not && ! actual
+            return SkyUnitExpectation.Fail("BeComplete", "Expected " + \
+                SkyUnitExpectation.ActualDescription() + " to be complete")
+        endIf
+        return SkyUnitExpectation.Pass("BeComplete")
     endIf
-    return SkyUnitExpectation.Pass("BeComplete")
 endFunction
 
 bool function BeFailed()
