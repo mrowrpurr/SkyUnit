@@ -19,10 +19,10 @@ int OBJECTIVE_TWO = 1
 function Tests()
     Test("Quest - BeComplete").Fn(Quest_BeComplete_Test())
     Test("Stage - BeComplete").Fn(Stage_BeComplete_Test())
-    Test("Stage - BeCurrentStage")
+    Test("Stage - BeCurrentStage").Fn(Stage_BeCurrentStage_Test())
     Test("Objective - BeComplete").Fn(Objective_BeComplete_Test())
     Test("Objective - BeFailed").Fn(Objective_BeFailed_Test())
-    Test("Objective - BeDisplayed")
+    Test("Objective - BeDisplayed").Fn(Objective_BeDisplayed_Test())
 endFunction
 
 function BeforeAll()
@@ -34,6 +34,63 @@ function BeforeEach()
     parent.BeforeEach()
     ExampleQuest.Stop()
     ExampleQuest.Reset()
+endFunction
+
+function Stage_BeCurrentStage_Test()
+    ExampleQuest.Start()
+    ExampleQuest.SetCurrentStageID(STAGE_START)
+
+    ; Fail
+    ExpectExpectation().ToFail(ExpectQuest(ExampleQuest).Stage(STAGE_COMPLETE).To(BeCurrentStage()))
+    JValue.writeToFile(ExpectationID, "TheExpectation.json")
+    ExpectDescriptionContains("ExpectQuest(Cool Test Quest [Quest <SkyUnitQuestForTesting (")
+    ExpectDescriptionContains("814)>]).Stage(20).To(BeCurrentStage())")
+    ExpectFailureMessageContains("Expected QuestStage Cool Test Quest [Quest <SkyUnitQuestForTesting (")
+    ExpectFailureMessageContains("814)>] Stage 20 to be current stage")
+    ExpectActual("QuestStage", "Cool Test Quest " + ExampleQuest)
+    Expect(SkyUnitExpectation.GetActualType(ExpectationID)).To(Equal("QuestStage"))
+    ExpectForm(SkyUnitExpectation.GetActualForm(ExpectationID)).To(EqualForm(ExampleQuest))
+    ExpectInt(SkyUnitExpectation.GetActualInt(ExpectationID, "stage")).To(EqualInt(20))
+    Expect(SkyUnitExpectation.GetExpectedType(ExpectationID)).To(Equal("Bool"))
+
+    ExampleQuest.SetCurrentStageID(STAGE_COMPLETE)
+
+    ; Pass
+    ExpectExpectation().ToPass(ExpectQuest(ExampleQuest).Stage(STAGE_COMPLETE).To(BeCurrentStage()))
+    ExpectDescriptionContains("ExpectQuest(Cool Test Quest [Quest <SkyUnitQuestForTesting (")
+    ExpectDescriptionContains("814)>]).Stage(20).To(BeCurrentStage())")
+    ExpectFailureMessage("")
+    ExpectActual("QuestStage", "Cool Test Quest " + ExampleQuest)
+    Expect(SkyUnitExpectation.GetActualType(ExpectationID)).To(Equal("QuestStage"))
+    ExpectForm(SkyUnitExpectation.GetActualForm(ExpectationID)).To(EqualForm(ExampleQuest))
+    ExpectInt(SkyUnitExpectation.GetActualInt(ExpectationID, "stage")).To(EqualInt(20))
+    Expect(SkyUnitExpectation.GetExpectedType(ExpectationID)).To(Equal("Bool"))
+
+    ; Not() Fail
+    ExpectExpectation().ToFail(ExpectQuest(ExampleQuest).Stage(STAGE_COMPLETE).Not().To(BeCurrentStage()))
+    ExpectDescriptionContains("ExpectQuest(Cool Test Quest [Quest <SkyUnitQuestForTesting (")
+    ExpectDescriptionContains("814)>]).Stage(20).Not().To(BeCurrentStage())")
+    ExpectFailureMessageContains("Expected QuestStage Cool Test Quest [Quest <SkyUnitQuestForTesting (")
+    ExpectFailureMessageContains("814)>] Stage 20 not to be current stage")
+    ExpectActual("QuestStage", "Cool Test Quest " + ExampleQuest)
+    Expect(SkyUnitExpectation.GetActualType(ExpectationID)).To(Equal("QuestStage"))
+    ExpectForm(SkyUnitExpectation.GetActualForm(ExpectationID)).To(EqualForm(ExampleQuest))
+    ExpectInt(SkyUnitExpectation.GetActualInt(ExpectationID, "stage")).To(EqualInt(20))
+    Expect(SkyUnitExpectation.GetExpectedType(ExpectationID)).To(Equal("Bool"))
+
+    ExampleQuest.Stop()
+    ExampleQuest.Reset()
+
+    ; Not() Pass
+    ExpectExpectation().ToPass(ExpectQuest(ExampleQuest).Stage(STAGE_COMPLETE).Not().To(BeCurrentStage()))
+    ExpectDescriptionContains("ExpectQuest(Cool Test Quest [Quest <SkyUnitQuestForTesting (")
+    ExpectDescriptionContains("814)>]).Stage(20).Not().To(BeCurrentStage())")
+    ExpectFailureMessage("")
+    ExpectActual("QuestStage", "Cool Test Quest " + ExampleQuest)
+    Expect(SkyUnitExpectation.GetActualType(ExpectationID)).To(Equal("QuestStage"))
+    ExpectForm(SkyUnitExpectation.GetActualForm(ExpectationID)).To(EqualForm(ExampleQuest))
+    ExpectInt(SkyUnitExpectation.GetActualInt(ExpectationID, "stage")).To(EqualInt(20))
+    Expect(SkyUnitExpectation.GetExpectedType(ExpectationID)).To(Equal("Bool"))
 endFunction
 
 function Quest_BeComplete_Test()

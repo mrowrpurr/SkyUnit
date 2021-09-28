@@ -808,4 +808,19 @@ bool function BeDisplayed()
 endFunction
 
 bool function BeCurrentStage()
+    SkyUnitExpectation.SetExpectedType("Bool")
+    Quest theQuest = SkyUnitExpectation.GetActualForm() as Quest
+    bool actual
+    bool not = SkyUnitExpectation.Not()
+    string actualType = SkyUnitExpectation.GetActualType()
+    int stageId = SkyUnitExpectation.GetActualInt(dataKey = "stage")
+    actual = theQuest.GetCurrentStageID() == stageId
+    if not && actual
+        return SkyUnitExpectation.Fail("BeCurrentStage", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " Stage " + stageId + " not to be current stage")
+    elseIf ! not && ! actual
+        return SkyUnitExpectation.Fail("BeCurrentStage", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " Stage " + stageId + " to be current stage")
+    endIf
+    return SkyUnitExpectation.Pass("BeCurrentStage")
 endFunction
