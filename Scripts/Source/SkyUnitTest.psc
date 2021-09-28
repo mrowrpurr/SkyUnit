@@ -664,6 +664,23 @@ bool function HaveItem(Form item)
     return SkyUnitExpectation.Pass("HaveItem")
 endFunction
 
+bool function HaveSpell(Spell theSpell)
+    SkyUnitExpectation.SetExpectedForm(theSpell)
+    Actor theActor = SkyUnitExpectation.GetActualForm() as Actor
+    bool actual = theActor.HasSpell(theSpell)
+    bool not = SkyUnitExpectation.Not()
+    if not && actual
+        return SkyUnitExpectation.Fail("HaveSpell", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " not to have spell " + \
+            SkyUnitExpectation.ExpectedDescription())
+    elseIf ! not && ! actual
+        return SkyUnitExpectation.Fail("HaveSpell", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " to have spell " + \
+            SkyUnitExpectation.ExpectedDescription())
+    endIf
+    return SkyUnitExpectation.Pass("HaveSpell")
+endFunction
+
 bool function HaveEquippedItem(Form item)
     SkyUnitExpectation.SetExpectedForm(item)
     Actor theActor = SkyUnitExpectation.GetActualForm() as Actor

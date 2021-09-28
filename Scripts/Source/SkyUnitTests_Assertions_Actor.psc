@@ -7,7 +7,7 @@ function Tests()
     Test("BeDead")
     Test("HaveItem").Fn(HaveItem_Test())
     Test("HavePerk")
-    Test("HaveSpell")
+    Test("HaveSpell").Fn(HaveSpell_Test())
     Test("HaveEquippedItem").Fn(HaveEquippedItem_Test())
     Test("HaveEquippedItemSpell").Fn(HaveEquippedSpell_Test())
 endFunction
@@ -58,6 +58,54 @@ function HaveItem_Test()
     ExpectExpected("Form", lockpickDescription)
     ExpectForm(SkyUnitExpectation.GetActualForm(ExpectationID)).To(EqualForm(Player))
     ExpectForm(SkyUnitExpectation.GetExpectedForm(ExpectationID)).To(EqualForm(lockpick))
+endFunction
+
+function HaveSpell_Test()
+    Spell candlelight = Game.GetForm(0x43324) as Spell
+    string candlelightDescription = "Candlelight [Spell < (00043324)>]"
+    string playerDescription = Player.GetActorBase().GetName() + " [Actor < (00000014)>]"
+
+    Player.RemoveSpell(candlelight)
+
+    ; Fail
+    ExpectExpectation().ToFail(ExpectPlayer().To(HaveSpell(candlelight)))
+    ExpectDescription("ExpectPlayer(" + playerDescription + ").To(HaveSpell(" + candlelightDescription + "))")
+    ExpectFailureMessage("Expected Actor " + playerDescription + " to have spell " + candlelightDescription)
+    ExpectActual("Form", playerDescription)
+    ExpectExpected("Form", candlelightDescription)
+    ExpectForm(SkyUnitExpectation.GetActualForm(ExpectationID)).To(EqualForm(Player))
+    ExpectForm(SkyUnitExpectation.GetExpectedForm(ExpectationID)).To(EqualForm(candlelight))
+
+    Player.AddSpell(candlelight)
+
+    ; Pass
+    ExpectExpectation().ToPass(ExpectPlayer().To(HaveSpell(candlelight)))
+    ExpectDescription("ExpectPlayer(" + playerDescription + ").To(HaveSpell(" + candlelightDescription + "))")
+    ExpectFailureMessage("")
+    ExpectActual("Form", playerDescription)
+    ExpectExpected("Form", candlelightDescription)
+    ExpectForm(SkyUnitExpectation.GetActualForm(ExpectationID)).To(EqualForm(Player))
+    ExpectForm(SkyUnitExpectation.GetExpectedForm(ExpectationID)).To(EqualForm(candlelight))
+
+    ; Not() Fail
+    ExpectExpectation().ToFail(ExpectPlayer().Not().To(HaveSpell(candlelight)))
+    ExpectDescription("ExpectPlayer(" + playerDescription + ").Not().To(HaveSpell(" + candlelightDescription + "))")
+    ExpectFailureMessage("Expected Actor " + playerDescription + " not to have spell " + candlelightDescription)
+    ExpectActual("Form", playerDescription)
+    ExpectExpected("Form", candlelightDescription)
+    ExpectForm(SkyUnitExpectation.GetActualForm(ExpectationID)).To(EqualForm(Player))
+    ExpectForm(SkyUnitExpectation.GetExpectedForm(ExpectationID)).To(EqualForm(candlelight))
+
+    Player.RemoveSpell(candlelight)
+
+    ; Not() Pass
+    ExpectExpectation().ToPass(ExpectPlayer().Not().To(HaveSpell(candlelight)))
+    ExpectDescription("ExpectPlayer(" + playerDescription + ").Not().To(HaveSpell(" + candlelightDescription + "))")
+    ExpectFailureMessage("")
+    ExpectActual("Form", playerDescription)
+    ExpectExpected("Form", candlelightDescription)
+    ExpectForm(SkyUnitExpectation.GetActualForm(ExpectationID)).To(EqualForm(Player))
+    ExpectForm(SkyUnitExpectation.GetExpectedForm(ExpectationID)).To(EqualForm(candlelight))
 endFunction
 
 function HaveEquippedItem_Test()
