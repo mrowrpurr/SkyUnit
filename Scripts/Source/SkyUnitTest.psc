@@ -772,6 +772,21 @@ bool function BeComplete()
 endFunction
 
 bool function BeFailed()
+    SkyUnitExpectation.SetExpectedType("Bool")
+    Quest theQuest = SkyUnitExpectation.GetActualForm() as Quest
+    bool actual
+    bool not = SkyUnitExpectation.Not()
+    string actualType = SkyUnitExpectation.GetActualType()
+    int objectiveId = SkyUnitExpectation.GetActualInt(dataKey = "objective")
+    actual = theQuest.IsObjectiveFailed(objectiveId)
+    if not && actual
+        return SkyUnitExpectation.Fail("BeFailed", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " Objective " + objectiveId + " not to be failed")
+    elseIf ! not && ! actual
+        return SkyUnitExpectation.Fail("BeFailed", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " Objective " + objectiveId + " to be failed")
+    endIf
+    return SkyUnitExpectation.Pass("BeFailed")
 endFunction
 
 bool function BeCurrentStage()
