@@ -2,18 +2,7 @@ scriptName SkyUnitExpectation hidden
 {Global functions used for implementing custom expectations.
 This script is also used for implementing all built-in SkyUnit expectations.
 
-Example Custom Expectation:
-
-```
-;TODO
-```
-
-Example Custom Assertion:
-
-```
-;TODO
-```
-}
+! ALPHA - this interface may change !}
 
 ; Returns the currently installed version of the SkyUnit expectation framework.
 float function GetCurrentVersion()
