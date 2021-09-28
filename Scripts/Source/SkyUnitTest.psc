@@ -748,7 +748,16 @@ bool function BeComplete()
         endIf
         return SkyUnitExpectation.Pass("BeComplete")
     elseIf actualType == "QuestObjective"
-        ; TODO
+        int objectiveId = SkyUnitExpectation.GetActualInt(dataKey = "objective")
+        actual = theQuest.IsObjectiveCompleted(objectiveId)
+        if not && actual
+            return SkyUnitExpectation.Fail("BeComplete", "Expected " + \
+                SkyUnitExpectation.ActualDescription() + " Objective " + objectiveId + " not to be complete")
+        elseIf ! not && ! actual
+            return SkyUnitExpectation.Fail("BeComplete", "Expected " + \
+                SkyUnitExpectation.ActualDescription() + " Objective " + objectiveId + " to be complete")
+        endIf
+        return SkyUnitExpectation.Pass("BeComplete")
     else
         actual = theQuest.IsCompleted()
         if not && actual

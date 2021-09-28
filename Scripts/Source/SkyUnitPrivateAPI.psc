@@ -836,6 +836,9 @@ function UI_Show_ViewAllTestSuites(string filter = "") global
 
     int matchingTestSuiteNames = JArray.object()
     string[] testSuiteNames = SkyUnitPrivateAPI.TestSuites()
+
+    string firstMatchingTestSuiteName = ""
+    int numMatching = 0
     bool anyMatching = (filter == "")
     int suiteIndex = 0
     while suiteIndex < testSuiteNames.Length
@@ -850,6 +853,10 @@ function UI_Show_ViewAllTestSuites(string filter = "") global
             endIf
             JArray.addStr(matchingTestSuiteNames, testSuiteName)
             anyMatching = true
+            numMatching += 1
+            if ! firstMatchingTestSuiteName
+                firstMatchingTestSuiteName = testSuiteName
+            endIf
         endIf
         suiteIndex += 1
     endWhile
@@ -857,6 +864,11 @@ function UI_Show_ViewAllTestSuites(string filter = "") global
     if ! anyMatching
         Debug.MessageBox("No Test Suites found matching filter: " + filter)
         UI_Show_MainMenu()
+        return
+    endIf
+
+    if numMatching == 1
+        UI_Show_TestSuiteResult(RunTestSuite(firstMatchingTestSuiteName), firstMatchingTestSuiteName)
         return
     endIf
 
