@@ -251,3 +251,59 @@ function Objective_BeFailed_Test()
     ExpectInt(SkyUnitExpectation.GetActualInt(ExpectationID, "objective")).To(EqualInt(1))
     Expect(SkyUnitExpectation.GetExpectedType(ExpectationID)).To(Equal("Bool"))
 endFunction
+
+function Objective_BeDisplayed_Test()
+    ExampleQuest.Start()
+
+    ; Fail
+    ExpectExpectation().ToFail(ExpectQuest(ExampleQuest).Objective(OBJECTIVE_TWO).To(BeDisplayed()))
+    JValue.writeToFile(ExpectationID, "TheExpectation.json")
+    ExpectDescriptionContains("ExpectQuest(Cool Test Quest [Quest <SkyUnitQuestForTesting (")
+    ExpectDescriptionContains("814)>]).Objective(1).To(BeDisplayed())")
+    ExpectFailureMessageContains("Expected QuestObjective Cool Test Quest [Quest <SkyUnitQuestForTesting (")
+    ExpectFailureMessageContains("814)>] Objective 1 to be displayed")
+    ExpectActual("QuestObjective", "Cool Test Quest " + ExampleQuest)
+    Expect(SkyUnitExpectation.GetActualType(ExpectationID)).To(Equal("QuestObjective"))
+    ExpectForm(SkyUnitExpectation.GetActualForm(ExpectationID)).To(EqualForm(ExampleQuest))
+    ExpectInt(SkyUnitExpectation.GetActualInt(ExpectationID, "objective")).To(EqualInt(1))
+    Expect(SkyUnitExpectation.GetExpectedType(ExpectationID)).To(Equal("Bool"))
+
+    ExampleQuest.SetObjectiveDisplayed(OBJECTIVE_TWO)
+
+    ; Pass
+    ExpectExpectation().ToPass(ExpectQuest(ExampleQuest).Objective(OBJECTIVE_TWO).To(BeDisplayed()))
+    ExpectDescriptionContains("ExpectQuest(Cool Test Quest [Quest <SkyUnitQuestForTesting (")
+    ExpectDescriptionContains("814)>]).Objective(1).To(BeDisplayed())")
+    ExpectFailureMessage("")
+    ExpectActual("QuestObjective", "Cool Test Quest " + ExampleQuest)
+    Expect(SkyUnitExpectation.GetActualType(ExpectationID)).To(Equal("QuestObjective"))
+    ExpectForm(SkyUnitExpectation.GetActualForm(ExpectationID)).To(EqualForm(ExampleQuest))
+    ExpectInt(SkyUnitExpectation.GetActualInt(ExpectationID, "objective")).To(EqualInt(1))
+    Expect(SkyUnitExpectation.GetExpectedType(ExpectationID)).To(Equal("Bool"))
+
+    ; Not() Fail
+    ExpectExpectation().ToFail(ExpectQuest(ExampleQuest).Objective(OBJECTIVE_TWO).Not().To(BeDisplayed()))
+    ExpectDescriptionContains("ExpectQuest(Cool Test Quest [Quest <SkyUnitQuestForTesting (")
+    ExpectDescriptionContains("814)>]).Objective(1).Not().To(BeDisplayed())")
+    ExpectFailureMessageContains("Expected QuestObjective Cool Test Quest [Quest <SkyUnitQuestForTesting (")
+    ExpectFailureMessageContains("814)>] Objective 1 not to be displayed")
+    ExpectActual("QuestObjective", "Cool Test Quest " + ExampleQuest)
+    Expect(SkyUnitExpectation.GetActualType(ExpectationID)).To(Equal("QuestObjective"))
+    ExpectForm(SkyUnitExpectation.GetActualForm(ExpectationID)).To(EqualForm(ExampleQuest))
+    ExpectInt(SkyUnitExpectation.GetActualInt(ExpectationID, "objective")).To(EqualInt(1))
+    Expect(SkyUnitExpectation.GetExpectedType(ExpectationID)).To(Equal("Bool"))
+
+    ExampleQuest.Stop()
+    ExampleQuest.Reset()
+
+    ; Not() Pass
+    ExpectExpectation().ToPass(ExpectQuest(ExampleQuest).Objective(OBJECTIVE_TWO).Not().To(BeDisplayed()))
+    ExpectDescriptionContains("ExpectQuest(Cool Test Quest [Quest <SkyUnitQuestForTesting (")
+    ExpectDescriptionContains("814)>]).Objective(1).Not().To(BeDisplayed())")
+    ExpectFailureMessage("")
+    ExpectActual("QuestObjective", "Cool Test Quest " + ExampleQuest)
+    Expect(SkyUnitExpectation.GetActualType(ExpectationID)).To(Equal("QuestObjective"))
+    ExpectForm(SkyUnitExpectation.GetActualForm(ExpectationID)).To(EqualForm(ExampleQuest))
+    ExpectInt(SkyUnitExpectation.GetActualInt(ExpectationID, "objective")).To(EqualInt(1))
+    Expect(SkyUnitExpectation.GetExpectedType(ExpectationID)).To(Equal("Bool"))
+endFunction

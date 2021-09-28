@@ -789,8 +789,23 @@ bool function BeFailed()
     return SkyUnitExpectation.Pass("BeFailed")
 endFunction
 
-bool function BeCurrentStage()
+bool function BeDisplayed()
+    SkyUnitExpectation.SetExpectedType("Bool")
+    Quest theQuest = SkyUnitExpectation.GetActualForm() as Quest
+    bool actual
+    bool not = SkyUnitExpectation.Not()
+    string actualType = SkyUnitExpectation.GetActualType()
+    int objectiveId = SkyUnitExpectation.GetActualInt(dataKey = "objective")
+    actual = theQuest.IsObjectiveDisplayed(objectiveId)
+    if not && actual
+        return SkyUnitExpectation.Fail("BeDisplayed", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " Objective " + objectiveId + " not to be displayed")
+    elseIf ! not && ! actual
+        return SkyUnitExpectation.Fail("BeDisplayed", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " Objective " + objectiveId + " to be displayed")
+    endIf
+    return SkyUnitExpectation.Pass("BeDisplayed")
 endFunction
 
-bool function BeDisplayed()
+bool function BeCurrentStage()
 endFunction
