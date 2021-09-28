@@ -712,7 +712,12 @@ function SetActualForm(Form value, string type, bool autoSetText = true, bool au
         JMap.setForm(JMap.getObj(expectationId, "actual"), "data", value)
         JMap.setStr(JMap.getObj(expectationId, "actual"), "formType", type)
         if autoSetText
-            SetActualText(value, expectationId)
+            string name = value.GetName()
+            if name
+                SetActualText(name + " " + value, expectationId)
+            else
+                SetActualText(value, expectationId)
+            endIf
         endIf
         if autoSetType
             SetActualType("Form", expectationId)

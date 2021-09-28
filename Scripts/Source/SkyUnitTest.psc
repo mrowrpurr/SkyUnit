@@ -103,6 +103,13 @@ endFunction
 
 ; Provide an assertion, e.g. `ExpectString("").To(EqualString(""))`
 bool function To(bool assertionFunction, string failureMessage = "")
+    if failureMessage
+        int expectationId = SkyUnitPrivateAPI.SkyUnitData_GetCurrentExpectation()
+        string status = SkyUnitExpectation.GetStatus(expectationId)
+        if status == "FAILING"
+            JMap.setStr(expectationId, "failureMessage", failureMessage)
+        endIf
+    endIf
     return assertionFunction
 endFunction
 
@@ -415,7 +422,6 @@ bool function Equal(string expected)
     else
         actual = SkyUnitExpectation.GetActualText()
     endIf
-    SkyUnitPrivateAPI.Info("Equal does actual " + actual + " equal expected " + expected)
     bool not = SkyUnitExpectation.Not()
     if not && actual == expected
         return SkyUnitExpectation.Fail("Equal", "Expected " + \
@@ -437,7 +443,6 @@ bool function EqualString(string expected)
     else
         actual = SkyUnitExpectation.GetActualText()
     endIf
-    SkyUnitPrivateAPI.Info("EqualString does actual " + actual + " equal expected " + expected)
     bool not = SkyUnitExpectation.Not()
     if not && actual == expected
         return SkyUnitExpectation.Fail("EqualString", "Expected " + \
@@ -691,4 +696,32 @@ bool function HaveEquippedSpell(Spell item)
             SkyUnitExpectation.ExpectedDescription())
     endIf
     return SkyUnitExpectation.Pass("HaveEquippedSpell")
+endFunction
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Quest Assertions
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+bool function BeComplete()
+    SkyUnitExpectation.SetExpectedType("Bool")
+    Quest theQuest = SkyUnitExpectation.GetActualForm() as Quest
+    bool actual = theQuest.IsCompleted()
+    bool not = SkyUnitExpectation.Not()
+    if not && actual
+        return SkyUnitExpectation.Fail("BeComplete", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " not to be complete")
+    elseIf ! not && ! actual
+        return SkyUnitExpectation.Fail("BeComplete", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " to be complete")
+    endIf
+    return SkyUnitExpectation.Pass("BeComplete")
+endFunction
+
+bool function BeFailed()
+endFunction
+
+bool function BeCurrentStage()
+endFunction
+
+bool function BeDisplayed()
 endFunction
