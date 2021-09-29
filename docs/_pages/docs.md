@@ -161,8 +161,7 @@ Time to _boot up the game!_
 
 > Make sure you have your new `.esp` containing the tests included.
 
-When you boot up the game and `coc [somewhere]`, you should see  
-a `1 Tests Found` notification!
+When you boot up the game and `coc [somewhere]`, you should see a `1 Tests Found` notification!
 
 If you see this, you will _automatically_ have a Lesser Power equipped (_which opens up the SkyUnit UI_)
 

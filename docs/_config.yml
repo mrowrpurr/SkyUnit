@@ -65,7 +65,7 @@ author:
   links:
     - label: "Nexus"
       icon: "fas fa-gamepad-alt"
-      url: "https://www.nexusmods.com/skyrimspecialedition/mods/56006"
+      url: ""
     - label: "GitHub"
       icon: "fab fa-fw fa-github"
       url: "https://github.com/mrowrpurr/SkyUnit"
@@ -74,7 +74,7 @@ footer:
   links:
     - label: "Nexus"
       icon: "fas fa-gamepad-alt"
-      url: "https://www.nexusmods.com/skyrimspecialedition/mods/56006"
+      url: ""
     - label: "GitHub"
       icon: "fab fa-fw fa-github"
       url: "https://github.com/mrowrpurr/SkyUnit"

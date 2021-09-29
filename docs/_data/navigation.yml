@@ -1,34 +1,35 @@
 main:
   - title: '<i class="fad fa-graduation-cap"></i> Getting Started'
-    url: /about/
+    url: /docs
   - title: '<i class="fad fa-book"></i> API Reference'
-    url: /about/
+    url: /api
   - title: '<i class="fas fa-gamepad-alt"></i> Nexus'
-    url: "https://www.nexusmods.com/skyrimspecialedition/mods/56006"
+    url: ""
 
 sidebar:
   - title: '<i class="fad fa-graduation-cap"></i> Getting Started'
-    url: /docs
+    url: "/docs#"
     children:
     - title: '<i class="fad fa-download"></i> Download'
-      url: /posts/
+      url: "/docs#-download-skyunit"
     - title: '<i class="fad fa-laptop"></i> Create Test'
-      url: /categories/
+      url: "/docs#-create-test"
     - title: '<i class="fad fa-gamepad-alt"></i> Run Test'
-      url: /tags/
+      url: "/docs#-run-test"
   - title: '<i class="fad fa-book"></i> API Reference'
+    url: "/api"
     children:
     - title: 'Expectations, e.g. <code>ExpectPlayer()</code>'
-      url: /posts/
+      url: "/api#expectations"
     - title: 'Basic Assertions, e.g. <code>ContainText()</code>'
-      url: /posts/
+      url: "/api#basic-assertions"
     - title: 'Actor Assertions, e.g. <code>HaveItem()</code>'
-      url: /posts/
+      url: "/api#actor-assertions"
     - title: 'Form Assertions, e.g. <code>HasKeyword()</code>'
-      url: /posts/
+      url: "/api#form-assertions"
     - title: 'Object Assertions, e.g. <code>BeEnabled()</code>'
-      url: /posts/
+      url: "/api#object-assertions"
     - title: 'Quest Assertions, e.g. <code>BeCurrentStage()</code>'
-      url: /posts/
-    - title: 'Other Assertions, e.g. <code>HaveEffect()</code>'
-      url: /posts/
+      url: "/api#quest-assertions"
+    - title: 'Custom Assertions, e.g. <code>BeMyLove()</code>'
+      url: "/api#custom-assertions"
