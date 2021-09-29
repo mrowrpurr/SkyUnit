@@ -1,1 +1,0 @@
-scriptName SkyUnitTests_EnchantmentAssertions extends Quest  

@@ -6,55 +6,41 @@
     Output="Scripts" 
     Optimize="false" 
     Release="false" 
-    Zip="false"
-    Package="false"
+    Zip="true"
+    Package="true"
     Final="false">
     <Variables>
-        <!-- Set the name of your mod: -->
-        <Variable Name="ModName" Value="CHANGE THE MOD NAME HERE" />
-        <!-- The folder where you store all of your mods -->
-        <Variable Name="ModsFolder" Value="C:\Users\mrowr\Dropbox\Skyrim\Mods" />
-        <!-- Optional folder with additional source code for imports -->
+        <Variable Name="ModName" Value="SkyUnit" />
         <Variable Name="ImportsFolder" Value="C:\Users\mrowr\Dropbox\Skyrim\Imports" />
     </Variables>
     <Imports>
         <Import>@ImportsFolder\SKSE64\Scripts\Source</Import>
-        <!-- <Import>@ImportsFolder\Lilac\Scripts\Source</Import> -->
         <Import>@ImportsFolder\PapyrusUtil\Scripts\Source</Import>
         <Import>@ImportsFolder\UIExtensions\scripts\source</Import>
         <Import>@ImportsFolder\JContainers\scripts\source</Import>
-        <!-- <Import>@ImportsFolder\LibFire\Scripts\Source</Import> -->
-        <!-- <Import>@ImportsFolder\iWantWidgets\Source\Scripts</Import> -->
-        <!-- <Import>@ImportsFolder\iWantStatusBars\Source\Scripts</Import> -->
-        <!-- <Import>@ImportsFolder\FISSES\scripts\source</Import> -->
-        <!-- <Import>@ImportsFolder\SkyUI_SDK\Scripts\Source</Import> -->
-        <!-- <Import>@ImportsFolder\ConsoleUtil</Import> -->
-        <!-- <Import>@ImportsFolder\PapyrusExtender\source\scripts</Import> -->
-
-        <!-- Change this to be your default Skyrim install directory's Scripts\Source path  -->
         <Import>C:\Steam\steamapps\common\Skyrim Special Edition\Data\Scripts\Source</Import>
     </Imports>
     <Folders>
-        <!-- Relative path to folder containing .psc Papyrus source code files for this project -->
         <Folder>./Scripts/Source</Folder>
     </Folders>
-    <!-- The following section is for .bsa archives. You can enable it by setting Package="true" in the PapyrusProject -->
     <Packages Output=".">
         <Package Name="@ModName" RootDir=".">
-            <Match In="Scripts">*.pex</Match>
-            <!-- <Match In="interface\translations">*.txt</Match> -->
+            <Match In="Scripts">SkyUnitTest.pex</Match>
+            <Match In="Scripts">SkyUnitExpectation.pex</Match>
+            <Match In="Scripts">SkyUnitPrivateAPI.pex</Match>
+            <Match In="Scripts">SkyUnitUI.pex</Match>
+            <Match In="Scripts">SkyUnitTestRunner.pex</Match>
+            <Match In="Scripts\Source">SkyUnitUI.psc</Match>
+            <Match In="Scripts\Source">SkyUnitTestRunner.psc</Match>
         </Package>
-        <!-- If you have any texture files, uncomment the following to create a Textures .bsa archive with texture files -->
-        <!-- <Package Name="@ModName - Textures" RootDir=".">
-            <Include>*.dds</Include>
-        </Package> -->
     </Packages>
-    <!-- The following section is for .zip archive. You can enable it by setting Zip="true" in the PapyrusProject -->
     <ZipFiles Output="Build">
         <ZipFile Name="@ModName" RootDir="." Compression="deflate">
             <Include>@ModName.esp</Include>
             <Include NoRecurse="true">*.bsa</Include>
-            <Match In="Scripts\Source">*.psc</Match>
+            <Match In="Scripts\Source">SkyUnitTest.psc</Match>
+            <Match In="Scripts\Source">SkyUnitExpectation.psc</Match>
+            <Match In="Scripts\Source">SkyUnitPrivateAPI.psc</Match>
         </ZipFile>
     </ZipFiles>
     <!-- This will remove any *.bsa files in this directory *after* the build, if there are any. Set UseInBuild="false" to disable. -->

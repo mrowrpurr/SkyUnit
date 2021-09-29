@@ -1,449 +1,843 @@
-scriptName SkyUnitTest extends Quest
-{Base script for all SkyUnit test scripts.
+scriptName SkyUnitTest extends Quest hidden
+{Extend this script to create SkyUnit tests.}
 
-e.g.
-  scriptName MyCoolTest extends SkyUnitTest
-  
-  function Tests()
-    Test("Pending test")
-    Test("Passing test").Fn(PassingTest())
-    Test("Failing test").Fn(FailingTest())
-  endFunction
-
-  function BeforeEach()
-    ; This code runs before each test
-    ; These functions are all available:
-    ;    BeforeEach()
-    ;    AfterEach()
-    ;    BeforeAll()
-    ;    AfterAll()
-  endFunction
-
-  function FailingTest()
-    ExpectInt(42).To(EqualInt(12345))
-  endFunction
-
-  function PassingTest()
-    ExpectString("Hello").To(ContainText("H"))
-  endFunction
-}
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Register self on init
-;;
-;; This will register with the default
-;; test suite.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
+; ~ Do not override ~
+;
+; Initializes this SkyUnit test.
+;
+; If you must override this, please be sure to call parent.OnInit()
 event OnInit()
-    SkyUnit2PrivateAPi api = SkyUnit2PrivateAPI.GetPrivateAPI()
-    if api.CurrentTestSuiteID
-        api.AddScriptToTestSuite(self, api.CurrentTestSuiteID)
-    endIf
+    SkyUnitPrivateAPI.RegisterTestSuite(self)
 endEvent
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Functions meant to be overridden
+;; Run Tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+; Runs all tests in this test suite and returns an identifier for a test result
+; which can be used to get the information about each test run and their expectations.
+; int function Run()
+;     return SkyUnitPrivateAPI.RunTestSuite(SkyUnitPrivateAPI.ScriptDisplayName(self))
+; endFunction
+
+; Returns a list of all of the defined test names in this test suite script.
+;
+; _Note: calling this function runs the test suite. Specifically, it runs the `Tests()` function._
+string[] function TestNames()
+    ; TODO Change This Up, it doesn't call BeforeAll/AfterAll correctly etc
+    return SkyUnitPrivateAPI.TestNamesInSuite(SkyUnitPrivateAPI.ScriptDisplayName(self))
+endFunction
+
+; Override the `Tests()` function to define your test cases
+;
+; Example:
+;
+; ```
+;   scriptName MyTests extend SkyUnitTest
+;
+;   function Tests()
+;       ; Tests without .Fn() functions are considered "PENDING".
+;       ; This can be useful for tracking a TODO list of tests to write.
+;       Test("Pending test")
+;
+;       Test("My passing test").Fn(PassingTest())
+;   endFunction
+;
+;   function PassingTest()
+;       ExpectString("Hello").To(EqualString("Hello"))
+;   endFunction
+; ```
 function Tests()
 endFunction
 
+; Defines a test in this test suite
+;
+; Example:
+;
+; ```
+;   scriptName MyTests extend SkyUnitTest
+;
+;   function Tests()
+;       ; Tests without .Fn() functions are considered "PENDING".
+;       ; This can be useful for tracking a TODO list of tests to write.
+;       Test("Pending test")
+;
+;       Test("My passing test").Fn(PassingTest())
+;   endFunction
+;
+;   function PassingTest()
+;       ExpectString("Hello").To(EqualString("Hello"))
+;   endFunction
+; ```
+SkyUnitTest function Test(string testName)
+    SkyUnitPrivateAPI.Test_BeginTestRun(SkyUnitPrivateAPI.ScriptDisplayName(self), testName)
+    return self
+endFunction
+
+; Usage: call your test function inside of the `Fn()` parameter
+;
+; Example:
+;
+; ```
+;   scriptName MyTests extend SkyUnitTest
+;
+;   function Tests()
+;       ; Note the that function passed to Fn()
+;       ; must be invoked using () parenthesis:
+;       Test("My passing test").Fn(PassingTest())
+;   endFunction
+;
+;   function PassingTest()
+;       ExpectString("Hello").To(EqualString("Hello"))
+;   endFunction
+; ```
+function Fn(bool testFunction)
+    SkyUnitPrivateAPI.Fn_EndTestRun()
+endFunction
+
+; Marks this as a "not" assertion, e.g. `ExpectString("").Not().To(EqualString(""))`
+SkyUnitTest function Not()
+    SkyUnitExpectation.ToggleNotExpectation()
+    return self
+endFunction
+
+; Provide an assertion, e.g. `ExpectString("").To(EqualString(""))`
+bool function To(bool assertionFunction, string failureMessage = "")
+    if failureMessage
+        int expectationId = SkyUnitPrivateAPI.SkyUnitData_GetCurrentExpectation()
+        string status = SkyUnitExpectation.GetStatus(expectationId)
+        if status == "FAILING"
+            JMap.setStr(expectationId, "failureMessage", failureMessage)
+        endIf
+    endIf
+    return assertionFunction
+endFunction
+
 function BeforeAll()
+    SkyUnitPrivateAPI.Info("BeforeAll not defined for " + self + " (this is not an error)")
 endFunction
 
 function AfterAll()
+    SkyUnitPrivateAPI.Info("AfterAll not defined for " + self + " (this is not an error)")
 endFunction
 
 function BeforeEach()
+    SkyUnitPrivateAPI.Info("BeforeEach not defined for " + self + " (this is not an error)")
 endFunction
 
 function AfterEach()
+    SkyUnitPrivateAPI.Info("AfterEach not defined for " + self + " (this is not an error)")
 endFunction
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Main Interface for Tests
+;; Simple Assert() and Fail()
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-SkyUnitTest function Test(string testName)
-    SkyUnit2PrivateAPI api = SkyUnit2PrivateAPI.GetPrivateAPI()
-
-    ; If filter provided but this test doesn't match it, return (Fn() will not run)
-    if api.CurrentTestRunFilter && StringUtil.Find(testName, api.CurrentTestRunFilter) == -1
-        api.Debug("Skipping test " + testName + " (filter: \"" + api.CurrentTestRunFilter + "\")")
-        return None
+; If the provided expression does not evaluate to true, fail this expectation.
+bool function Assert(bool actual, string failureMessage = "")
+    SkyUnitExpectation.BeginExpectation("Assert")
+    SkyUnitExpectation.SetActualBool(actual)
+    if actual
+        return SkyUnitExpectation.Pass("Assert")
+    else
     endIf
-
-    api.BeginTest(testName)
-    BeforeEach()
-    return self
+        return SkyUnitExpectation.Fail("Assert", failureMessage)
 endFunction
 
-function Fn(bool testFunction)
-    SkyUnit2PrivateAPI.GetPrivateAPI().EndTest(fnCalled = true)
+; If the provided expression evaluates to true, this will fail.
+bool function Refute(bool actual, string failureMessage = "")
+    SkyUnitExpectation.BeginExpectation("Refute")
+    SkyUnitExpectation.SetActualBool(actual)
+    if actual
+        return SkyUnitExpectation.Fail("Refute", failureMessage)
+    else
+        return SkyUnitExpectation.Pass("Refute")
+    endIf
 endFunction
 
-SkyUnitTest function Not()
-    SkyUnit2PrivateAPI.GetPrivateAPI().SetNotExpectation()
-    return self
+; Fails the current test with the provided message.
+; The failure message will be shown in the test results.
+bool function Fail(string failureMessage)
+    SkyUnitExpectation.BeginExpectation("Fail")
+    SkyUnitExpectation.Fail("Fail", failureMessage)
+    return false
 endFunction
 
-SkyUnitTest function To(bool expectationFunction, string failureMessage = "")
-    ; TODO Save the result of the expectation function :)
-    SkyUnit2PrivateAPI.GetPrivateAPI().SetCustomFailureMessage(failureMessage)
-    return self
+; Pass the current test (unless test has any failing expectations)
+bool function Pass()
+    SkyUnitExpectation.BeginExpectation("Pass")
+    SkyUnitExpectation.Pass("Pass")
+    return true
 endFunction
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Base included Expect[Type]() functions
+;; Expectation Functions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-SkyUnitTest function ExpectString(string value)
-    SkyUnit.BeginExpectation("ExpectString")
-    SkyUnit.SetExpectationData_MainObject_String(value)
-    return self
+; Alias for `ExpectString`
+SkyUnitTest function Expect(string actual)
+    SkyUnitExpectation.BeginExpectation("Expect")
+    SkyUnitExpectation.SetActualString(actual)
+    return SkyUnitExpectation.CurrentTest()
 endFunction
 
-SkyUnitTest function ExpectInt(int value)
-    SkyUnit.BeginExpectation("ExpectInt")
-    SkyUnit.SetExpectationData_MainObject_Int(value)
-    return self
+SkyUnitTest function ExpectString(string actual)
+    SkyUnitExpectation.BeginExpectation("ExpectString")
+    SkyUnitExpectation.SetActualString(actual)
+    return SkyUnitExpectation.CurrentTest()
 endFunction
 
-SkyUnitTest function ExpectBool(bool value)
-    SkyUnit.BeginExpectation("ExpectBool")
-    SkyUnit.SetExpectationData_MainObject_Bool(value)
-    return self
+SkyUnitTest function ExpectInt(int actual)
+    SkyUnitExpectation.BeginExpectation("ExpectInt")
+    SkyUnitExpectation.SetActualInt(actual)
+    return SkyUnitExpectation.CurrentTest()
 endFunction
 
-SkyUnitTest function ExpectFloat(float value)
-    SkyUnit.BeginExpectation("ExpectFloat")
-    SkyUnit.SetExpectationData_MainObject_Float(value)
-    return self
+SkyUnitTest function ExpectBool(bool actual)
+    SkyUnitExpectation.BeginExpectation("ExpectBool")
+    SkyUnitExpectation.SetActualBool(actual)
+    return SkyUnitExpectation.CurrentTest()
 endFunction
 
-SkyUnitTest function ExpectForm(Form value)
-    SkyUnit.BeginExpectation("ExpectForm")
-    SkyUnit.SetExpectationData_MainObject_Form(value)
-    return self
+SkyUnitTest function ExpectFloat(float actual)
+    SkyUnitExpectation.BeginExpectation("ExpectFloat")
+    SkyUnitExpectation.SetActualFloat(actual)
+    return SkyUnitExpectation.CurrentTest()
 endFunction
 
-; TODO
-; function Log(string text)
-; endFunction
+SkyUnitTest function ExpectForm(Form actual)
+    SkyUnitExpectation.BeginExpectation("ExpectForm")
+    SkyUnitExpectation.SetActualForm(actual, "Form", autoSetText = false)
+    if actual
+        string name = actual.GetName()
+        if name
+            name += " " + actual
+        else
+            name = actual
+        endIf
+        SkyUnitExpectation.SetActualText(name)
+    else
+        SkyUnitExpectation.SetActualText("None")
+    endIf
+    return SkyUnitExpectation.CurrentTest()
+endFunction
+
+SkyUnitTest function ExpectPlayer()
+    SkyUnitExpectation.BeginExpectation("ExpectPlayer")
+    Actor actual = Game.GetPlayer()
+    SkyUnitExpectation.SetActualForm(actual, "Actor", autoSetText = false)
+    SkyUnitExpectation.SetActualText(actual.GetActorBase().GetName() + " " + actual)
+    return SkyUnitExpectation.CurrentTest()
+endFunction
+
+SkyUnitTest function ExpectActor(Actor actual)
+    SkyUnitExpectation.BeginExpectation("ExpectActor")
+    SkyUnitExpectation.SetActualForm(actual, "Actor", autoSetText = false)
+    if actual
+        SkyUnitExpectation.SetActualText(actual.GetActorBase().GetName() + " " + actual)
+    else
+        SkyUnitExpectation.SetActualText("None")
+    endIf
+    return SkyUnitExpectation.CurrentTest()
+endFunction
+
+SkyUnitTest function ExpectActorBase(ActorBase actual)
+    SkyUnitExpectation.BeginExpectation("ExpectActorBase")
+    SkyUnitExpectation.SetActualForm(actual, "ActorBase")
+    return SkyUnitExpectation.CurrentTest()
+endFunction
+
+SkyUnitTest function ExpectSpell(Spell actual)
+    SkyUnitExpectation.BeginExpectation("ExpectSpell")
+    SkyUnitExpectation.SetActualForm(actual, "Spell")
+    return SkyUnitExpectation.CurrentTest()
+endFunction
+
+SkyUnitTest function ExpectShout(Shout actual)
+    SkyUnitExpectation.BeginExpectation("ExpectShout")
+    SkyUnitExpectation.SetActualForm(actual, "Shout")
+    return SkyUnitExpectation.CurrentTest()
+endFunction
+
+SkyUnitTest function ExpectQuest(Quest actual)
+    SkyUnitExpectation.BeginExpectation("ExpectQuest")
+    SkyUnitExpectation.SetActualForm(actual, "Quest")
+    return SkyUnitExpectation.CurrentTest()
+endFunction
+
+SkyUnitTest function ExpectEnchantment(Enchantment actual)
+    SkyUnitExpectation.BeginExpectation("ExpectEnchantment")
+    SkyUnitExpectation.SetActualForm(actual, "Enchantment")
+    return SkyUnitExpectation.CurrentTest()
+endFunction
+
+SkyUnitTest function ExpectScroll(Scroll actual)
+    SkyUnitExpectation.BeginExpectation("ExpectScroll")
+    SkyUnitExpectation.SetActualForm(actual, "Scroll")
+    return SkyUnitExpectation.CurrentTest()
+endFunction
+
+SkyUnitTest function ExpectPerk(Perk actual)
+    SkyUnitExpectation.BeginExpectation("ExpectPerk")
+    SkyUnitExpectation.SetActualForm(actual, "Perk")
+    return SkyUnitExpectation.CurrentTest()
+endFunction
+
+SkyUnitTest function ExpectIngredient(Ingredient actual)
+    SkyUnitExpectation.BeginExpectation("ExpectIngredient")
+    SkyUnitExpectation.SetActualForm(actual, "Ingredient")
+    return SkyUnitExpectation.CurrentTest()
+endFunction
+
+SkyUnitTest function ExpectFormList(FormList actual)
+    SkyUnitExpectation.BeginExpectation("ExpectFormList")
+    SkyUnitExpectation.SetActualForm(actual, "FormList")
+    return SkyUnitExpectation.CurrentTest()
+endFunction
+
+SkyUnitTest function ExpectArmor(Armor actual)
+    SkyUnitExpectation.BeginExpectation("ExpectArmor")
+    SkyUnitExpectation.SetActualForm(actual, "Armor")
+    return SkyUnitExpectation.CurrentTest()
+endFunction
+
+SkyUnitTest function ExpectWeapon(Weapon actual)
+    SkyUnitExpectation.BeginExpectation("ExpectWeapon")
+    SkyUnitExpectation.SetActualForm(actual, "Weapon")
+    return SkyUnitExpectation.CurrentTest()
+endFunction
+
+SkyUnitTest function ExpectPotion(Potion actual)
+    SkyUnitExpectation.BeginExpectation("ExpectPotion")
+    SkyUnitExpectation.SetActualForm(actual, "Potion")
+    return SkyUnitExpectation.CurrentTest()
+endFunction
+
+SkyUnitTest function ExpectCell(Cell actual)
+    SkyUnitExpectation.BeginExpectation("ExpectCell")
+    SkyUnitExpectation.SetActualForm(actual, "Cell")
+    return SkyUnitExpectation.CurrentTest()
+endFunction
+
+SkyUnitTest function ExpectLocation(Location actual)
+    SkyUnitExpectation.BeginExpectation("ExpectLocation")
+    SkyUnitExpectation.SetActualForm(actual, "Location")
+    return SkyUnitExpectation.CurrentTest()
+endFunction
+
+SkyUnitTest function ExpectLight(Light actual)
+    SkyUnitExpectation.BeginExpectation("ExpectLight")
+    SkyUnitExpectation.SetActualForm(actual, "Light")
+    return SkyUnitExpectation.CurrentTest()
+endFunction
+
+SkyUnitTest function ExpectGlobalVariable(GlobalVariable actual)
+    SkyUnitExpectation.BeginExpectation("ExpectGlobalVariable")
+    SkyUnitExpectation.SetActualForm(actual, "GlobalVariable")
+    return SkyUnitExpectation.CurrentTest()
+endFunction
+
+SkyUnitTest function ExpectFaction(Faction actual)
+    SkyUnitExpectation.BeginExpectation("ExpectFaction")
+    SkyUnitExpectation.SetActualForm(actual, "Faction")
+    return SkyUnitExpectation.CurrentTest()
+endFunction
+
+SkyUnitTest function ExpectPackage(Package actual)
+    SkyUnitExpectation.BeginExpectation("ExpectPackage")
+    SkyUnitExpectation.SetActualForm(actual, "Package")
+    return SkyUnitExpectation.CurrentTest()
+endFunction
+
+SkyUnitTest function ExpectScene(Scene actual)
+    SkyUnitExpectation.BeginExpectation("ExpectScene")
+    SkyUnitExpectation.SetActualForm(actual, "Scene")
+    return SkyUnitExpectation.CurrentTest()
+endFunction
+
+SkyUnitTest function ExpectObjectReference(ObjectReference actual)
+    SkyUnitExpectation.BeginExpectation("ExpectObjectReferece")
+    SkyUnitExpectation.SetActualForm(actual, "ObjectReference")
+    return SkyUnitExpectation.CurrentTest()
+endFunction
+
+SkyUnitTest function ExpectMagicEffect(MagicEffect actual)
+    SkyUnitExpectation.BeginExpectation("ExpectMagicEffect")
+    SkyUnitExpectation.SetActualForm(actual, "MagicEffect")
+    return SkyUnitExpectation.CurrentTest()
+endFunction
+
+SkyUnitTest function ExpectActiveMagicEffect(ActiveMagicEffect actual)
+    SkyUnitExpectation.BeginExpectation("ExpectActiveMagicEffect")
+    SkyUnitExpectation.SetActualActiveMagicEffect(actual)
+    return SkyUnitExpectation.CurrentTest()
+endFunction
+
+SkyUnitTest function ExpectAlias(Alias actual)
+    SkyUnitExpectation.BeginExpectation("ExpectAlias")
+    SkyUnitExpectation.SetActualAlias(actual)
+    return SkyUnitExpectation.CurrentTest()
+endFunction
+
+SkyUnitTest function ExpectStringArray(string[] actual)
+    SkyUnitExpectation.BeginExpectation("ExpectStringArray")
+    SkyUnitExpectation.SetActualStringArray(actual)
+    return SkyUnitExpectation.CurrentTest()
+endFunction
+
+SkyUnitTest function ExpectIntArray(int[] actual)
+    SkyUnitExpectation.BeginExpectation("ExpectIntArray")
+    SkyUnitExpectation.SetActualIntArray(actual)
+    return SkyUnitExpectation.CurrentTest()
+endFunction
+
+SkyUnitTest function ExpectFloatArray(float[] actual)
+    SkyUnitExpectation.BeginExpectation("ExpectFloatArray")
+    SkyUnitExpectation.SetActualFloatArray(actual)
+    return SkyUnitExpectation.CurrentTest()
+endFunction
+
+SkyUnitTest function ExpectFormArray(Form[] actual)
+    SkyUnitExpectation.BeginExpectation("ExpectFormArray")
+    SkyUnitExpectation.SetActualFormArray(actual)
+    return SkyUnitExpectation.CurrentTest()
+endFunction
+
+SkyUnitTest function ExpectBoolArray(bool[] actual)
+    SkyUnitExpectation.BeginExpectation("ExpectBoolArray")
+    SkyUnitExpectation.SetActualBoolArray(actual)
+    return SkyUnitExpectation.CurrentTest()
+endFunction
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Base included Assertion Functions
+;; Assertion Functions - Equal
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-; UPDATE THESE TO RETURN BOOLS!
+; Alias for `EqualString`
+bool function Equal(string expected)
+    SkyUnitExpectation.SetExpectedString(expected)
+    string actual
+    if SkyUnitExpectation.GetActualType() == "String"
+        actual = SkyUnitExpectation.GetActualString()
+    else
+        actual = SkyUnitExpectation.GetActualText()
+    endIf
+    bool not = SkyUnitExpectation.Not()
+    if not && actual == expected
+        return SkyUnitExpectation.Fail("Equal", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " not to equal " + \
+            SkyUnitExpectation.ExpectedDescription())
+    elseIf ! not && actual != expected
+        return SkyUnitExpectation.Fail("Equal", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " to equal " + \
+            SkyUnitExpectation.ExpectedDescription())
+    endIf
+    return SkyUnitExpectation.Pass("Equal")
+endFunction
 
 bool function EqualString(string expected)
-    SkyUnit.SetAssertionData_MainObject_String(expected)
-    string actual = SkyUnit.GetExpectationData_MainObject_Text()
-    if SkyUnit.GetExpectationData_MainObject_Type() == "String"
-        actual = SkyUnit.GetExpectationData_MainObject_String()
+    SkyUnitExpectation.SetExpectedString(expected)
+    string actual
+    if SkyUnitExpectation.GetActualType() == "String"
+        actual = SkyUnitExpectation.GetActualString()
+    else
+        actual = SkyUnitExpectation.GetActualText()
     endIf
-    bool not = SkyUnit.Not()
+    bool not = SkyUnitExpectation.Not()
     if not && actual == expected
-        return SkyUnit.FailExpectation("EqualString", "Expected '" + actual + "' not to equal '" + expected + "'")
+        return SkyUnitExpectation.Fail("EqualString", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " not to equal " + \
+            SkyUnitExpectation.ExpectedDescription())
     elseIf ! not && actual != expected
-        return SkyUnit.FailExpectation("EqualString", "Expected '" + actual + "' to equal '" + expected + "'")
+        return SkyUnitExpectation.Fail("EqualString", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " to equal " + \
+            SkyUnitExpectation.ExpectedDescription())
     endIf
-    return SkyUnit.PassExpectation("EqualString")
+    return SkyUnitExpectation.Pass("EqualString")
 endFunction
 
-function EqualInt(int expected)
-    SkyUnit.SetAssertionData_MainObject_Int(expected)
-    int actual = SkyUnit.GetExpectationData_MainObject_Int()
-    bool not = SkyUnit.Not()
-    if not && actual == expected
-        SkyUnit.FailExpectation("EqualInt", "Expected " + actual + " not to equal " + expected)
-        return
-    elseIf ! not && actual != expected
-        SkyUnit.FailExpectation("EqualInt", "Expected " + actual + " to equal " + expected)
-        return
+bool function EqualInt(int expected)
+    SkyUnitExpectation.SetExpectedInt(expected)
+    int actual
+    if SkyUnitExpectation.GetActualType() == "Int"
+        actual = SkyUnitExpectation.GetActualInt()
+    else
+        actual = SkyUnitExpectation.GetActualText() as int
     endIf
-    SkyUnit.PassExpectation("EqualInt")
+    bool not = SkyUnitExpectation.Not()
+    if not && actual == expected
+        return SkyUnitExpectation.Fail("EqualInt", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " not to equal " + \
+            SkyUnitExpectation.ExpectedDescription())
+    elseIf ! not && actual != expected
+        return SkyUnitExpectation.Fail("EqualInt", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " to equal " + \
+            SkyUnitExpectation.ExpectedDescription())
+    endIf
+    return SkyUnitExpectation.Pass("EqualInt")
 endFunction
 
-function EqualBool(bool expected)
-    SkyUnit.SetAssertionData_MainObject_Bool(expected)
-    bool actual = SkyUnit.GetExpectationData_MainObject_Bool()
-    bool not = SkyUnit.Not()
-    if not && actual == expected
-        SkyUnit.FailExpectation("EqualBool", "Expected " + actual + " not to equal " + expected)
-        return
-    elseIf ! not && actual != expected
-        SkyUnit.FailExpectation("EqualBool", "Expected " + actual + " to equal " + expected)
-        return
+bool function EqualBool(bool expected)
+    SkyUnitExpectation.SetExpectedBool(expected)
+    bool actual
+    if SkyUnitExpectation.GetActualType() == "Bool"
+        actual = SkyUnitExpectation.GetActualBool()
+    else
+        actual = SkyUnitExpectation.GetActualText() as bool
     endIf
-    SkyUnit.PassExpectation("EqualBool")
+    bool not = SkyUnitExpectation.Not()
+    if not && actual == expected
+        return SkyUnitExpectation.Fail("EqualBool", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " not to equal " + \
+            SkyUnitExpectation.ExpectedDescription())
+    elseIf ! not && actual != expected
+        return SkyUnitExpectation.Fail("EqualBool", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " to equal " + \
+            SkyUnitExpectation.ExpectedDescription())
+    endIf
+    return SkyUnitExpectation.Pass("EqualBool")
 endFunction
 
-function EqualFloat(float expected)
-    SkyUnit.SetAssertionData_MainObject_Float(expected)
-    float actual = SkyUnit.GetExpectationData_MainObject_Text() as float
-    bool not = SkyUnit.Not()
-    if not && actual == expected
-        SkyUnit.FailExpectation("EqualFloat", "Expected " + actual + " not to equal " + expected)
-        return
-    elseIf ! not && actual != expected
-        SkyUnit.FailExpectation("EqualFloat", "Expected " + actual + " to equal " + expected)
-        return
+bool function EqualFloat(float expected)
+    SkyUnitExpectation.SetExpectedFloat(expected)
+    float actual
+    if SkyUnitExpectation.GetActualType() == "Float"
+        actual = SkyUnitExpectation.GetActualFloat()
+    else
+        actual = SkyUnitExpectation.GetActualText() as float
     endIf
-    SkyUnit.PassExpectation("EqualFloat")
+    bool not = SkyUnitExpectation.Not()
+    if not && actual == expected
+        return SkyUnitExpectation.Fail("EqualFloat", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " not to equal " + \
+            SkyUnitExpectation.ExpectedDescription())
+    elseIf ! not && actual != expected
+        return SkyUnitExpectation.Fail("EqualFloat", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " to equal " + \
+            SkyUnitExpectation.ExpectedDescription())
+    endIf
+    return SkyUnitExpectation.Pass("EqualFloat")
 endFunction
 
-function EqualForm(Form expected)
-    SkyUnit.SetAssertionData_MainObject_Form(expected)
-    Form actual = SkyUnit.GetExpectationData_MainObject_Form()
-    string expectedName
+bool function EqualForm(Form expected)
+    SkyUnitExpectation.SetExpectedForm(expected, "Form", autoSetText = false)
     if expected
-        expectedName = expected.GetName() + " " + expected
+        string name = expected.GetName()
+        if name
+            name += " " + expected
+        else
+            name = expected
+        endIf
+        SkyUnitExpectation.SetExpectedText(name)
     else
-        expectedName = "None"
-    endIF
-    string actualName
-    if actual
-        actualName = actual.GetName() + " " + actual
+        SkyUnitExpectation.SetExpectedText("None")
+    endIf
+    Form actual
+    if SkyUnitExpectation.GetActualType() == "Form"
+        actual = SkyUnitExpectation.GetActualForm()
     else
-        actualName = "None"
-    endIF
-    bool not = SkyUnit.Not()
+        return SkyUnitExpectation.Fail("EqualForm", "EqualForm() called but no Form-type was provided via an Expect*() function, e.g. ExpectForm() or ExpectActor() etc")
+    endIf
+    bool not = SkyUnitExpectation.Not()
     if not && actual == expected
-        SkyUnit.FailExpectation("EqualForm", "Expected " + actualName + " not to equal " + expectedName)
-        return
+        return SkyUnitExpectation.Fail("EqualForm", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " not to equal " + \
+            SkyUnitExpectation.ExpectedDescription())
     elseIf ! not && actual != expected
-        SkyUnit.FailExpectation("EqualForm", "Expected " + actualName + " to equal " + expectedName)
-        return
+        return SkyUnitExpectation.Fail("EqualForm", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " to equal " + \
+            SkyUnitExpectation.ExpectedDescription())
     endIf
-    SkyUnit.PassExpectation("EqualForm")
+    return SkyUnitExpectation.Pass("EqualForm")
 endFunction
 
-function ContainText(string expect)
-    SkyUnit.SetAssertionData_MainObject_String(expect)
-    string actual = SkyUnit.GetExpectationData_MainObject_Text()
-    bool not = SkyUnit.Not()
-    if not && StringUtil.Find(actual, expect) > -1
-        SkyUnit.FailExpectation("ContainText", "Expected '" + actual + "' not to contain text '" + expect + "'")
-        return
-    elseIf ! not && StringUtil.Find(actual, expect) == -1
-        SkyUnit.FailExpectation("ContainText", "Expected '" + actual + "' to contain text '" + expect + "'")
-        return
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Assertion Functions - Arrays
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+bool function EqualStringArray(string[] expected)
+    SkyUnitExpectation.SetExpectedStringArray(expected)
+    string[] actual = SkyUnitExpectation.GetActualStringArray()
+    bool not = SkyUnitExpectation.Not()
+    if not && actual == expected
+        return SkyUnitExpectation.Fail("EqualStringArray", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " not to equal " + \
+            SkyUnitExpectation.ExpectedDescription())
+    elseIf ! not && actual != expected
+        return SkyUnitExpectation.Fail("EqualStringArray", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " to equal " + \
+            SkyUnitExpectation.ExpectedDescription())
     endIf
-    SkyUnit.PassExpectation("ContainText")
+    return SkyUnitExpectation.Pass("EqualStringArray")
 endFunction
 
-bool function BeEmpty()
-    string actual = SkyUnit.GetExpectationData_MainObject_Text()
-    bool not = SkyUnit.Not()
-    string type = SkyUnit.GetExpectationData_MainObject_Type()
-    bool isEmpty = ! actual
-    if StringUtil.Find(type, "Array") > -1
-        isEmpty = actual == "[]"
-        if not && isEmpty
-            return SkyUnit.FailExpectation("BeEmpty", "Expected " + type + " " + actual + " not to be empty")
-        elseIf ! not && ! isEmpty
-            return SkyUnit.FailExpectation("BeEmpty", "Expected " + type + " " + actual + " to be empty")
-        endIf
-    else
-        if not && isEmpty
-            return SkyUnit.FailExpectation("BeEmpty", "Expected " + type + " '" + actual + "' not to be empty")
-        elseIf ! not && ! isEmpty
-            return SkyUnit.FailExpectation("BeEmpty", "Expected " + type + " '"  + actual + "' to be empty")
-        endIf
-    endIf
-    return SkyUnit.PassExpectation("BeEmpty")
-endFunction
-
-bool function HaveLength(int expectedLength)
-    string type = SkyUnit.GetExpectationData_MainObject_Type()
-    string text = SkyUnit.GetExpectationData_MainObject_Text()
-    bool not = SkyUnit.Not()
-    int actualLength
-    if type == "String"
-        text = SkyUnit.GetExpectationData_MainObject_String()
-        actualLength = StringUtil.GetLength(text)
-        text = "'" + text + "'"
-    elseIf type == "StringArray"
-        actualLength = SkyUnit.GetExpectationData_MainObject_StringArray().Length
-    elseIf type == "IntArray"
-        actualLength = SkyUnit.GetExpectationData_MainObject_IntArray().Length
-    elseIf type == "FloatArray"
-        actualLength = SkyUnit.GetExpectationData_MainObject_FloatArray().Length
-    elseIf type == "FormArray"
-        actualLength = SkyUnit.GetExpectationData_MainObject_FormArray().Length
-    elseIf type == "BoolArray"
-        actualLength = SkyUnit.GetExpectationData_MainObject_BoolArray().Length
-    else
-        return SkyUnit.FailExpectation("HaveLength", "HaveLength() called with unsupported type " + type + " " + text)
-    endIf
-    if not && expectedLength == actualLength
-        return SkyUnit.FailExpectation("HaveLength", "Expected " + type + " " + text + " not to have length " + expectedLength)
-    elseIf ! not && expectedLength != actualLength
-        return SkyUnit.FailExpectation("HaveLength", "Expected " + type + " " + text + " to have length " + expectedLength)
-    endIf
-    return SkyUnit.PassExpectation("HaveLength")
-endFunction
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Generic Assertions
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 bool function BeTrue()
-    string type = SkyUnit.GetExpectationData_MainObject_Type()
-    string text = SkyUnit.GetExpectationData_MainObject_Text()
-    bool not = SkyUnit.Not()
-    bool actualValue
-    if type == "Bool"
-        actualValue = SkyUnit.GetExpectationData_MainObject_Bool()
-    elseIf type == "String"
-        actualValue = SkyUnit.GetExpectationData_MainObject_String()
-        text = "'" + text + "'"
-    elseIf type == "Int"
-        actualValue = SkyUnit.GetExpectationData_MainObject_Int()
-    elseIf type == "Float"
-        actualValue = SkyUnit.GetExpectationData_MainObject_Float()
-    elseIf type == "Form"
-        actualValue = SkyUnit.GetExpectationData_MainObject_Form()
-        if actualValue
-            text = SkyUnit.GetExpectationData_MainObject_Form().GetName() + " " + SkyUnit.GetExpectationData_MainObject_Form()
-        else
-            text = "None"
+    SkyUnitExpectation.SetExpectedType("Bool")
+    bool not = SkyUnitExpectation.Not()
+    string actualText = SkyUnitExpectation.GetActualText()
+    string actualType = SkyUnitExpectation.GetActualType()
+    ; TODO Array
+    ; TODO Int
+    ; TODO Float
+    ; TODO Bool
+    if actualType == "Bool"
+        if not && SkyUnitExpectation.GetActualBool()
+            return SkyUnitExpectation.Fail("BeTrue", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " not to be true")
+        elseIf ! not && ! SkyUnitExpectation.GetActualBool()
+            return SkyUnitExpectation.Fail("BeTrue", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " to be true")
         endIf
-    elseIf type == "StringArray"
-        actualValue = SkyUnit.GetExpectationData_MainObject_StringArray()
-    elseIf type == "IntArray"
-        actualValue = SkyUnit.GetExpectationData_MainObject_IntArray()
-    elseIf type == "FloatArray"
-        actualValue = SkyUnit.GetExpectationData_MainObject_FloatArray()
-    elseIf type == "FormArray"
-        actualValue = SkyUnit.GetExpectationData_MainObject_FormArray()
-    elseIf type == "BoolArray"
-        actualValue = SkyUnit.GetExpectationData_MainObject_BoolArray()
-    elseIf StringUtil.Find(type, "Array") > -1
-        actualValue = SkyUnit.GetExpectationData_MainObject_Text() != "[]"
     else
-        actualValue = SkyUnit.GetExpectationData_MainObject_Text()
+
     endIf
-    if not && actualValue
-        return SkyUnit.FailExpectation("BeTrue", "Expected " + type + " " + text + " not to be true")
-    elseIf ! not && ! actualValue
-        return SkyUnit.FailExpectation("BeTrue", "Expected " + type + " " + text + " to be true")
-    endIf
-    return SkyUnit.PassExpectation("BeTrue")
+    return SkyUnitExpectation.Pass("BeTrue")
 endFunction
 
 bool function BeFalse()
-    string type = SkyUnit.GetExpectationData_MainObject_Type()
-    string text = SkyUnit.GetExpectationData_MainObject_Text()
-    bool not = SkyUnit.Not()
-    bool actualValue
-    if type == "Bool"
-        actualValue = SkyUnit.GetExpectationData_MainObject_Bool()
-    elseIf type == "String"
-        actualValue = SkyUnit.GetExpectationData_MainObject_String()
-        text = "'" + text + "'"
-    elseIf type == "Int"
-        actualValue = SkyUnit.GetExpectationData_MainObject_Int()
-    elseIf type == "Float"
-        actualValue = SkyUnit.GetExpectationData_MainObject_Float()
-    elseIf type == "Form"
-        actualValue = SkyUnit.GetExpectationData_MainObject_Form()
-        if actualValue
-            text = SkyUnit.GetExpectationData_MainObject_Form().GetName() + " " + SkyUnit.GetExpectationData_MainObject_Form()
-        else
-            text = "None"
+    SkyUnitExpectation.SetExpectedType("Bool")
+    bool not = SkyUnitExpectation.Not()
+    string actualText = SkyUnitExpectation.GetActualText()
+    string actualType = SkyUnitExpectation.GetActualType()
+    ; TODO Array
+    ; TODO Int
+    ; TODO Float
+    ; TODO Bool
+    if actualType == "Bool"
+        if not && ! SkyUnitExpectation.GetActualBool()
+            return SkyUnitExpectation.Fail("BeFalse", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " not to be false")
+        elseIf ! not && SkyUnitExpectation.GetActualBool()
+            return SkyUnitExpectation.Fail("BeFalse", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " to be false")
         endIf
-    elseIf type == "StringArray"
-        actualValue = SkyUnit.GetExpectationData_MainObject_StringArray()
-    elseIf type == "IntArray"
-        actualValue = SkyUnit.GetExpectationData_MainObject_IntArray()
-    elseIf type == "FloatArray"
-        actualValue = SkyUnit.GetExpectationData_MainObject_FloatArray()
-    elseIf type == "FormArray"
-        actualValue = SkyUnit.GetExpectationData_MainObject_FormArray()
-    elseIf type == "BoolArray"
-        actualValue = SkyUnit.GetExpectationData_MainObject_BoolArray()
-    elseIf StringUtil.Find(type, "Array") > -1
-        actualValue = SkyUnit.GetExpectationData_MainObject_Text() != "[]"
     else
-        actualValue = SkyUnit.GetExpectationData_MainObject_Text()
+
     endIf
-    if not && ! actualValue
-        return SkyUnit.FailExpectation("BeFalse", "Expected " + type + " " + text + " not to be false")
-    elseIf ! not && actualValue
-        return SkyUnit.FailExpectation("BeFalse", "Expected " + type + " " + text + " to be false")
-    endIf
-    return SkyUnit.PassExpectation("BeFalse")
+    return SkyUnitExpectation.Pass("BeFalse")
 endFunction
 
-bool function BeNone()
-    string type = SkyUnit.GetExpectationData_MainObject_Type()
-    string text = SkyUnit.GetExpectationData_MainObject_Text()
-    bool not = SkyUnit.Not()
-    bool actualValue
-    if type == "Bool"
-        actualValue = SkyUnit.GetExpectationData_MainObject_Bool()
-    elseIf type == "String"
-        actualValue = SkyUnit.GetExpectationData_MainObject_String()
-        text = "'" + text + "'"
-    elseIf type == "Int"
-        actualValue = SkyUnit.GetExpectationData_MainObject_Int()
-    elseIf type == "Float"
-        actualValue = SkyUnit.GetExpectationData_MainObject_Float()
-    elseIf type == "Form"
-        actualValue = SkyUnit.GetExpectationData_MainObject_Form()
-        if actualValue
-            text = SkyUnit.GetExpectationData_MainObject_Form().GetName() + " " + SkyUnit.GetExpectationData_MainObject_Form()
-        else
-            text = "None"
-        endIf
-    elseIf type == "StringArray"
-        actualValue = SkyUnit.GetExpectationData_MainObject_StringArray()
-    elseIf type == "IntArray"
-        actualValue = SkyUnit.GetExpectationData_MainObject_IntArray()
-    elseIf type == "FloatArray"
-        actualValue = SkyUnit.GetExpectationData_MainObject_FloatArray()
-    elseIf type == "FormArray"
-        actualValue = SkyUnit.GetExpectationData_MainObject_FormArray()
-    elseIf type == "BoolArray"
-        actualValue = SkyUnit.GetExpectationData_MainObject_BoolArray()
-    elseIf StringUtil.Find(type, "Array") > -1
-        actualValue = SkyUnit.GetExpectationData_MainObject_Text() != "[]"
-    else
-        actualValue = SkyUnit.GetExpectationData_MainObject_Text()
-    endIf
-    if not && ! actualValue
-        return SkyUnit.FailExpectation("BeNone", "Expected " + type + " " + text + " not to be None")
-    elseIf ! not && actualValue
-        return SkyUnit.FailExpectation("BeNone", "Expected " + type + " " + text + " to be None")
-    endIf
-    return SkyUnit.PassExpectation("BeNone")
+bool function BeEmpty()
 endFunction
 
+bool function HaveLength(int expected)
+endFunction
 
-; function BeGreaterThan(float value)
-;     string type = SkyUnit.GetExpectationData_MainObjectType()
-;     bool not = SkyUnit.Not()
-;     float actualValue
-;     if type == "Int"
-;         actualValue = SkyUnit.GetExpectationData_Object_Int()
-;     elseIf type == "Float"
-;         actualValue = SkyUnit.GetExpectationData_Object_Float()
-;     else
-;         SkyUnit.FailExpectation("BeGreaterThan() can only be called on Int or Float but was called on type: " + type)
-;         return
-;     endIf
-;     if not && (actualValue > value)
-;         SkyUnit.FailExpectation("Expected " + actualValue + " not to be greater than " + value)
-;     elseIf ! not && ! (actualValue > value)
-;         SkyUnit.FailExpectation("Expected " + actualValue + " to be greater than " + value)
-;     endIf
-; endFunction
+bool function ContainText(string expected)
+    SkyUnitExpectation.SetExpectedString(expected)
+    bool not = SkyUnitExpectation.Not()
+    string actualText = SkyUnitExpectation.GetActualText()
+    if not && StringUtil.Find(actualText, expected) > -1
+        return SkyUnitExpectation.Fail("ContainText", "Expected " + \
+        SkyUnitExpectation.ActualDescription() + " not to contain text " + \
+        "\"" + expected + "\"")
+    elseIf ! not && StringUtil.Find(actualText, expected) == -1
+        return SkyUnitExpectation.Fail("ContainText", "Expected " + \
+        SkyUnitExpectation.ActualDescription() + " to contain text " + \
+        "\"" + expected + "\"")
+    endIf
+    return SkyUnitExpectation.Pass("ContainText")
+endFunction
 
-; ; bool function BeGreaterThanOrEqualTo(float value)
-; ; endFunction
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Actor Assertions
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-; ; bool function BeLessThan(float value)
-; ; endFunction
+bool function HaveItem(Form item)
+    SkyUnitExpectation.SetExpectedForm(item)
+    Actor theActor = SkyUnitExpectation.GetActualForm() as Actor
+    bool actual = theActor.GetItemCount(item) > 0
+    bool not = SkyUnitExpectation.Not()
+    if not && actual
+        return SkyUnitExpectation.Fail("HaveItem", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " not to have item " + \
+            SkyUnitExpectation.ExpectedDescription())
+    elseIf ! not && ! actual
+        return SkyUnitExpectation.Fail("HaveItem", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " to have item " + \
+            SkyUnitExpectation.ExpectedDescription())
+    endIf
+    return SkyUnitExpectation.Pass("HaveItem")
+endFunction
 
-; ; bool function BeLessThanOrEqualTo(float value)
-; ; endFunction
+bool function HaveSpell(Spell theSpell)
+    SkyUnitExpectation.SetExpectedForm(theSpell)
+    Actor theActor = SkyUnitExpectation.GetActualForm() as Actor
+    bool actual = theActor.HasSpell(theSpell)
+    bool not = SkyUnitExpectation.Not()
+    if not && actual
+        return SkyUnitExpectation.Fail("HaveSpell", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " not to have spell " + \
+            SkyUnitExpectation.ExpectedDescription())
+    elseIf ! not && ! actual
+        return SkyUnitExpectation.Fail("HaveSpell", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " to have spell " + \
+            SkyUnitExpectation.ExpectedDescription())
+    endIf
+    return SkyUnitExpectation.Pass("HaveSpell")
+endFunction
+
+bool function HaveEquippedItem(Form item)
+    SkyUnitExpectation.SetExpectedForm(item)
+    Actor theActor = SkyUnitExpectation.GetActualForm() as Actor
+    bool actual = theActor.IsEquipped(item)
+    bool not = SkyUnitExpectation.Not()
+    if not && actual
+        return SkyUnitExpectation.Fail("HaveEquippedItem", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " not to have item equipped " + \
+            SkyUnitExpectation.ExpectedDescription())
+    elseIf ! not && ! actual
+        return SkyUnitExpectation.Fail("HaveEquippedItem", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " to have item equipped " + \
+            SkyUnitExpectation.ExpectedDescription())
+    endIf
+    return SkyUnitExpectation.Pass("HaveEquippedItem")
+endFunction
+
+bool function HaveEquippedSpell(Spell item)
+    SkyUnitExpectation.SetExpectedForm(item)
+    Actor theActor = SkyUnitExpectation.GetActualForm() as Actor
+    bool actual = theActor.GetEquippedSpell(0) == item || theActor.GetEquippedSpell(1) == item || theActor.GetEquippedSpell(2) == item || theActor.GetEquippedSpell(3) == item
+    bool not = SkyUnitExpectation.Not()
+    if not && actual
+        return SkyUnitExpectation.Fail("HaveEquippedSpell", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " not to have item equipped " + \
+            SkyUnitExpectation.ExpectedDescription())
+    elseIf ! not && ! actual
+        return SkyUnitExpectation.Fail("HaveEquippedSpell", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " to have item equipped " + \
+            SkyUnitExpectation.ExpectedDescription())
+    endIf
+    return SkyUnitExpectation.Pass("HaveEquippedSpell")
+endFunction
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Quest Assertions
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+SkyUnitTest function Stage(int stageId)
+    SkyUnitExpectation.SetActualType("QuestStage")
+    SkyUnitExpectation.SetActualInt(stageId, autoSetText = false, autoSetType = false, dataKey = "stage")
+    Quest theQuest = SkyUnitExpectation.GetActualForm() as Quest
+
+    ; Default ExpectQuest()
+    ; But add .Stage(X)
+    string description = SkyUnitExpectation.GetExpectationType() + "(" + SkyUnitExpectation.GetActualText() + ")" + \
+        ".Stage(" + stageId + ")"
+
+    SkyUnitExpectation.SetActualDescription(description)
+    return self
+endFunction
+
+SkyUnitTest function Objective(int objectiveId)
+    SkyUnitExpectation.SetActualType("QuestObjective")
+    SkyUnitExpectation.SetActualInt(objectiveId, autoSetText = false, autoSetType = false, dataKey = "objective")
+    Quest theQuest = SkyUnitExpectation.GetActualForm() as Quest
+
+    ; Default ExpectQuest()
+    ; But add .Objective(X)
+    string description = SkyUnitExpectation.GetExpectationType() + "(" + SkyUnitExpectation.GetActualText() + ")" + \
+        ".Objective(" + objectiveId + ")"
+
+    SkyUnitExpectation.SetActualDescription(description)
+    return self
+endFunction
+
+bool function BeComplete()
+    SkyUnitExpectation.SetExpectedType("Bool")
+    Quest theQuest = SkyUnitExpectation.GetActualForm() as Quest
+    bool actual
+    bool not = SkyUnitExpectation.Not()
+    string actualType = SkyUnitExpectation.GetActualType()
+    if actualType == "QuestStage"
+        int stageId = SkyUnitExpectation.GetActualInt(dataKey = "stage")
+        actual = theQuest.IsStageDone(stageId)
+        if not && actual
+            return SkyUnitExpectation.Fail("BeComplete", "Expected " + \
+                SkyUnitExpectation.ActualDescription() + " Stage " + stageId + " not to be complete")
+        elseIf ! not && ! actual
+            return SkyUnitExpectation.Fail("BeComplete", "Expected " + \
+                SkyUnitExpectation.ActualDescription() + " Stage " + stageId + " to be complete")
+        endIf
+        return SkyUnitExpectation.Pass("BeComplete")
+    elseIf actualType == "QuestObjective"
+        int objectiveId = SkyUnitExpectation.GetActualInt(dataKey = "objective")
+        actual = theQuest.IsObjectiveCompleted(objectiveId)
+        if not && actual
+            return SkyUnitExpectation.Fail("BeComplete", "Expected " + \
+                SkyUnitExpectation.ActualDescription() + " Objective " + objectiveId + " not to be complete")
+        elseIf ! not && ! actual
+            return SkyUnitExpectation.Fail("BeComplete", "Expected " + \
+                SkyUnitExpectation.ActualDescription() + " Objective " + objectiveId + " to be complete")
+        endIf
+        return SkyUnitExpectation.Pass("BeComplete")
+    else
+        actual = theQuest.IsCompleted()
+        if not && actual
+            return SkyUnitExpectation.Fail("BeComplete", "Expected " + \
+                SkyUnitExpectation.ActualDescription() + " not to be complete")
+        elseIf ! not && ! actual
+            return SkyUnitExpectation.Fail("BeComplete", "Expected " + \
+                SkyUnitExpectation.ActualDescription() + " to be complete")
+        endIf
+        return SkyUnitExpectation.Pass("BeComplete")
+    endIf
+endFunction
+
+bool function BeFailed()
+    SkyUnitExpectation.SetExpectedType("Bool")
+    Quest theQuest = SkyUnitExpectation.GetActualForm() as Quest
+    bool actual
+    bool not = SkyUnitExpectation.Not()
+    string actualType = SkyUnitExpectation.GetActualType()
+    int objectiveId = SkyUnitExpectation.GetActualInt(dataKey = "objective")
+    actual = theQuest.IsObjectiveFailed(objectiveId)
+    if not && actual
+        return SkyUnitExpectation.Fail("BeFailed", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " Objective " + objectiveId + " not to be failed")
+    elseIf ! not && ! actual
+        return SkyUnitExpectation.Fail("BeFailed", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " Objective " + objectiveId + " to be failed")
+    endIf
+    return SkyUnitExpectation.Pass("BeFailed")
+endFunction
+
+bool function BeDisplayed()
+    SkyUnitExpectation.SetExpectedType("Bool")
+    Quest theQuest = SkyUnitExpectation.GetActualForm() as Quest
+    bool actual
+    bool not = SkyUnitExpectation.Not()
+    string actualType = SkyUnitExpectation.GetActualType()
+    int objectiveId = SkyUnitExpectation.GetActualInt(dataKey = "objective")
+    actual = theQuest.IsObjectiveDisplayed(objectiveId)
+    if not && actual
+        return SkyUnitExpectation.Fail("BeDisplayed", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " Objective " + objectiveId + " not to be displayed")
+    elseIf ! not && ! actual
+        return SkyUnitExpectation.Fail("BeDisplayed", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " Objective " + objectiveId + " to be displayed")
+    endIf
+    return SkyUnitExpectation.Pass("BeDisplayed")
+endFunction
+
+bool function BeCurrentStage()
+    SkyUnitExpectation.SetExpectedType("Bool")
+    Quest theQuest = SkyUnitExpectation.GetActualForm() as Quest
+    bool actual
+    bool not = SkyUnitExpectation.Not()
+    string actualType = SkyUnitExpectation.GetActualType()
+    int stageId = SkyUnitExpectation.GetActualInt(dataKey = "stage")
+    actual = theQuest.GetCurrentStageID() == stageId
+    if not && actual
+        return SkyUnitExpectation.Fail("BeCurrentStage", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " Stage " + stageId + " not to be current stage")
+    elseIf ! not && ! actual
+        return SkyUnitExpectation.Fail("BeCurrentStage", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " Stage " + stageId + " to be current stage")
+    endIf
+    return SkyUnitExpectation.Pass("BeCurrentStage")
+endFunction
