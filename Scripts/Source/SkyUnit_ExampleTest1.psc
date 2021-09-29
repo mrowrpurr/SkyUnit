@@ -21,7 +21,7 @@ string[] property TestLogs auto
 
 SkyUnit_ExampleTest1 function ResetTestSuite()
     ResetTestLogs = true
-    TestLogs = Utility.CreateStringArray(0)
+    TestLogs = new string[1]
     DisableTests()
     return self
 endFunction
