@@ -15,9 +15,8 @@
     </Variables>
     <Imports>
         <Import>@ImportsFolder\SKSE64\Scripts\Source</Import>
-        <Import>@ImportsFolder\PapyrusUtil\Scripts\Source</Import>
         <Import>@ImportsFolder\UIExtensions\scripts\source</Import>
-        <Import>@ImportsFolder\JContainers\scripts\source</Import>
+        <!-- <Import>@ImportsFolder\JContainers\scripts\source</Import> -->
         <Import>C:\Steam\steamapps\common\Skyrim Special Edition\Data\Scripts\Source</Import>
     </Imports>
     <Folders>

@@ -1,9 +1,34 @@
 main:
-  - title: "Posts"
-    url: /posts/
-  - title: "Categories"
-    url: /categories/
-  - title: "Tags"
-    url: /tags/
-  - title: "About"
+  - title: '<i class="fad fa-graduation-cap"></i> Getting Started'
     url: /about/
+  - title: '<i class="fad fa-book"></i> API Reference'
+    url: /about/
+  - title: '<i class="fas fa-gamepad-alt"></i> Nexus'
+    url: "https://www.nexusmods.com/skyrimspecialedition/mods/56006"
+
+sidebar:
+  - title: '<i class="fad fa-graduation-cap"></i> Getting Started'
+    url: /docs
+    children:
+    - title: '<i class="fad fa-download"></i> Download'
+      url: /posts/
+    - title: '<i class="fad fa-laptop"></i> Create Test'
+      url: /categories/
+    - title: '<i class="fad fa-gamepad-alt"></i> Run Test'
+      url: /tags/
+  - title: '<i class="fad fa-book"></i> API Reference'
+    children:
+    - title: 'Expectations, e.g. <code>ExpectPlayer()</code>'
+      url: /posts/
+    - title: 'Basic Assertions, e.g. <code>ContainText()</code>'
+      url: /posts/
+    - title: 'Actor Assertions, e.g. <code>HaveItem()</code>'
+      url: /posts/
+    - title: 'Form Assertions, e.g. <code>HasKeyword()</code>'
+      url: /posts/
+    - title: 'Object Assertions, e.g. <code>BeEnabled()</code>'
+      url: /posts/
+    - title: 'Quest Assertions, e.g. <code>BeCurrentStage()</code>'
+      url: /posts/
+    - title: 'Other Assertions, e.g. <code>HaveEffect()</code>'
+      url: /posts/
