@@ -625,6 +625,22 @@ bool function BeEmpty()
 endFunction
 
 bool function HaveLength(int expected)
+    SkyUnitExpectation.SetExpectedInt(expected)
+    bool not = SkyUnitExpectation.Not()
+    string actualType = SkyUnitExpectation.GetActualType()
+    if actualType == "String"
+        int actual = StringUtil.GetLength(SkyUnitExpectation.GetActualString())
+        if not && actual == expected
+            return SkyUnitExpectation.Fail("HaveLength", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " not to have length " + expected)
+        elseIf ! not && actual != expected
+            return SkyUnitExpectation.Fail("HaveLength", "Expected " + \
+            SkyUnitExpectation.ActualDescription() + " to have length " + expected)
+        endIf
+    else
+        return SkyUnitExpectation.Fail("HaveLength", "HaveLength does not support " + actualType)
+    endIf
+    return SkyUnitExpectation.Pass("HaveLength")
 endFunction
 
 bool function ContainText(string expected)

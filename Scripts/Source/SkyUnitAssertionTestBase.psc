@@ -149,7 +149,7 @@ function ToPass(bool expectationResult)
     CurrentFakeExpectationResult = expectationResult
     CurrentFakeExpectationId = SkyUnitExpectation.LatestExpectationID()
     SwitchToContext_Real()
-    ExpectBool(expectationResult).To(BeTrue(), "Expected expectation to pass: " + SkyUnitExpectation.GetDescription(CurrentFakeExpectationId))
+    ExpectBool(expectationResult).To(BeTrue(), "Expected expectation to pass: " + SkyUnitExpectation.GetDescription(CurrentFakeExpectationId) + " Failure message: " + SkyUnitExpectation.GetFailureMessage(CurrentFakeExpectationId))
     ExpectString(SkyUnitExpectation.GetStatus(CurrentFakeExpectationId)).To(EqualString("PASSING"))
     Assert(SkyUnitExpectation.GetFailureMessage(CurrentFakeExpectationId) == "", "Expected failure message to be empty but was: " + SkyUnitExpectation.GetFailureMessage(CurrentFakeExpectationId))
 endFunction

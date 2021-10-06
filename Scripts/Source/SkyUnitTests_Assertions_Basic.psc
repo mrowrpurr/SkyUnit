@@ -11,7 +11,7 @@ function Tests()
     Test("BeFalse()").Fn(ExpectBool_BeFalse_Test())
     Test("ContainText() with Strings").Fn(String_ContainText_Test())
     Test("ContainText() with Arrays").Fn(Array_ContainText_Test())
-    Test("HaveLength() with Strings")
+    Test("HaveLength() with Strings").Fn(String_HaveLength_Test())
     Test("HaveLength() with Arrays")
     Test("BeEmpty() with Strings")
     Test("BeEmpty() with Arrays")
@@ -158,7 +158,6 @@ function String_ContainText_Test()
     ExpectString(SkyUnitExpectation.GetExpectedString(ExpectationID)).To(EqualString("Foo"))
 endFunction
 
-; TODO FIXME
 function Array_ContainText_Test()
     string[] myArray = new string[2]
     myArray[0] = "Hello"
@@ -197,4 +196,40 @@ function Array_ContainText_Test()
     ExpectExpected("String", "Foo")
     ExpectStringArray(SkyUnitExpectation.GetActualStringArray(ExpectationID)).To(EqualStringArray(myArray))
     ExpectString(SkyUnitExpectation.GetExpectedString(ExpectationID)).To(EqualString("Foo"))
+endFunction
+
+function String_HaveLength_Test()
+    ; FAIL
+    ExpectExpectation().ToFail(ExpectString("Hello").To(HaveLength(3)) )
+    ExpectDescription("ExpectString(\"Hello\").To(HaveLength(3))")
+    ExpectFailureMessage("Expected String \"Hello\" to have length 3")
+    ExpectActual("String", "Hello")
+    ExpectExpected("Int", "3")
+    ExpectString(SkyUnitExpectation.GetActualString(ExpectationID)).To(EqualString("Hello"))
+    ExpectInt(SkyUnitExpectation.GetExpectedInt(ExpectationID)).To(EqualInt(3))
+
+    ; PASS
+    ExpectExpectation().ToPass(ExpectString("Hello").To(HaveLength(5)))
+    ExpectDescription("ExpectString(\"Hello\").To(HaveLength(5))")
+    ExpectActual("String", "Hello")
+    ExpectExpected("Int", "5")
+    ExpectString(SkyUnitExpectation.GetActualString(ExpectationID)).To(EqualString("Hello"))
+    ExpectInt(SkyUnitExpectation.GetExpectedInt(ExpectationID)).To(EqualInt(5))
+
+    ; Not() FAIL
+    ExpectExpectation().ToFail(ExpectString("Hello").Not().To(HaveLength(5)))
+    ExpectDescription("ExpectString(\"Hello\").Not().To(HaveLength(5))")
+    ExpectFailureMessage("Expected String \"Hello\" not to have length 5")
+    ExpectActual("String", "Hello")
+    ExpectExpected("Int", "5")
+    ExpectString(SkyUnitExpectation.GetActualString(ExpectationID)).To(EqualString("Hello"))
+    ExpectInt(SkyUnitExpectation.GetExpectedInt(ExpectationID)).To(EqualInt(5))
+
+    ; Not() PASS
+    ExpectExpectation().ToPass(ExpectString("Hello").Not().To(HaveLength(3)))
+    ExpectDescription("ExpectString(\"Hello\").Not().To(HaveLength(3))")
+    ExpectActual("String", "Hello")
+    ExpectExpected("Int", "3")
+    ExpectString(SkyUnitExpectation.GetActualString(ExpectationID)).To(EqualString("Hello"))
+    ExpectInt(SkyUnitExpectation.GetExpectedInt(ExpectationID)).To(EqualInt(3))
 endFunction
