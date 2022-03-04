@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.22)
 
 # Set your SKSE plugin name and version.
 project(
-	ExampleProject
+	SkyUnit
 	VERSION 1.0.0
 	LANGUAGES CXX
 )
