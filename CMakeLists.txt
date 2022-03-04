@@ -7,7 +7,15 @@ project(
 	LANGUAGES CXX
 )
 
+set(SKYUNIT_IS_MAIN_PROJECT OFF)
+if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
+  set(SKYUNIT_IS_MAIN_PROJECT ON)
+endif()
+
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+option(SKYUNIT_BUILD_TESTS "Build the tests for SkyUnit" ${SKYUNIT_IS_MAIN_PROJECT})
 
 # Add options for specifying the version
 # Only one version may be provided at a time
@@ -36,12 +44,90 @@ elseif(${SKYRIM_VR})
 	set(SKYRIM_VERSION VR)
 endif()
 
-# Enable testing
-enable_testing()
 
 # Process the .in templates in the cmake/ folder for Plugin.h and version.rc
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
-# Process the CMakeLists.txt in the src/ folder
-add_subdirectory(src)
-add_subdirectory(test)
+# Enable testing
+if(SKYUNIT_BUILD_TESTS)
+	message("Build SkyUnit tests: TRUE")
+	enable_testing()
+	add_subdirectory(test)
+endif()
+
+# Setup SKSE project library
+add_library(
+	"${PROJECT_NAME}"
+	INTERFACE
+)
+add_library("${PROJECT_NAME}::${PROJECT_NAME}" ALIAS "${PROJECT_NAME}")
+
+# Compile with C++20 features
+target_compile_features(
+	"${PROJECT_NAME}"
+	INTERFACE
+		cxx_std_23
+)
+
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+	target_compile_options(
+		"${PROJECT_NAME}"
+		INTERFACE
+			"/sdl"	# Enable Additional Security Checks
+			"/utf-8"	# Set Source and Executable character sets to UTF-8
+			"/Zi"	# Debug Information Format
+
+			"/permissive-"	# Standards conformance
+			"/Zc:preprocessor"	# Enable preprocessor conformance mode
+
+			"/wd4200" # nonstandard extension used : zero-sized array in struct/union
+
+			"$<$<CONFIG:DEBUG>:>"
+			"$<$<CONFIG:RELEASE>:/Zc:inline;/JMC-;/Ob3>"
+	)
+
+	target_link_options(
+		"${PROJECT_NAME}"
+		INTERFACE
+			"$<$<CONFIG:DEBUG>:/INCREMENTAL;/OPT:NOREF;/OPT:NOICF>"
+			"$<$<CONFIG:RELEASE>:/INCREMENTAL:NO;/OPT:REF;/OPT:ICF;/DEBUG:FULL>"
+	)
+endif()
+
+# Default output directory for compiled files
+target_include_directories(
+	"${PROJECT_NAME}"
+	INTERFACE
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+		$<INSTALL_INTERFACE:include>
+)
+
+set(ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+
+# CommonLib
+if(${SKYRIM_AE})
+	add_subdirectory("${ROOT_DIR}/CommonLib/AE" CommonLibSSE EXCLUDE_FROM_ALL)
+    target_link_libraries(
+        "${PROJECT_NAME}"
+        INTERFACE
+            CommonLibSSE::CommonLibSSE
+    )
+elseif(${SKYRIM_SE})
+	add_subdirectory("${ROOT_DIR}/CommonLib/SE" CommonLibSSE EXCLUDE_FROM_ALL)
+    target_link_libraries(
+        "${PROJECT_NAME}"
+        INTERFACE
+            CommonLibSSE::CommonLibSSE
+    )
+elseif(${SKYRIM_VR})
+	add_subdirectory("${ROOT_DIR}/CommonLib/VR" CommonLibVR EXCLUDE_FROM_ALL)
+    target_link_libraries(
+        "${PROJECT_NAME}"
+        INTERFACE
+            CommonLibVR::CommonLibVR
+    )
+endif()
+
+# Include spdlog
+find_package(spdlog CONFIG REQUIRED)
+target_link_libraries("${PROJECT_NAME}" INTERFACE spdlog::spdlog)
