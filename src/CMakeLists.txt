@@ -73,8 +73,10 @@ target_include_directories(
 	PRIVATE
 		"${CMAKE_CURRENT_BINARY_DIR}/src"
 		"${SOURCE_DIR}"
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-		$<INSTALL_INTERFACE:include>
+		"${CMAKE_CURRENT_BINARY_DIR}/include"
+		"${INCLUDE_DIR}"
+		# $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+		# $<INSTALL_INTERFACE:include>
 )
 
 # CommonLib
