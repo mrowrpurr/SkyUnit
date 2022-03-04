@@ -14,3 +14,4 @@
 - Papyrus test support
 - Skyrim Platform test support
 - Beautiful UI test runner
+- All tests run _inside of Skyrim_
