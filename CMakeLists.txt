@@ -7,7 +7,15 @@ project(
 	LANGUAGES CXX
 )
 
+set(SKYUNIT_IS_MAIN_PROJECT OFF)
+if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
+	set(SKYUNIT_IS_MAIN_PROJECT ON)
+endif()
+
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+option(SKYUNIT_BUILD_TESTS "Build the tests for SkyUnit" ${SKYUNIT_IS_MAIN_PROJECT})
 
 # Add options for specifying the version
 # Only one version may be provided at a time
@@ -36,12 +44,14 @@ elseif(${SKYRIM_VR})
 	set(SKYRIM_VERSION VR)
 endif()
 
-# Enable testing
-enable_testing()
-
 # Process the .in templates in the cmake/ folder for Plugin.h and version.rc
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
 # Process the CMakeLists.txt in the src/ folder
 add_subdirectory(src)
-add_subdirectory(test)
+
+# Enable testing
+if(SKYUNIT_BUILD_TESTS)
+	enable_testing()
+	add_subdirectory(test)
+endif()
