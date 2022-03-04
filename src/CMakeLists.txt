@@ -70,7 +70,7 @@ endif()
 # Default output directory for compiled files
 target_include_directories(
 	"SkyUnit"
-	PRIVATE
+	PUBLIC
 		"${CMAKE_CURRENT_BINARY_DIR}/src"
 		"${SOURCE_DIR}"
 		"${CMAKE_CURRENT_BINARY_DIR}/include"
