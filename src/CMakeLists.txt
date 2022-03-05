@@ -110,6 +110,10 @@ endif()
 find_package(spdlog CONFIG REQUIRED)
 target_link_libraries("SkyUnit" PUBLIC spdlog::spdlog)
 
+# Include oatpp
+find_package(oatpp CONFIG REQUIRED)
+target_link_libraries("${PROJECT_NAME}" PRIVATE oatpp::oatpp oatpp::oatpp-test)
+
 # Precompiled Headers (PCH)
 target_precompile_headers(
 	"SkyUnit"

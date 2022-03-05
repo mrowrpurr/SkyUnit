@@ -1,5 +1,6 @@
 #include <format>
 #include "../include/SkyUnit.h"
+#include "Web.h"
 
 namespace {
 	void InitializeLog() {
@@ -24,7 +25,8 @@ namespace {
 		// kDataLoaded
 		if (event->type == SKSE::MessagingInterface::kDataLoaded) {
 			auto* consoleLog = RE::ConsoleLog::GetSingleton();
-			consoleLog->Print("Hello from Example SKSE plugin!");
+			consoleLog->Print("Hi broken friends! I'm broken too. Y'all the best <3");
+			Web::RunThread();
 		}
 	}
 
