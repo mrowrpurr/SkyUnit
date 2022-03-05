@@ -35,7 +35,7 @@ add_library(
 	"${ROOT_DIR}/.editorconfig"
 )
 
-# Load first so SKSE plugins can depende on it!
+# Load first so SKSE plugins can depend on it!
 set_target_properties(SkyUnit PROPERTIES OUTPUT_NAME "!SkyUnit")
 
 # Compile with C++20 features
