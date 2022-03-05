@@ -1,3 +1,7 @@
 namespace SkyUnit {
-    std::string HELLO = "Hi there";
+    std::string _hello = "Hi there";
+
+    std::string* GetHello() {
+        return &_hello;
+    }
 }

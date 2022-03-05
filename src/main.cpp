@@ -3,8 +3,6 @@
 
 namespace {
 	void InitializeLog() {
-		auto val = SkyUnit::HELLO;
-
 		auto path = logger::log_directory();
 		if (!path) {
 			util::report_and_fail("Failed to find standard logging directory"sv);
