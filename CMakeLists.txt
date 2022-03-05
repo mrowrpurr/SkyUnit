@@ -7,9 +7,6 @@ project(
 	LANGUAGES CXX
 )
 
-# Load first so SKSE plugins can depende on it!
-set_target_properties(SkyUnit PROPERTIES OUTPUT_NAME "!SkyUnit")
-
 set(SKYUNIT_IS_MAIN_PROJECT OFF)
 if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
 	set(SKYUNIT_IS_MAIN_PROJECT ON)
