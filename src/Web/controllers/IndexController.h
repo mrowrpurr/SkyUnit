@@ -19,7 +19,12 @@ public:
 
   ENDPOINT("GET", "/", root) {
     auto now = std::chrono::system_clock::now();
-    return response(std::format("Hey! This is SkyUnit! Let's have some Vitamin C and then continue!", now));
+
+    auto response = createResponse(Status::CODE_200, "<h1>Hello world!</h1><a href=\"http://mrowrpurr.com\">Mrowr Purr</a>");
+    response->putHeader(Header::CONTENT_TYPE, "text/html");
+    return response;
+
+    // return response(std::format("Hey! This is SkyUnit! Let's have some Vitamin C and then continue!", now));
   }
   
   ENDPOINT("GET", "/spells/{spellName}", searchSpells, PATH(String, spellName)) {

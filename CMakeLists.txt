@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.22)
+cmake_minimum_required(VERSION 3.21.1)
 
 # Set your SKSE plugin name and version.
 project(
@@ -24,10 +24,10 @@ option(SKYRIM_SE "Compile plugin for Skyrim SE" OFF)
 option(SKYRIM_VR "Compile plugin for Skyrim VR" OFF)
 
 # Exit if no Skyrim version was specified
-if(NOT ${SKYRIM_AE} AND NOT ${SKYRIM_SE} AND NOT ${SKYRIM_VR})
-	message(FATAL_ERROR "Run cmake using one of the build/ .bat files for building Skyrim")
-	return()
-endif()
+# if(NOT ${SKYRIM_AE} AND NOT ${SKYRIM_SE} AND NOT ${SKYRIM_VR})
+#	message(FATAL_ERROR "Run cmake using one of the build/ .bat files for building Skyrim")
+#	return()
+# endif()
 
 # Add support for #ifdef for SKYRIM_AE, SKYRIM_SE, and SKYRIM_VR
 if(${SKYRIM_AE})

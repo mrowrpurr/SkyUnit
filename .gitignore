@@ -1,2 +1,4 @@
 build/
 output/
+.idea
+cmake-build-debug/
