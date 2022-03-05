@@ -20,7 +20,14 @@ public:
   ENDPOINT("GET", "/", root) {
     auto now = std::chrono::system_clock::now();
 
-    auto response = createResponse(Status::CODE_200, "<h1>Hello world!</h1><a href=\"http://mrowrpurr.com\">Mrowr Purr</a>");
+    auto html = std::string("<h1>List of stuff:</h1><ul>");
+    auto stuffs = SkyUnit::GetStringVector();
+    for (const auto item : stuffs) {
+      html = std::format("{}<li>{}</li>", html, item);
+    }
+    html = std::format("{}</ul>", html);
+
+    auto response = createResponse(Status::CODE_200, html);
     response->putHeader(Header::CONTENT_TYPE, "text/html");
     return response;
 
