@@ -21,8 +21,9 @@ public:
     auto now = std::chrono::system_clock::now();
 
     auto html = std::string("<h1>List of registered callbacks:</h1><ul>");
-	for (auto& [key, value] : SkyUnit::Callbacks) {
-		html = std::format("{}<li>{}</li>", html, *key);
+	auto callbacks = SkyUnit::GetCallbacks();
+	for (auto& [key, value] : callbacks) {
+		html = std::format("{}<li>{}</li>", html, key);
 	}
     html = std::format("{}</ul>", html);
 

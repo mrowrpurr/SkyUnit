@@ -1,15 +1,13 @@
 #include "../include/SkyUnit.h"
 
-std::unordered_map<const std::string*, const std::function<void()>*> SkyUnit::Callbacks;
-
 namespace SkyUnit {
-    std::vector<std::string> _texts = {};
+	std::unordered_map<std::string, std::function<void()>> _callbacks;
 
-    std::vector<std::string>& GetStringVector() {
-        return _texts;
+    void AddCallback(std::string&& name, std::function<void()>&& callback) {
+		_callbacks.try_emplace(name, callback);
     }
 
-    void AddCallback(const std::string* name, const std::function<void()>* callback) {
-		Callbacks.try_emplace(name, callback);
-    }
+	std::unordered_map<std::string, std::function<void()>>& GetCallbacks() {
+		return _callbacks;
+	}
 }
