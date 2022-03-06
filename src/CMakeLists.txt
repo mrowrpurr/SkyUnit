@@ -114,6 +114,10 @@ target_link_libraries("SkyUnit" PUBLIC spdlog::spdlog)
 find_package(oatpp CONFIG REQUIRED)
 target_link_libraries("${PROJECT_NAME}" PRIVATE oatpp::oatpp oatpp::oatpp-test)
 
+# Include snowhouse - assertions
+find_path(SNOWHOUSE_INCLUDE_DIRS "snowhouse/assert.h")
+target_include_directories("${PROJECT_NAME}" PRIVATE ${SNOWHOUSE_INCLUDE_DIRS})
+
 # Precompiled Headers (PCH)
 target_precompile_headers(
 	"SkyUnit"

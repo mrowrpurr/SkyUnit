@@ -3,12 +3,12 @@
 #include <iostream>
 #include <format>
 #include <thread>
-#include <windows.h>
+
 #include <oatpp/web/server/api/ApiController.hpp>
 #include <oatpp/core/macro/codegen.hpp>
 #include <oatpp/core/macro/component.hpp>
-#include <RE/C/ConsoleLog.h>
-#include <exception>
+
+#include <snowhouse/snowhouse.h>
 
 #include "Web/dtos/TextDto.h"
 
@@ -42,8 +42,10 @@ public:
 			try {
 				auto result = fn();
 				return response(std::format("Callback {} returned {}", callbackName->c_str(), result));
+			} catch (const snowhouse::AssertionException& e) {
+				return response(std::format("Callback blew up: {} with message: {}", callbackName->c_str(), e.what()));
 			} catch (...) {
-				return response(std::format("Callback blew up: {}", callbackName->c_str()));
+				return response(std::format("Callback blew up: {} with unexpected error", callbackName->c_str()));
 			}
 		} else {
 			return response(std::format("No callback defined with this name: {}", callbackName->c_str()));

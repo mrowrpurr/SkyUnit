@@ -6,6 +6,7 @@
     "rsm-binary-io",
     "spdlog",
     "gtest",
-    "oatpp"
+    "oatpp",
+    "snowhouse"
   ]
 }
