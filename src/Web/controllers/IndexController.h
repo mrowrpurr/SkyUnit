@@ -9,7 +9,6 @@
 #include <oatpp/core/macro/component.hpp>
 #include <inja/inja.hpp>
 
-#include "SkyUnit/Data.h"
 #include "Web/dtos/TextDto.h"
 
 #include OATPP_CODEGEN_BEGIN(ApiController)
@@ -19,7 +18,7 @@ public:
   explicit IndexController(OATPP_COMPONENT(std::shared_ptr<ObjectMapper>, objectMapper)) : oatpp::web::server::api::ApiController(objectMapper) {}
 
   ENDPOINT("GET", "/", root) {
-	const auto htmlTemplate = R"(<h1>Available Callbacks</h1>
+	const auto htmlTemplate = R"(<h1>Available Callbacks CHANGED</h1>
 <ul>
 ## for callback in callbacks
 	<li><a href="/callbacks/{{ callback }}>{{ callback }}</a></li>
@@ -30,7 +29,7 @@ public:
 	inja::json data;
 	data["callbacks"] = {};
 
-	auto callbacks = SkyUnit::Private::Data::GetCallbacks();
+	auto callbacks = SkyUnit::GetCallbacks();
 	for (auto& [key, value] : callbacks) {
 		data["callbacks"].push_back(key);
 	}
@@ -41,7 +40,7 @@ public:
 
 	ENDPOINT("GET", "/callbacks/{callbackName}", invokeCallback, PATH(String, callbackNameString)) {
 		const auto callbackName = callbackNameString->c_str();
-		auto callbacks = SkyUnit::Private::Data::GetCallbacks();
+		auto callbacks = SkyUnit::GetCallbacks();
 		if (callbacks.contains((callbackName))) {
 			auto fn = callbacks[callbackName];
 			try {
