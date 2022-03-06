@@ -40,44 +40,70 @@ public:
   ENDPOINT("GET", "/", root) {
     auto now = std::chrono::system_clock::now();
 
-    auto html = std::string("<h1>Tests:</h1><ul>");
+    auto html = std::string("<h1>Tests:</h1><p><a href=\"/run-all\">Run all</a></p><ul>");
 	auto callbacks = SkyUnit::GetCallbacks();
 	for (auto& [key, value] : callbacks) {
 		html = std::format("{}<li><a href=\"/test/{}\">{}</a></li>", html, key, key);
 	}
     html = std::format("{}</ul>", html);
 
-    auto response = createResponse(Status::CODE_200, html);
-    response->putHeader(Header::CONTENT_TYPE, "text/html");
-    return response;
-
-    // return response(std::format("Hey! This is SkyUnit! Let's have some Vitamin C and then continue!", now));
+	return responseHtml(html);
   }
 
-  // RENAME TO TEST!
-	ENDPOINT("GET", "/test/{callbackNameString}", invokeCallback, PATH(String, callbackNameString)) {
+	ENDPOINT("GET", "/test/{callbackNameString}", runTest, PATH(String, callbackNameString)) {
 		const auto callbackName = urlDecode(callbackNameString->c_str());
 		auto callbacks = SkyUnit::GetCallbacks();
 		if (callbacks.contains((callbackName.data()))) {
 			auto fn = callbacks[callbackName];
 			try {
 				fn();
-				return response(std::format("Test {} passed", callbackName));
+				return responseHtml(std::format("<strong style=\"color: #127339;\">Test {} passed</strong>", callbackName));
 			} catch (const snowhouse::AssertionException& e) {
-				return response(std::format("Test {} failed with message: {}", callbackName, e.what()));
+				return responseHtml(std::format("<strong style=\"color: #b00c6c\">Test {} failed with message: {}</strong>", callbackName, e.what()));
 			} catch (...) {
-				return response(std::format("Test {} failed with unexpected error", callbackName));
+				return responseHtml(std::format("<strong style=\"color: #b00c6c\">Test {} failed with unexpected error</strong>", callbackName));
 			}
 		} else {
-			return response(std::format("No test defined with this name: {}", callbackName));
+			return responseHtml(std::format("No test defined with this name: {}", callbackName));
 		}
 	}
 
-  std::shared_ptr<oatpp::web::protocol::http::outgoing::Response> response(std::string text) {
-    auto response = TextDto::createShared();
-    response->text = text;
-    return createDtoResponse(Status::CODE_200, response);
-  }
+	ENDPOINT("GET", "/run-all", runAll) {
+		bool anyFailed = false;
+		std::string results = "<ul>";
+		auto callbacks = SkyUnit::GetCallbacks();
+		for (const auto& [testName, fn] : callbacks) {
+			try {
+				fn();
+				results += std::format("<li style=\"color: #127339;\">Test {} passed</li>", testName);
+			} catch (const snowhouse::AssertionException& e) {
+				results += std::format("<li style=\"color: #b00c6c\">Test {} failed with message: {}</li>", testName, e.what());
+				anyFailed = true;
+			} catch (...) {
+				results += std::format("<li style=\"color: #b00c6c\">Test {} failed with unexpected error</li>", testName);
+				anyFailed = true;
+			}
+		}
+		results += "</ul>";
+		if (anyFailed) {
+			results = std::format("<h1 style=\"color: #b00c6c\">Tests Failed</h1>{}", results);
+		} else {
+			results = std::format("<h1 style=\"color: #127339;\">Tests Passed</h1>{}", results);
+		}
+		return responseHtml(results);
+	}
+
+	std::shared_ptr<oatpp::web::protocol::http::outgoing::Response> responseHtml(std::string text) {
+		auto response = createResponse(Status::CODE_200, text);
+		response->putHeader(Header::CONTENT_TYPE, "text/html");
+		return response;
+	}
+
+	std::shared_ptr<oatpp::web::protocol::http::outgoing::Response> response(std::string text) {
+		auto response = TextDto::createShared();
+		response->text = text;
+		return createDtoResponse(Status::CODE_200, response);
+	}
 };
 
 #include OATPP_CODEGEN_END(ApiController) 
