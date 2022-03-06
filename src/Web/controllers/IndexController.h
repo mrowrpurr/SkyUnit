@@ -40,10 +40,10 @@ public:
   ENDPOINT("GET", "/", root) {
     auto now = std::chrono::system_clock::now();
 
-    auto html = std::string("<h1>List of registered callbacks:</h1><ul>");
+    auto html = std::string("<h1>Tests:</h1><ul>");
 	auto callbacks = SkyUnit::GetCallbacks();
 	for (auto& [key, value] : callbacks) {
-		html = std::format("{}<li><a href=\"/callback/{}\">{}</a></li>", html, key, key);
+		html = std::format("{}<li><a href=\"/test/{}\">{}</a></li>", html, key, key);
 	}
     html = std::format("{}</ul>", html);
 
@@ -55,21 +55,21 @@ public:
   }
 
   // RENAME TO TEST!
-	ENDPOINT("GET", "/callback/{callbackNameString}", invokeCallback, PATH(String, callbackNameString)) {
+	ENDPOINT("GET", "/test/{callbackNameString}", invokeCallback, PATH(String, callbackNameString)) {
 		const auto callbackName = urlDecode(callbackNameString->c_str());
 		auto callbacks = SkyUnit::GetCallbacks();
 		if (callbacks.contains((callbackName.data()))) {
 			auto fn = callbacks[callbackName];
 			try {
-				auto result = fn();
-				return response(std::format("Callback {} returned {}", callbackName, result));
+				fn();
+				return response(std::format("Test {} passed", callbackName));
 			} catch (const snowhouse::AssertionException& e) {
-				return response(std::format("Callback blew up: {} with message: {}", callbackName, e.what()));
+				return response(std::format("Test {} failed with message: {}", callbackName, e.what()));
 			} catch (...) {
-				return response(std::format("Callback blew up: {} with unexpected error", callbackName));
+				return response(std::format("Test {} failed with unexpected error", callbackName));
 			}
 		} else {
-			return response(std::format("No callback defined with this name: {}", callbackName));
+			return response(std::format("No test defined with this name: {}", callbackName));
 		}
 	}
 
