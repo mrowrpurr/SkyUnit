@@ -3,7 +3,7 @@
 namespace SkyUnit {
 	std::unordered_map<std::string, std::function<std::string_view()>> _callbacks;
 
-    void AddCallback(std::string_view name, std::function<std::string_view()>&& callback) {
+    void AddTest(std::string_view name, std::function<std::string_view()>&& callback) {
 		_callbacks.try_emplace(std::string(name), callback);
     }
 
