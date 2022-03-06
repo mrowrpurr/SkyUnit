@@ -23,7 +23,7 @@ public:
     auto html = std::string("<h1>List of registered callbacks:</h1><ul>");
 	auto callbacks = SkyUnit::GetCallbacks();
 	for (auto& [key, value] : callbacks) {
-		html = std::format("{}<li>{}</li>", html, key);
+		html = std::format("{}<li><a href=\"/callback/{}\">{}</a></li>", html, key, key);
 	}
     html = std::format("{}</ul>", html);
 
@@ -33,22 +33,11 @@ public:
 
     // return response(std::format("Hey! This is SkyUnit! Let's have some Vitamin C and then continue!", now));
   }
-  
-  ENDPOINT("GET", "/spells/{spellName}", searchSpells, PATH(String, spellName)) {
-    const auto nameQuery = spellName->data();
-    const auto dataHandler = RE::TESDataHandler::GetSingleton();
-    const auto& spells = dataHandler->GetFormArray<RE::SpellItem>();
-    int found = 0;
 
-    for (const auto& spell : spells) {
-      std::string name(spell->GetName());
-      if (name.find(nameQuery) != std::string::npos)
-        found++;
-    }
+	ENDPOINT("GET", "/callback/{callbackName}", searchSpells, PATH(String, callbackName)) {
+		return response(std::format("Hello, the callback is {}", callbackName->c_str()));
+	}
 
-    return response(std::format("Found {} spells", found)); // 
-  }
-  
   std::shared_ptr<oatpp::web::protocol::http::outgoing::Response> response(std::string text) {
     auto response = TextDto::createShared();
     response->text = text;
