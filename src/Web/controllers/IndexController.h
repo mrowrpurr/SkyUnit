@@ -3,58 +3,69 @@
 #include <iostream>
 #include <format>
 #include <thread>
-#include <windows.h>
+#include <exception>
 #include <oatpp/web/server/api/ApiController.hpp>
 #include <oatpp/core/macro/codegen.hpp>
 #include <oatpp/core/macro/component.hpp>
-#include <RE/C/ConsoleLog.h>
-#include <exception>
+#include <inja/inja.hpp>
 
+#include "SkyUnit/Data.h"
 #include "Web/dtos/TextDto.h"
 
 #include OATPP_CODEGEN_BEGIN(ApiController)
 
 class IndexController : public oatpp::web::server::api::ApiController {
 public:
-  IndexController(OATPP_COMPONENT(std::shared_ptr<ObjectMapper>, objectMapper)) : oatpp::web::server::api::ApiController(objectMapper) {}
+  explicit IndexController(OATPP_COMPONENT(std::shared_ptr<ObjectMapper>, objectMapper)) : oatpp::web::server::api::ApiController(objectMapper) {}
 
   ENDPOINT("GET", "/", root) {
-    auto now = std::chrono::system_clock::now();
+	const auto htmlTemplate = R"(<h1>Available Callbacks</h1>
+<ul>
+## for callback in callbacks
+	<li><a href="/callbacks/{{ callback }}>{{ callback }}</a></li>
+## endfor
+</ul>
+)";
 
-    auto html = std::string("<h1>List of registered callbacks:</h1><ul>");
-	auto callbacks = SkyUnit::GetCallbacks();
+	inja::json data;
+	data["callbacks"] = {};
+
+	auto callbacks = SkyUnit::Private::Data::GetCallbacks();
 	for (auto& [key, value] : callbacks) {
-		html = std::format("{}<li><a href=\"/callback/{}\">{}</a></li>", html, key, key);
+		data["callbacks"].push_back(key);
 	}
-    html = std::format("{}</ul>", html);
 
-    auto response = createResponse(Status::CODE_200, html);
-    response->putHeader(Header::CONTENT_TYPE, "text/html");
-    return response;
-
-    // return response(std::format("Hey! This is SkyUnit! Let's have some Vitamin C and then continue!", now));
+	const auto html = inja::render(htmlTemplate, data);
+    return HtmlResponse(html);
   }
 
-	ENDPOINT("GET", "/callback/{callbackName}", invokeCallback, PATH(String, callbackName)) {
-		auto callbacks = SkyUnit::GetCallbacks();
-		if (callbacks.contains((callbackName->c_str()))) {
-			auto fn = callbacks[callbackName->c_str()];
+	ENDPOINT("GET", "/callbacks/{callbackName}", invokeCallback, PATH(String, callbackNameString)) {
+		const auto callbackName = callbackNameString->c_str();
+		auto callbacks = SkyUnit::Private::Data::GetCallbacks();
+		if (callbacks.contains((callbackName))) {
+			auto fn = callbacks[callbackName];
 			try {
 				auto result = fn();
-				return response(std::format("Callback {} returned {}", callbackName->c_str(), result));
+				return TextResponse(std::format("Callback {} returned {}", callbackName, result));
 			} catch (...) {
-				return response(std::format("Callback blew up: {}", callbackName->c_str()));
+				return TextResponse(std::format("Callback blew up: {}", callbackName));
 			}
 		} else {
-			return response(std::format("No callback defined with this name: {}", callbackName->c_str()));
+			return TextResponse(std::format("No callback defined with this name: {}", callbackName));
 		}
 	}
 
-  std::shared_ptr<oatpp::web::protocol::http::outgoing::Response> response(std::string text) {
+	std::shared_ptr<oatpp::web::protocol::http::outgoing::Response> HtmlResponse(const std::string& text) {
+		auto response = createResponse(Status::CODE_200, text);
+		response->putHeader(Header::CONTENT_TYPE, "text/html");
+		return response;
+	}
+
+	std::shared_ptr<oatpp::web::protocol::http::outgoing::Response> TextResponse(const std::string& text) {
     auto response = TextDto::createShared();
     response->text = text;
     return createDtoResponse(Status::CODE_200, response);
   }
 };
 
-#include OATPP_CODEGEN_END(ApiController) 
+#include OATPP_CODEGEN_END(ApiController)

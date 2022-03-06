@@ -46,6 +46,14 @@ target_compile_features(
 )
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+	add_compile_definitions(
+            UNICODE
+            _UNICODE
+            NOMINMAX
+            WIN32_LEAN_AND_MEAN
+            _CRT_USE_BUILTIN_OFFSETOF # Fixes MSVC being non-compliant with offsetof behavior by default.
+    )
+
 	target_compile_options(
 		"SkyUnit"
 		PRIVATE
@@ -113,6 +121,10 @@ target_link_libraries("SkyUnit" PUBLIC spdlog::spdlog)
 # Include oatpp
 find_package(oatpp CONFIG REQUIRED)
 target_link_libraries("${PROJECT_NAME}" PRIVATE oatpp::oatpp oatpp::oatpp-test)
+
+# Inja
+find_package(inja CONFIG REQUIRED)
+target_link_libraries("${PROJECT_NAME}" PRIVATE pantor::inja)
 
 # Precompiled Headers (PCH)
 target_precompile_headers(
