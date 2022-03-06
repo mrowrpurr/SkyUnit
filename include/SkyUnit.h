@@ -1,7 +1,7 @@
 namespace SkyUnit {
 
-    __declspec(dllexport) void AddCallback(std::string&& name, std::function<void()>&& callback);
+    __declspec(dllexport) void AddCallback(std::string_view name, std::function<void()>&& callback);
 
-	extern std::unordered_map<std::string, std::function<void()>>& GetCallbacks();
+	extern std::unordered_map<std::string_view, std::function<void()>>& GetCallbacks();
 
 }
