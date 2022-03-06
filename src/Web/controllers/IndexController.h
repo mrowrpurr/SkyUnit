@@ -8,6 +8,7 @@
 #include <oatpp/core/macro/codegen.hpp>
 #include <oatpp/core/macro/component.hpp>
 #include <RE/C/ConsoleLog.h>
+#include <exception>
 
 #include "Web/dtos/TextDto.h"
 
@@ -34,8 +35,19 @@ public:
     // return response(std::format("Hey! This is SkyUnit! Let's have some Vitamin C and then continue!", now));
   }
 
-	ENDPOINT("GET", "/callback/{callbackName}", searchSpells, PATH(String, callbackName)) {
-		return response(std::format("Hello, the callback is {}", callbackName->c_str()));
+	ENDPOINT("GET", "/callback/{callbackName}", invokeCallback, PATH(String, callbackName)) {
+		auto callbacks = SkyUnit::GetCallbacks();
+		if (callbacks.contains((callbackName->c_str()))) {
+			auto fn = callbacks[callbackName->c_str()];
+			try {
+				auto result = fn();
+				return response(std::format("Callback {} returned {}", callbackName->c_str(), result));
+			} catch (...) {
+				return response(std::format("Callback blew up: {}", callbackName->c_str()));
+			}
+		} else {
+			return response(std::format("No callback defined with this name: {}", callbackName->c_str()));
+		}
 	}
 
   std::shared_ptr<oatpp::web::protocol::http::outgoing::Response> response(std::string text) {
