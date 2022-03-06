@@ -19,7 +19,7 @@ option(SKYUNIT_BUILD_TESTS "Build the tests for SkyUnit" ${SKYUNIT_IS_MAIN_PROJE
 
 # Add options for specifying the version
 # Only one version may be provided at a time
-option(SKYRIM_AE "Compile plugin for Skyrim AE" OFF)
+option(SKYRIM_AE "Compile plugin for Skyrim AE" ON)
 option(SKYRIM_SE "Compile plugin for Skyrim SE" OFF)
 option(SKYRIM_VR "Compile plugin for Skyrim VR" OFF)
 

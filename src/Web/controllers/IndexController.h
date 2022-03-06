@@ -20,11 +20,10 @@ public:
   ENDPOINT("GET", "/", root) {
     auto now = std::chrono::system_clock::now();
 
-    auto html = std::string("<h1>List of stuff:</h1><ul>");
-    auto stuffs = SkyUnit::GetStringVector();
-    for (const auto item : stuffs) {
-      html = std::format("{}<li>{}</li>", html, item);
-    }
+    auto html = std::string("<h1>List of registered callbacks:</h1><ul>");
+	for (auto& [key, value] : SkyUnit::Callbacks) {
+		html = std::format("{}<li>{}</li>", html, *key);
+	}
     html = std::format("{}</ul>", html);
 
     auto response = createResponse(Status::CODE_200, html);

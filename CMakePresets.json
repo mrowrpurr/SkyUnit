@@ -114,5 +114,19 @@
       "displayName": "vs2022-windows RELEASE",
       "toolset": "v143"
     }
+  ],
+  "buildPresets": [
+    {
+      "name": "Release",
+      "displayName": "Release",
+      "configurePreset": "vs2022-windows-release",
+      "description": "Optimized release build with debug symbols."
+    },
+    {
+      "name": "Debug",
+      "displayName": "Debug",
+      "configurePreset": "vs2022-windows-debug",
+      "description": "Debug build for testing."
+    }
   ]
 }
