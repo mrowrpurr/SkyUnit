@@ -27,12 +27,7 @@ public:
 )";
 
 	inja::json data;
-	data["callbacks"] = {};
-
-	auto callbacks = SkyUnit::GetCallbacks();
-	for (auto& [key, value] : callbacks) {
-		data["callbacks"].push_back(key);
-	}
+	data["callbacks"] = SkyUnit::Private::GetTestNames();
 
 	const auto html = inja::render(htmlTemplate, data);
     return HtmlResponse(html);
@@ -40,7 +35,7 @@ public:
 
 	ENDPOINT("GET", "/callbacks/{callbackName}", invokeCallback, PATH(String, callbackNameString)) {
 		const auto callbackName = callbackNameString->c_str();
-		auto callbacks = SkyUnit::GetCallbacks();
+		auto callbacks = SkyUnit::Private::GetTestCallbacks();
 		if (callbacks.contains((callbackName))) {
 			auto fn = callbacks[callbackName];
 			try {
