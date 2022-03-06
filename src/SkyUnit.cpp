@@ -1,9 +1,9 @@
 namespace SkyUnit {
-	namespace {
+	//namespace {
 		std::unordered_map<std::string, std::function<std::string_view()>> _testCallbacks;
-	}
+	//}
 
-	namespace Private {
+	//namespace Private {
 		std::unordered_map<std::string, std::function<std::string_view ()>>& GetTestCallbacks() {
 			return _testCallbacks;
 		}
@@ -15,8 +15,9 @@ namespace SkyUnit {
 			}
 			return testNames;
 		}
-	}
+	//}
+
 	void AddTest(std::string_view name, std::function<std::string_view()>&& callback) {
-		Private::GetTestCallbacks().try_emplace(std::string(name), callback);
+		GetTestCallbacks().try_emplace(std::string(name), callback);
 	}
 }
