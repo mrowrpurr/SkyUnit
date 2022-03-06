@@ -3,6 +3,7 @@
 #include <iostream>
 #include <format>
 #include <thread>
+#include <stdio.h>
 
 #include <oatpp/web/server/api/ApiController.hpp>
 #include <oatpp/core/macro/codegen.hpp>
@@ -17,6 +18,24 @@
 class IndexController : public oatpp::web::server::api::ApiController {
 public:
   IndexController(OATPP_COMPONENT(std::shared_ptr<ObjectMapper>, objectMapper)) : oatpp::web::server::api::ApiController(objectMapper) {}
+
+  // https://stackoverflow.com/a/4823686
+  std::string urlDecode(std::string uriComponent) {
+    std::string ret;
+    char ch;
+    int i, ii;
+    for (i=0; i<uriComponent.length(); i++) {
+        if (int(uriComponent[i])==37) {
+            sscanf_s(uriComponent.substr(i+1,2).c_str(), "%x", &ii);
+            ch=static_cast<char>(ii);
+            ret+=ch;
+            i=i+2;
+        } else {
+            ret+=uriComponent[i];
+        }
+    }
+    return (ret);
+  }
 
   ENDPOINT("GET", "/", root) {
     auto now = std::chrono::system_clock::now();
@@ -35,20 +54,22 @@ public:
     // return response(std::format("Hey! This is SkyUnit! Let's have some Vitamin C and then continue!", now));
   }
 
-	ENDPOINT("GET", "/callback/{callbackName}", invokeCallback, PATH(String, callbackName)) {
+  // RENAME TO TEST!
+	ENDPOINT("GET", "/callback/{callbackNameString}", invokeCallback, PATH(String, callbackNameString)) {
+		const auto callbackName = urlDecode(callbackNameString->c_str());
 		auto callbacks = SkyUnit::GetCallbacks();
-		if (callbacks.contains((callbackName->c_str()))) {
-			auto fn = callbacks[callbackName->c_str()];
+		if (callbacks.contains((callbackName.data()))) {
+			auto fn = callbacks[callbackName];
 			try {
 				auto result = fn();
-				return response(std::format("Callback {} returned {}", callbackName->c_str(), result));
+				return response(std::format("Callback {} returned {}", callbackName, result));
 			} catch (const snowhouse::AssertionException& e) {
-				return response(std::format("Callback blew up: {} with message: {}", callbackName->c_str(), e.what()));
+				return response(std::format("Callback blew up: {} with message: {}", callbackName, e.what()));
 			} catch (...) {
-				return response(std::format("Callback blew up: {} with unexpected error", callbackName->c_str()));
+				return response(std::format("Callback blew up: {} with unexpected error", callbackName));
 			}
 		} else {
-			return response(std::format("No callback defined with this name: {}", callbackName->c_str()));
+			return response(std::format("No callback defined with this name: {}", callbackName));
 		}
 	}
 
