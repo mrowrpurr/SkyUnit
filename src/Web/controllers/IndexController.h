@@ -77,7 +77,7 @@ public:
 				fn();
 				results += std::format("<li style=\"color: #127339;\">Test {} passed</li>", testName);
 			} catch (const snowhouse::AssertionException& e) {
-				results += std::format("<li style=\"color: #b00c6c\">Test {} failed with message: {}</li>", testName, e.what());
+				results += std::format("<li style=\"color: #b00c6c\">Test {} failed with message: {}<br>{}:{}</li>", testName, e.what(), e.file(), e.line());
 				anyFailed = true;
 			} catch (...) {
 				results += std::format("<li style=\"color: #b00c6c\">Test {} failed with unexpected error</li>", testName);
