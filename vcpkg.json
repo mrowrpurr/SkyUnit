@@ -10,6 +10,8 @@
         { "name": "vcpkg-cmake-config", "host": true },
         "commonlibae",
         "websocketpp",
-        "boost-random"
+        "boost-random",
+        "bandit",
+        "snowhouse"
     ]
 }

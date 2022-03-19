@@ -1,0 +1,3 @@
+namespace SkyUnitExampleTestRunner {
+    void RunTests();
+}
