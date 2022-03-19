@@ -1,3 +1,5 @@
+#include "RE/C/ConsoleLog.h"
+
 extern "C" __declspec(dllexport) constinit auto SKSEPlugin_Version = []() {
 	SKSE::PluginVersionData v;
 
@@ -10,14 +12,22 @@ extern "C" __declspec(dllexport) constinit auto SKSEPlugin_Version = []() {
 	return v;
 }();
 
-extern "C" __declspec(dllexport) bool SKSEAPI SKSEPlugin_Query(const SKSE::QueryInterface* a_skse, SKSE::PluginInfo* a_info) {
+extern "C" __declspec(dllexport) bool SKSEAPI SKSEPlugin_Query(const SKSE::QueryInterface* skse, SKSE::PluginInfo* a_info) {
 	a_info->infoVersion = SKSE::PluginInfo::kVersion;
 	a_info->name = Plugin::NAME.data();
 	a_info->version = Plugin::VERSION.pack();
+	if (skse->IsEditor()) { return false; }
+	return true;
+}
 
-	if (a_skse->IsEditor()) {
-		return false;
-	}
+extern "C" __declspec(dllexport) bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* skse) {
+	SKSE::Init(skse);
+
+    SKSE::GetMessagingInterface()->RegisterListener([](SKSE::MessagingInterface::Message* message){
+        if (message->type == SKSE::MessagingInterface::kDataLoaded) {
+            RE::ConsoleLog::GetSingleton()->Print("Hello ladies and jellyspoons!");
+        }
+    });
 
 	return true;
 }
