@@ -1,4 +1,6 @@
 #include "TestRunnerInterface.h"
+#include "TestHelper.h"
+#include "TestRunner.h"
 
 void SkyUnitExampleTestRunner::RunTests() {
     auto* consoleLog = RE::ConsoleLog::GetSingleton();

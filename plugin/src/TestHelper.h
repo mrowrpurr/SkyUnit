@@ -1,3 +1,5 @@
+#pragma once
+
 #include <snowhouse/snowhouse.h>
 #include <bandit/bandit.h>
 

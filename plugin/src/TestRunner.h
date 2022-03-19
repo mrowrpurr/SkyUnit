@@ -1,3 +1,5 @@
+#pragma once
+
 #include <bandit/reporters/interface.h>
 #include <RE/C/ConsoleLog.h>
 #include <websocketpp/server.hpp>
@@ -18,9 +20,7 @@ typedef webSocketServer::message_handler message_handler;
 
 namespace SkyUnitExampleTestRunner {
 
-    struct WebSocketReporter : public bandit::reporter::
-
-    interface {
+    struct WebSocketReporter : public bandit::reporter::interface {
         //    webSocketServer& _server;
 
     public:
