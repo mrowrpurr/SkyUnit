@@ -9,6 +9,7 @@
     "dependencies": [
         { "name": "vcpkg-cmake-config", "host": true },
         "commonlibae",
-        "boost-process"
+        "websocketpp",
+        "boost-random"
     ]
 }
