@@ -3,8 +3,10 @@
         {
             "kind": "git",
             "repository": "https://github.com/mrowrpurr/vcpkg-repo.git",
-            "baseline": "5bbd6e7cee20e694a50d7288a3671d70f6769b75",
-            "packages": [ ]
+            "baseline": "97bc962900681e73c23e8f47bced00d7b01c60e2",
+            "packages": [
+                "commonlibae"
+            ]
         }
     ]
 }

@@ -7,5 +7,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 include(compile_definitions)
+include(configure_file)
 
-add_executable(SkyUnitExample src/main.cpp)
+add_library(SkyUnitExample SHARED src/main.cpp include/PCH.h ${CMAKE_CURRENT_BINARY_DIR}/version.rc)
+
+find_package(CommonLibSSE CONFIG REQUIRED)
+target_link_libraries(SkyUnitExample PRIVATE CommonLibSSE::CommonLibSSE)
+include(compile_features)
+include(precompiled_headers)
