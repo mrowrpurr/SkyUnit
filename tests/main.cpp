@@ -11,6 +11,12 @@ using websocketpp::lib::bind;
 
 typedef websocketpp::config::asio_client::message_type::ptr message_ptr;
 
+void on_open(client* c, websocketpp::connection_hdl hdl) {
+    std::cout << "OPEN!!!";
+    websocketpp::lib::error_code ec;
+    c->send(hdl, "Hi Skyrim, can you hear me?", websocketpp::frame::opcode::text, ec);
+}
+
 void on_message(client* c, websocketpp::connection_hdl hdl, message_ptr msg) {
     std::cout << "on_message called with hdl: " << hdl.lock().get()
               << " and message: " << msg->get_payload()
@@ -38,6 +44,8 @@ int main(int argc, char* argv[]) {
         // Set logging to be pretty verbose (everything except message payloads)
         c.set_access_channels(websocketpp::log::alevel::all);
         c.clear_access_channels(websocketpp::log::alevel::frame_payload);
+
+        c.set_open_handler(bind(&on_open, &c, ::_1));
 
         // Initialize ASIO
         c.init_asio();

@@ -21,7 +21,7 @@ typedef server::message_ptr message_ptr;
 typedef server::message_handler message_handler;
 
 void on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
-    RE::ConsoleLog::GetSingleton()->Print("RECEIVED A MESSAGE");
+    RE::ConsoleLog::GetSingleton()->Print(std::format("Received a message! '{}'", msg->get_payload()).c_str());
 }
 
 void RunWebSocketServer() {
