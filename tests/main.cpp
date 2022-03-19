@@ -22,12 +22,12 @@ void on_message(client* c, websocketpp::connection_hdl hdl, message_ptr msg) {
               << " and message: " << msg->get_payload()
               << std::endl;
 
-    websocketpp::lib::error_code ec;
-
-    c->send(hdl, msg->get_payload(), msg->get_opcode(), ec);
-    if (ec) {
-        std::cout << "Echo failed because: " << ec.message() << std::endl;
-    }
+//    websocketpp::lib::error_code ec;
+//
+//    c->send(hdl, msg->get_payload(), msg->get_opcode(), ec);
+//    if (ec) {
+//        std::cout << "Echo failed because: " << ec.message() << std::endl;
+//    }
 }
 
 int main(int argc, char* argv[]) {
