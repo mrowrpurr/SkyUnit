@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
+add_definitions(-DBoost_NO_WARN_NEW_VERSIONS=1)
 include(compile_definitions)
 include(configure_file)
 
@@ -17,3 +18,6 @@ include(compile_features)
 include(precompiled_headers)
 
 add_executable(SkyUnitTestExample tests/main.cpp)
+find_package(Boost 1.78.0 REQUIRED COMPONENTS filesystem)
+target_link_libraries(SkyUnitTestExample PRIVATE Boost::boost Boost::filesystem)
+include_directories(${Boost_INCLUDE_DIRS})

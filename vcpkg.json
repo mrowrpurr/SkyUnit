@@ -8,6 +8,7 @@
     "supports": "windows & x64",
     "dependencies": [
         { "name": "vcpkg-cmake-config", "host": true },
-        "commonlibae"
+        "commonlibae",
+        "boost-process"
     ]
 }
