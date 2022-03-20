@@ -23,6 +23,8 @@ void on_message(client* c, websocketpp::connection_hdl hdl, message_ptr msg) {
     auto messageText = msg->get_payload();
     if (messageText == "Complete") {
         c->send(hdl, "Quit", websocketpp::frame::opcode::text);
+        Sleep(100);
+        c->close(hdl, websocketpp::close::status::going_away, "");
     } else {
         std::cout << messageText + "\n";
     }
@@ -45,9 +47,11 @@ int main(int argc, char* argv[]) {
 
         // Initialize ASIO
         c.init_asio();
-        
+
         c.set_access_channels(websocketpp::log::alevel::none);
         c.clear_access_channels(websocketpp::log::alevel::all);
+        c.set_error_channels(websocketpp::log::alevel::none);
+        c.clear_error_channels(websocketpp::log::alevel::all);
 
         // Register our message handler
         c.set_message_handler(bind(&on_message,&c,::_1,::_2));
@@ -68,6 +72,6 @@ int main(int argc, char* argv[]) {
         // will exit when this connection is closed.
         c.run();
     } catch (websocketpp::exception const & e) {
-        std::cout << e.what() << std::endl;
+        std::cout << std::format("ERROR! {}\n", e.what());
     }
 }

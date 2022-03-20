@@ -12,7 +12,7 @@ add_definitions(-DBoost_NO_WARN_NEW_VERSIONS=1)
 include(compile_definitions)
 include(configure_file)
 
-add_library(SkyUnitExample SHARED plugin/src/main.cpp plugin/src/TestRunner.h plugin/src/TestHelper.h plugin/src/TestRunnerInterface.h plugin/src/TestRunnerInterface.cpp plugin/src/Tests.cpp plugin/include/PCH.h ${CMAKE_CURRENT_BINARY_DIR}/version.rc)
+add_library(SkyUnitExample SHARED plugin/src/main.cpp plugin/src/TestRunner.h plugin/src/TestHelper.h plugin/src/TestRunnerInterface.h plugin/src/TestRunnerInterface.cpp plugin/src/Tests.cpp plugin/src/Tests2.cpp plugin/include/PCH.h ${CMAKE_CURRENT_BINARY_DIR}/version.rc)
 target_link_libraries(SkyUnitExample PRIVATE websocketpp::websocketpp)
 
 find_package(CommonLibSSE CONFIG REQUIRED)
