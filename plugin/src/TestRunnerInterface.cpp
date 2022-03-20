@@ -11,7 +11,10 @@ void SkyUnitExampleTestRunner::RunTests() {
     controller.set_policy(new bandit::run_policy::bandit({}, false, false));
     bandit::detail::register_controller(&controller);
 
-    controller.set_reporter(new SkyUnitExampleTestRunner::WebSocketReporter());
+    webSocketServer server;
+    auto reporter = new SkyUnitExampleTestRunner::WebSocketReporter(server);
+    SkyUnitExampleTestRunner::WebSocketReporter::Instance = reporter;
+    controller.set_reporter(reporter);
     controller.get_reporter().test_run_starting();
 
     bool hard_skip = false;
@@ -23,8 +26,6 @@ void SkyUnitExampleTestRunner::RunTests() {
     };
 
     controller.get_reporter().test_run_complete();
-
-// controller.get_reporter().did_we_pass();
   }
 
 extern "C" __declspec(dllexport) bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* skse) {
