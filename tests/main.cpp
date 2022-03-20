@@ -12,9 +12,13 @@ using websocketpp::lib::bind;
 typedef websocketpp::config::asio_client::message_type::ptr message_ptr;
 
 void on_open(client* c, websocketpp::connection_hdl hdl) {
-    std::cout << "OPEN!!!";
+    std::cout << "OPEN!";
     websocketpp::lib::error_code ec;
-    c->send(hdl, "Hi Skyrim, can you hear me?", websocketpp::frame::opcode::text, ec);
+    c->send(hdl, "RunTests", websocketpp::frame::opcode::text, ec);
+}
+
+void on_close(client* c, websocketpp::connection_hdl hdl) {
+    std::cout << "CLOSED!";
 }
 
 void on_message(client* c, websocketpp::connection_hdl hdl, message_ptr msg) {
@@ -46,6 +50,7 @@ int main(int argc, char* argv[]) {
         c.clear_access_channels(websocketpp::log::alevel::frame_payload);
 
         c.set_open_handler(bind(&on_open, &c, ::_1));
+        c.set_close_handler(bind(&on_close, &c, ::_1));
 
         // Initialize ASIO
         c.init_asio();

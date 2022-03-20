@@ -1,5 +1,5 @@
 #pragma once
 
 namespace SkyUnitExampleTestRunner {
-    void RunTests();
+    void RunWebSocketServer();
 }

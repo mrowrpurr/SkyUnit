@@ -20,57 +20,27 @@ typedef webSocketServer::message_handler message_handler;
 
 namespace SkyUnitExampleTestRunner {
 
+    // lol.
     webSocketServer* Server;
     connection_hdl* Connection;
 
-    void on_open(connection_hdl hdl) {
-        Connection = &hdl;
-    }
-
-    void on_message(server<config::asio>* s, connection_hdl hdl, message_ptr msg) {
-        auto messageText = msg->get_payload();
-        if (messageText == "RunTests") {
-            // TODO RUN TESTS!
-        } else {
-            s->send(hdl, std::format("Unexpected message '{}'", messageText), websocketpp::frame::opcode::text);
-        }
-    }
-
     struct WebSocketReporter : public bandit::reporter::interface {
-
     public:
-
-        explicit WebSocketReporter(webSocketServer& server) {
-            Server = &server;
-            try {
-                server.set_access_channels(websocketpp::log::alevel::all);
-                server.clear_access_channels(websocketpp::log::alevel::frame_payload);
-                server.init_asio();
-                server.set_open_handler(bind(&on_open, ::_1));
-                server.set_message_handler(bind(&on_message, &server, ::_1, ::_2));
-                server.listen(6969);
-                server.start_accept();
-                std::thread t([&server](){ server.run(); });
-                t.detach();
-            } catch (websocketpp::exception const & e) {
-                std::cout << e.what() << std::endl;
-            } catch (...) {
-                std::cout << "other exception" << std::endl;
-            }
-        }
-
         ~WebSocketReporter() override = default;
 
         void test_run_starting() override {
             RE::ConsoleLog::GetSingleton()->Print("Tests started!");
+            Server->send(*Connection, "Tests started!", frame::opcode::text);
         }
 
         void test_run_complete() override {
             RE::ConsoleLog::GetSingleton()->Print("Tests complete!");
+            Server->send(*Connection, "Tests complete!", frame::opcode::text);
         }
 
         void context_starting(const std::string &desc) override {
             RE::ConsoleLog::GetSingleton()->Print(std::format("Starting context: {}", desc).c_str());
+            Server->send(*Connection, std::format("Starting context: {}", desc), frame::opcode::text);
         }
 
         void context_ended(const std::string &desc) override {}
@@ -83,10 +53,12 @@ namespace SkyUnitExampleTestRunner {
 
         void it_succeeded(const std::string &desc) override {
             RE::ConsoleLog::GetSingleton()->Print(std::format("{} PASSED", desc).c_str());
+            Server->send(*Connection, std::format("{} PASSED", desc), frame::opcode::text);
         }
 
         void it_failed(const std::string &desc, const bandit::detail::assertion_exception &ex) override {
             RE::ConsoleLog::GetSingleton()->Print(std::format("{} FAILED", desc).c_str());
+            Server->send(*Connection, std::format("{} FAILED", desc), frame::opcode::text);
         }
 
         void it_unknown_error(const std::string &desc) override {}
