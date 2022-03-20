@@ -1,6 +1,8 @@
 #include "TestRunnerInterface.h"
 #include "TestHelper.h"
 #include "TestRunner.h"
+#include <RE/C/Console.h>
+#include <Windows.h>
 
 namespace {
     void RunTests() {
@@ -25,10 +27,12 @@ namespace {
         };
 
         controller.get_reporter().test_run_complete();
+
+        SkyUnitExampleTestRunner::Server->send(*SkyUnitExampleTestRunner::Connection, std::format("Complete"), websocketpp::frame::opcode::text);
     }
 
     void on_open(connection_hdl hdl) {
-//        SkyUnitExampleTestRunner::Connection = &hdl;
+        SkyUnitExampleTestRunner::Connection = &hdl;
     }
 
     void on_close(connection_hdl hdl) {
@@ -44,6 +48,8 @@ namespace {
         if (messageText == "RunTests") {
             SkyUnitExampleTestRunner::Connection = &hdl;
             RunTests();
+        } else if (messageText == "Quit") {
+            ExitProcess(0);
         } else {
             s->send(hdl, std::format("Unknown message '{}'", messageText), websocketpp::frame::opcode::text);
         }
