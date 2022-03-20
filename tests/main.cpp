@@ -39,8 +39,8 @@ namespace Foo {
     }
 
     int Start() {
-    //    std::system(R"(C:\Modding\MO2\ModOrganizer.exe "moshortcut://Authoring - AE:SKSE")");
-    //    Sleep(4000);
+        // TODO - move to environment variable
+        std::system(R"(C:\Modding\MO2\ModOrganizer.exe "moshortcut://Authoring - AE:SKSE")");
         client c;
 
         std::string uri = "ws://localhost:6969";
