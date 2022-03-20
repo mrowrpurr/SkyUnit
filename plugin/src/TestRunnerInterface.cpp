@@ -49,8 +49,6 @@ namespace {
             SkyUnitExampleTestRunner::Connection = &hdl;
             RunTests();
         } else if (messageText == "Quit") {
-//            s->close(hdl, websocketpp::close::status::going_away, "");
-            Sleep(1000);
             ExitProcess(0);
         } else {
             s->send(hdl, std::format("Unknown message '{}'", messageText), websocketpp::frame::opcode::text);
