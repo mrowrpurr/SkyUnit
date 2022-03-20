@@ -56,7 +56,9 @@ namespace SkyUnitExampleTestRunner {
 
         void it_skip(const std::string &desc) override {}
 
-        bool did_we_pass() const override {}
+        bool did_we_pass() const override {
+            return true; // why is this my responsibility? lol.
+        }
     };
 
     //void on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {

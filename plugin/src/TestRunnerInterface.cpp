@@ -5,7 +5,27 @@
 void SkyUnitExampleTestRunner::RunTests() {
     auto* consoleLog = RE::ConsoleLog::GetSingleton();
     consoleLog->Print("THIS WILL RUN THE TESTS!");
-}
+
+    bandit::detail::controller_t controller;
+    controller.set_report_timing(true);
+    controller.set_policy(new bandit::run_policy::bandit({}, false, false));
+    bandit::detail::register_controller(&controller);
+
+    controller.set_reporter(new SkyUnitExampleTestRunner::WebSocketReporter());
+    controller.get_reporter().test_run_starting();
+
+    bool hard_skip = false;
+    context::bandit global_context("", hard_skip);
+    controller.get_contexts().push_back(&global_context);
+
+    for (const auto& func : bandit::detail::specs()) {
+      func();
+    };
+
+    controller.get_reporter().test_run_complete();
+
+// controller.get_reporter().did_we_pass();
+  }
 
 extern "C" __declspec(dllexport) bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* skse) {
     SKSE::Init(skse);
