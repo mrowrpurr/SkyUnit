@@ -6,6 +6,17 @@
 
 namespace {
     void RunTests() {
+        Sleep(2000);
+
+        WinExec("AutoHotkey C:/Users/mrowr/Desktop/coc.ahk", SW_HIDE);
+
+        // Send {~}
+        // Sleep 200
+        // Send coc riverwood
+        // Send {Enter}
+
+        Sleep(4000);
+
         auto *consoleLog = RE::ConsoleLog::GetSingleton();
         consoleLog->Print("THIS WILL RUN THE TESTS!");
 
@@ -84,8 +95,10 @@ extern "C" __declspec(dllexport) bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadIn
         if (message->type == SKSE::MessagingInterface::kDataLoaded) {
             auto* consoleLog = RE::ConsoleLog::GetSingleton();
             consoleLog->Print("Hello ladies and jellyspoons!");
-            std::thread t(SkyUnitExampleTestRunner::RunWebSocketServer);
-            t.detach();
+
+            std::thread server(SkyUnitExampleTestRunner::RunWebSocketServer);
+            server.detach();
+
 //            auto weaponNames = FindWeaponNames("Dagger");
 //            if (weaponNames.empty()) {
 //                consoleLog->Print("No matching weapons found.");

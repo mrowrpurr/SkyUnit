@@ -24,6 +24,9 @@ target_include_directories(SkyUnitExample PRIVATE ${SNOWHOUSE_INCLUDE_DIRS})
 find_path(BANDIT_INCLUDE_DIRS "bandit/adapters.h")
 target_include_directories(SkyUnitExample PRIVATE ${BANDIT_INCLUDE_DIRS})
 
+find_package(common CONFIG REQUIRED)
+target_link_libraries(SkyUnitExample PRIVATE xse::common)
+
 include(compile_features)
 include(precompiled_headers)
 

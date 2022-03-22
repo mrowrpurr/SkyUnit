@@ -38,9 +38,14 @@ namespace Foo {
         }
     }
 
+    int skyrimStarted = false;
+
     int Start() {
         // TODO - move to environment variable
-        std::system(R"(C:\Modding\MO2\ModOrganizer.exe "moshortcut://Authoring - AE:SKSE")");
+        if (! skyrimStarted ) {
+            std::system(R"(C:\Modding\MO2\ModOrganizer.exe "moshortcut://Authoring - AE:SKSE")");
+        }
+        skyrimStarted = true;
         client c;
 
         std::string uri = "ws://localhost:6969";

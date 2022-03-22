@@ -8,6 +8,15 @@
                 "commonlibae",
                 "bandit"
             ]
+        },
+        {
+            "kind": "git",
+            "repository": "https://gitlab.com/colorglass/vcpkg-colorglass",
+            "baseline": "385e16f499c9921f5c02d635621b3f43807b48ce",
+            "packages": [
+                "script-extender-common",
+                "skse"
+            ]
         }
     ]
 }

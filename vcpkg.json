@@ -12,6 +12,8 @@
         "websocketpp",
         "boost-random",
         "bandit",
-        "snowhouse"
+        "snowhouse",
+        "script-extender-common",
+        "skse"
     ]
 }
